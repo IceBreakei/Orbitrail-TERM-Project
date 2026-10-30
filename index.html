@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schale | Log in</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="script.js"></script>
+  </head>
+  <body>
+    <main class="auth-layout">
+      <!-- Game introduction and decorative spell sigil. -->
+      <section class="intro" aria-label="Welcome">
+        <!-- Decorative halo: hidden from assistive technology and mouse input. -->
+        <div class="halo-scene" aria-hidden="true">
+          <div class="halo-ring halo-ring-outer"></div>
+          <div class="halo-ring halo-ring-inner"></div>
+          <span class="halo-core"></span>
+          <span class="halo-marker halo-marker-left"></span>
+          <span class="halo-marker halo-marker-right"></span>
+        </div>
+        <a class="brand" href="index.html">
+          <span class="brand-icon" aria-hidden="true">&#10023;</span>
+          SCHALE
+        </a>
+        <div class="intro-copy">
+          <span class="eyebrow">KIVOTOS / SCHALE OPERATIONS</span>
+          <h1>
+            Welcome to Kivotos.
+            <br>
+            Your students await.
+          </h1>
+          <p>
+            Take command, Sensei.
+            <br>
+            Draw your skills. Lead your students into battle.
+          </p>
+        </div>
+        <!-- A static spell diagram suggests gesture casting without adding gameplay. -->
+        <div class="spell-art" aria-hidden="true">
+          <span class="spell-caption">EX SKILL / TRACE SEQUENCE</span>
+          <svg class="spell-sigil" viewBox="0 0 440 300" fill="none">
+            <defs>
+              <linearGradient id="spell-ink" x1="100" y1="240" x2="340" y2="50" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#087fba"/>
+                <stop offset="1" stop-color="#48d7f5"/>
+              </linearGradient>
+            </defs>
+            <ellipse class="sigil-orbit" cx="220" cy="160" rx="170" ry="105"/>
+            <ellipse class="sigil-orbit sigil-orbit-inner" cx="220" cy="160" rx="142" ry="87"/>
+            <path class="sigil-guide" d="M70 160H370M220 35V285"/>
+            <path class="sigil-stroke" d="M130 225L218 64L310 225L130 225L266 151L178 151L220 105"/>
+            <circle class="sigil-node" cx="130" cy="225" r="7"/>
+            <circle class="sigil-node" cx="218" cy="64" r="7"/>
+            <circle class="sigil-node" cx="310" cy="225" r="7"/>
+            <path class="sigil-star" d="M344 71V97M331 84H357M81 224V242M72 233H90"/>
+          </svg>
+          <div class="spell-legend"><span>01 / TRACE</span><span>02 / EX SKILL</span><span>03 / SORTIE</span></div>
+        </div>
+        <p class="intro-footer">
+          SCHALE &nbsp; / &nbsp; OPERATIONS IN KIVOTOS
+        </p>
+      </section>
+      <section class="form-panel">
+        <div class="auth-card">
+          <span class="eyebrow">SCHALE AUTHENTICATION</span>
+          <h2 id="form-title">Welcome back, Sensei</h2>
+          <p class="subtitle" id="form-description">
+            Log in to Schale and prepare for your next sortie.
+          </p>
+          <!-- JavaScript switches this form between login and registration. -->
+          <form id="auth-form">
+            <!-- Name is shown and required only when creating an account. -->
+            <div id="name-field" hidden>
+              <label for="name">Sensei name</label>
+              <input id="name" name="name" autocomplete="name" placeholder="Your Sensei name" maxlength="100">
+            </div>
+            <div>
+              <label for="email">Email address</label>
+              <input id="email" name="email" type="email" autocomplete="username" placeholder="you@example.com" required maxlength="254">
+            </div>
+            <div>
+              <label for="password">Password</label>
+              <div class="password-wrap">
+                <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required>
+                <button class="reveal" type="button" aria-label="Show password" aria-pressed="false">Show</button>
+              </div>
+              <p class="hint" id="password-hint" hidden>
+                Use at least 8 characters.
+              </p>
+            </div>
+            <p id="message" class="message" role="status" aria-live="polite"></p>
+            <button class="submit" type="submit">
+              <span id="submit-label">Log in</span>
+              <span aria-hidden="true">→</span>
+            </button>
+          </form>
+          <p class="switch-copy">
+            <span id="switch-prompt">Don't have an account?</span>
+            <button id="switch-mode" type="button">Create an account</button>
+          </p>
+          <p class="demo-note">Your students are counting on you, Sensei.</p>
+        </div>
+        <footer class="panel-footer">KIVOTOS AWAITS YOU, SENSEI.</footer>
+      </section>
+    </main>
+  </body>
+</html>

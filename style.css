@@ -1,0 +1,693 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+/* Base typography and browser defaults. */
+
+:root {
+  /* Blue Archive-inspired palette: sky blue, cyan, navy, and white. */
+  --color-text: #183654;
+  --color-background: #f5fbff;
+  --color-primary: #087fba;
+  --color-primary-hover: #066899;
+  --color-cyan: #48d7f5;
+  --color-surface: #ffffff;
+  --color-muted: #526f87;
+  --color-border: #c9e3f2;
+  --color-focus: #00a9e8;
+
+  font-family: 'DM Sans', sans-serif;
+  color: var(--color-text);
+  background: var(--color-background);
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button, input {
+  font: inherit;
+}
+
+button, a, input {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:focus-visible, a:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 4px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* Desktop layout and welcome panel. */
+
+.auth-layout {
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 18px;
+  gap: 18px;
+}
+
+.intro {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(145deg, #e5f8ff 0%, #c7edff 60%, #a9e0fa 100%);
+  border-radius: 16px;
+  padding: 34px 42px;
+  min-height: 720px;
+  display: flex;
+  flex-direction: column;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--color-text);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -.8px;
+}
+
+.brand-icon {
+  display: grid;
+  place-items: center;
+  background: var(--color-primary);
+  color: var(--color-surface);
+  width: 35px;
+  height: 35px;
+  border-radius: 10px;
+  font-size: 25px;
+}
+
+.intro-copy {
+  margin-top: 88px;
+  z-index: 1;
+}
+
+.eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--color-muted);
+}
+
+h1 {
+  font-family: Manrope, sans-serif;
+  font-size: clamp(36px, 4vw, 60px);
+  line-height: 1.17;
+  letter-spacing: -2.8px;
+  font-weight: 500;
+  margin: 22px 0;
+}
+
+.intro-copy p {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--color-muted);
+}
+
+.intro-footer {
+  margin-top: auto;
+  padding-top: 250px;
+  font-size: 11px;
+  color: var(--color-muted);
+  letter-spacing: .4px;
+}
+
+/* Decorative project cards and orbit shapes. */
+
+.illustration {
+  position: absolute;
+  width: 330px;
+  height: 260px;
+  bottom: 55px;
+  right: 18px;
+  transform: rotate(-8deg);
+}
+
+.orbit {
+  position: absolute;
+  border: 1px solid #8dcee9;
+  border-radius: 50%;
+  width: 340px;
+  height: 185px;
+  top: 55px;
+  left: -20px;
+  transform: rotate(-25deg);
+}
+
+.orbit-two {
+  transform: rotate(30deg);
+}
+
+.tile {
+  position: absolute;
+  width: 165px;
+  height: 185px;
+  border-radius: 18px;
+  left: 95px;
+  top: 40px;
+}
+
+.tile-back {
+  background: #79ccef;
+  transform: rotate(20deg) translate(20px, -10px);
+}
+
+.tile-front {
+  background: var(--color-surface);
+  box-shadow: 0 18px 35px #12618d26;
+  padding: 30px;
+}
+
+.tile-front span {
+  display: block;
+  background: #cfedfc;
+  height: 7px;
+  margin-bottom: 12px;
+  border-radius: 5px;
+}
+
+.tile-front span:nth-child(2) {
+  width: 75%;
+}
+
+.tile-front span:nth-child(3) {
+  width: 50%;
+}
+
+.tile-front i {
+  position: absolute;
+  bottom: 23px;
+  right: 24px;
+  background: var(--color-primary);
+  color: var(--color-surface);
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  font-style: normal;
+}
+
+.spark {
+  position: absolute;
+  left: 55px;
+  top: 27px;
+  font-size: 45px;
+  color: var(--color-cyan);
+}
+
+/* Login and registration form controls. */
+
+.form-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 60px 30px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 365px;
+}
+
+h2 {
+  font-family: Manrope, sans-serif;
+  font-size: 34px;
+  letter-spacing: -1.4px;
+  font-weight: 600;
+  margin: 18px 0 10px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--color-muted);
+  margin: 0 0 35px;
+}
+
+form {
+  display: grid;
+  gap: 21px;
+}
+
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 9px;
+}
+
+input {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  border-radius: 7px;
+  padding: 14px;
+  font-size: 13px;
+  color: var(--color-text);
+  outline: none;
+}
+
+input::placeholder {
+  color: #657f93;
+}
+
+input:focus {
+  border-color: var(--color-focus);
+  box-shadow: 0 0 0 3px #00a9e826;
+}
+
+.password-wrap {
+  position: relative;
+}
+
+.password-wrap input {
+  padding-right: 65px;
+}
+
+.reveal {
+  position: absolute;
+  right: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: var(--color-muted);
+  font-size: 11px;
+  padding: 5px;
+}
+
+.hint {
+  font-size: 11px;
+  color: var(--color-muted);
+  margin: 8px 0 0;
+}
+
+.message {
+  font-size: 12px;
+  color: #b33448;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.message:empty {
+  display: none;
+}
+
+.submit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-primary);
+  border: 0;
+  border-radius: 7px;
+  padding: 15px 18px;
+  color: var(--color-surface);
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 4px;
+  transition: background .2s;
+}
+
+.submit:hover {
+  background: var(--color-primary-hover);
+}
+
+.submit:disabled {
+  opacity: .65;
+  cursor: wait;
+}
+
+.switch-copy {
+  text-align: center;
+  font-size: 12px;
+  color: var(--color-muted);
+  margin: 25px 0 0;
+}
+
+#switch-mode {
+  border: 0;
+  background: none;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px;
+}
+
+.demo-note {
+  text-align: center;
+  font-size: 10px;
+  line-height: 1.7;
+  color: var(--color-muted);
+  margin-top: 35px;
+}
+
+.panel-footer {
+  position: absolute;
+  bottom: 22px;
+  font-size: 10px;
+  color: var(--color-muted);
+}
+
+/* Luminous, tilted halo with geometric markers above the project cards. */
+.halo-scene {
+  position: absolute;
+  right: 14px;
+  bottom: 275px;
+  width: 300px;
+  height: 115px;
+  pointer-events: none;
+  transform: rotate(-12deg);
+}
+
+.halo-ring {
+  position: absolute;
+  border-radius: 50%;
+  box-shadow:
+    0 0 8px #ffffff,
+    0 0 22px #48d7f5b3,
+    inset 0 0 14px #48d7f580;
+}
+
+.halo-ring-outer {
+  inset: 10px 8px;
+  border: 5px solid var(--color-cyan);
+  outline: 1px solid #ffffffcc;
+  outline-offset: 4px;
+}
+
+.halo-ring-inner {
+  inset: 25px 40px;
+  border: 2px solid #ffffff;
+}
+
+.halo-core,
+.halo-marker {
+  position: absolute;
+  background: #ffffff;
+  border: 2px solid var(--color-cyan);
+  box-shadow: 0 0 14px #00a9e899;
+}
+
+.halo-core {
+  width: 16px;
+  height: 16px;
+  top: 49px;
+  left: 142px;
+  transform: rotate(45deg);
+}
+
+.halo-marker {
+  width: 12px;
+  height: 25px;
+  top: 45px;
+}
+
+.halo-marker-left {
+  left: 5px;
+}
+
+.halo-marker-right {
+  right: 5px;
+}
+
+/* A small static halo keeps the motif visible in the compact mobile header. */
+@media (max-width: 760px) {
+  .halo-scene {
+    width: 150px;
+    height: 58px;
+    top: 14px;
+    right: 12px;
+    bottom: auto;
+    opacity: .7;
+  }
+
+  .halo-ring-outer {
+    inset: 8px;
+    border-width: 3px;
+  }
+
+  .halo-ring-inner {
+    inset: 17px 28px;
+  }
+
+  .halo-core {
+    width: 10px;
+    height: 10px;
+    top: 24px;
+    left: 70px;
+  }
+
+  .halo-marker {
+    width: 8px;
+    height: 16px;
+    top: 21px;
+  }
+}
+
+@media (max-width: 360px) {
+  .halo-scene {
+    right: -35px;
+    opacity: .4;
+  }
+}
+
+/* Extra spacing for wide screens. */
+
+@media (min-width: 1400px) {
+  .intro {
+    padding: 40px 60px;
+  }
+
+  .intro-copy {
+    margin-top: 110px;
+  }
+
+}
+
+/* Stack the panels and simplify the decoration on mobile. */
+
+@media (max-width: 760px) {
+  .auth-layout {
+    grid-template-columns: 1fr;
+    padding: 10px;
+    gap: 0;
+  }
+
+  .intro {
+    min-height: 210px;
+    padding: 23px;
+  }
+
+  .intro-copy {
+    margin-top: 30px;
+  }
+
+  .intro-copy .eyebrow, .intro-copy p, .intro-footer, .illustration {
+    display: none;
+  }
+
+  h1 {
+    font-size: 32px;
+    letter-spacing: -1.3px;
+    margin: 0;
+  }
+
+  h1 br {
+    display: none;
+  }
+
+  .brand {
+    font-size: 18px;
+  }
+
+  .brand-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 22px;
+  }
+
+  .form-panel {
+    padding: 48px 22px 65px;
+  }
+
+  h2 {
+    font-size: 30px;
+  }
+
+  .panel-footer {
+    bottom: 15px;
+  }
+
+}
+
+/* Spellcasting login theme: a light tactical grid and hand-traced magic sigil. */
+.intro {
+  isolation: isolate;
+  background:
+    linear-gradient(#ffffff40 1px, transparent 1px),
+    linear-gradient(90deg, #ffffff40 1px, transparent 1px),
+    linear-gradient(145deg, #ecfaff, #c7edff 60%, #a9e0fa);
+  background-size: 36px 36px, 36px 36px, auto;
+}
+
+.brand {
+  position: relative;
+  z-index: 1;
+  letter-spacing: 3px;
+  font-size: 17px;
+}
+
+.brand-icon {
+  letter-spacing: 0;
+}
+
+.intro-copy {
+  margin-top: 65px;
+}
+
+.intro-copy h1 {
+  font-size: clamp(32px, 3.4vw, 50px);
+}
+
+.intro-footer {
+  position: relative;
+  z-index: 1;
+  padding-top: 310px;
+  letter-spacing: 2px;
+  font-size: 9px;
+}
+
+.halo-scene {
+  bottom: 265px;
+  right: 45px;
+  z-index: -1;
+}
+
+.spell-art {
+  position: absolute;
+  bottom: 70px;
+  left: 8%;
+  width: 84%;
+  max-width: 460px;
+  pointer-events: none;
+}
+
+.spell-caption,
+.spell-legend {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--color-muted);
+}
+
+.spell-caption {
+  display: block;
+  padding-left: 12%;
+}
+
+.spell-sigil {
+  display: block;
+  width: 100%;
+  filter: drop-shadow(0 0 12px #ffffffcc);
+}
+
+.sigil-orbit {
+  stroke: #087fba55;
+  stroke-width: 1;
+}
+
+.sigil-orbit-inner {
+  stroke-dasharray: 3 9;
+}
+
+.sigil-guide {
+  stroke: #087fba33;
+  stroke-dasharray: 4 8;
+}
+
+.sigil-stroke {
+  stroke: url(#spell-ink);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sigil-node {
+  fill: var(--color-surface);
+  stroke: var(--color-primary);
+  stroke-width: 2;
+}
+
+.sigil-star {
+  stroke: var(--color-primary);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.spell-legend {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.auth-card h2 {
+  font-size: 28px;
+}
+
+.submit {
+  box-shadow: 0 6px 18px #087fba26;
+}
+
+/* Keep the illustrated game identity in a shorter, stacked mobile banner. */
+@media (max-width: 760px) {
+  .intro {
+    min-height: 295px;
+  }
+
+  .intro-copy {
+    margin-top: 36px;
+  }
+
+  .intro-copy h1 {
+    position: relative;
+    z-index: 1;
+    max-width: 260px;
+    font-size: 34px;
+  }
+
+  .spell-art {
+    width: 195px;
+    left: auto;
+    right: -45px;
+    bottom: 0;
+    opacity: .4;
+  }
+
+  .spell-caption,
+  .spell-legend {
+    display: none;
+  }
+
+  .halo-scene {
+    bottom: auto;
+    right: 12px;
+  }
+}
+
