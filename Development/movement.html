@@ -7,19 +7,35 @@
     <link rel="stylesheet" href="movement.css">
     <script type="module" src="movement.js"></script>
   </head>
-  <body>
+  <body class="simulation-page">
     <main id="development-content" hidden>
-      <p><a href="index.html">Back to development lab</a></p>
+      <nav class="test-toolbar" aria-label="Development tools">
+        <a class="tool-button" href="index.html">Dev lab</a>
+        <button type="button" id="admin-tools" aria-expanded="false" aria-controls="admin-panel">Admin tools</button>
+        <button type="button" id="reset-scene">Reset scene</button>
+        <button type="button" id="toggle-bounds" aria-pressed="false">Sprite bounds</button>
+      </nav>
+      <section id="admin-panel" class="admin-panel" hidden>
+        <strong>Admin test session</strong>
+        <p>Infinite horizontal scrolling enabled. Vertical camera locked. All eight movement directions remain available.</p>
+        <a href="../project.html">Return to project</a>
+      </section>
       <p class="eyebrow">SCHALE / ANIMATION STUDY</p>
-      <h1>Movement preview</h1>
-      <p>Select a character. Hold two movement keys together to move diagonally, or use the eight-direction controls.</p>
-      <div class="characters" role="group" aria-label="Select character">
-        <button type="button" data-character="plana" aria-pressed="true">Plana</button>
-        <button type="button" data-character="mob" aria-pressed="false">Mob</button>
-      </div>
+      <h1>Playarea simulation</h1>
+      <p>Plana and Arona are playable characters. Use the admin swap controls below the screen to test all avatars. Only one is visible at a time.</p>
       <!-- EDIT width and height below to change the movement AREA in canvas pixels.
            For sprite size/padding use movement.js; for crop cutoffs use sprite-layouts.js. -->
-      <canvas id="arena" width="900" height="500" tabindex="0" aria-label="Character movement area. Use arrow keys or WASD to move the selected character."></canvas>
+      <div class="simulated-screen">
+      <canvas id="arena" width="1280" height="720" tabindex="0" aria-label="Character movement area. Use arrow keys or WASD to move the selected character."></canvas>
+      </div>
+      <section class="admin-panel" aria-label="Admin character testing">
+        <strong>Admin / Character swap</strong>
+        <div class="characters" role="group" aria-label="Admin character swap">
+          <button type="button" data-character="plana" aria-pressed="true">Plana (playable)</button>
+          <button type="button" data-character="arona" aria-pressed="false">Arona (playable)</button>
+          <button type="button" data-character="mob" aria-pressed="false">Mob (test)</button>
+        </div>
+      </section>
       <p id="status" role="status">Loading sprite sheets…</p>
       <div class="directions" role="group" aria-label="Eight-direction movement controls">
         <button type="button" data-direction="upLeft" aria-label="Move up-left">&#8598;</button>
@@ -32,7 +48,7 @@
         <button type="button" data-direction="down" aria-label="Move down">&#8595;</button>
         <button type="button" data-direction="downRight" aria-label="Move down-right">&#8600;</button>
       </div>
-      <p class="note">Release to idle. Both sprite sheets are included. This preview is separate from the project page.</p>
+      <p class="note">Simulated full screen: the game fills the 16:9 screen above. Dev controls stay outside it. Travel endlessly left or right; only visible background tiles are drawn. The camera never scrolls vertically.</p>
     </main>
   </body>
 </html>

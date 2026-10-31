@@ -12,7 +12,7 @@ const frameDuration = 110; // Milliseconds per walking frame; lower is faster.
 const spriteSize = 130; // Display size in canvas pixels, not source crop size.
 const movementSpeed = 180; // Canvas pixels per second, including diagonals.
 const spritePadding = 8; // Empty display space around the full source frame.
-const showSpriteBounds = false; // Set true to see the rendered frame rectangle.
+let showSpriteBounds = false; // Set true to see the rendered frame rectangle.
 
 // Source crop boundaries are editable in sprite-layouts.js. Do not enlarge the
 // canvas to fix source clipping: adjust that frame's row/column edges instead.
@@ -21,6 +21,7 @@ const directionVectors = {
   upLeft: [-1, -1], upRight: [1, -1],
   downLeft: [-1, 1], downRight: [1, 1]
 };
+// Playable characters are Plana and Arona. Mob remains an admin-only test avatar.
 let selected = 'plana';
 let previousTime;
 
@@ -31,8 +32,26 @@ const characters = {
   plana: {
     label: 'Plana',
     source: '../sprites/Plana Sprite Sheet.png',
-    rows: { down: 0, downLeft: 1, left: 2, upLeft: 3, up: 4, upRight: 5, right: 6, downRight: 7 },
+    // Plana's stronger down-left stride is row 2; the true side profile is row 3.
+    rows: { down: 0, downLeft: 2, left: 3, upLeft: 3, up: 4, upRight: 5, right: 6, downRight: 7 },
+    // EDIT these frame indices to tune individual walk cycles. Include frame 0:
+    // it provides the neutral leg pose between this sheet's similar stride poses.
+    walkFrames: {
+      downLeft: [0, 1, 2, 3, 4],
+      left: [0, 1, 2, 3, 4]
+    },
     layout: spriteLayouts.plana,
+    x: 310, y: 260, direction: 'down', elapsed: 0, moving: false
+  },
+  arona: {
+    label: 'Arona',
+    source: '../sprites/Arona Sprite Sheet.png',
+    // This sheet has its own margin, cell size, and left-facing right-side poses.
+    rows: { down: 0, downLeft: 1, left: 2, upLeft: 3, up: 4, upRight: 5, right: 6, downRight: 7 },
+    mirroredDirections: ['upRight', 'right', 'downRight'],
+    layout: spriteLayouts.arona,
+    // EDIT referenceSize for this sheet's display scale without altering crops.
+    referenceSize: 190,
     x: 310, y: 260, direction: 'down', elapsed: 0, moving: false
   },
   mob: {
@@ -46,6 +65,71 @@ const characters = {
     x: 590, y: 260, direction: 'down', elapsed: 0, moving: false
   }
 };
+
+
+// PLAYAREA SETTINGS: background height matches the internal screen height.
+// The level is infinite horizontally. Only intersecting tiles are drawn each frame;
+// no tile objects or off-screen canvases are retained. Camera Y stays 0.
+// EDIT topMovementPadding to restrict the top edge if needed (canvas pixels).
+// Zero allows walking into the window area; the sprite stays inside the screen.
+const topMovementPadding = 0;
+// EDIT bottomMovementPadding to reserve space below the sprite (canvas pixels).
+// Names are no longer drawn, so no extra label space is needed at the bottom.
+const bottomMovementPadding = 0;
+const camera = { x: 0, y: 0 };
+const playarea = { source: '../sprites/Playarea.png', image: null };
+let backgroundTileWidth = canvas.width;
+
+/** Reset character positions and horizontal camera without changing sprite settings. */
+function resetScene() {
+  releaseControls();
+  for (const character of Object.values(characters)) {
+    character.x = canvas.width * 0.4;
+    character.y = canvas.height * 0.6;
+    character.direction = 'down';
+    character.elapsed = 0;
+    character.moving = false;
+  }
+  camera.x = 0;
+  camera.y = 0;
+}
+
+/** Follow the active character through positive and negative world coordinates. */
+function updateCamera() {
+  camera.x = characters[selected].x - canvas.width / 2;
+  camera.y = 0;
+}
+
+/** Compute only visible tile indices, including negative indices left of origin. */
+function getVisibleTileRange(cameraX, viewportWidth, tileWidth) {
+  return {
+    first: Math.floor(cameraX / tileWidth),
+    last: Math.ceil((cameraX + viewportWidth) / tileWidth) - 1
+  };
+}
+
+/** Render a bounded number of tiles from one shared image, however far we travel. */
+function drawPlayarea() {
+  const { first, last } = getVisibleTileRange(camera.x, canvas.width, backgroundTileWidth);
+  for (let tile = first; tile <= last; tile++) {
+    // Round shared edges rather than tile widths to avoid subpixel gaps.
+    const left = Math.round(tile * backgroundTileWidth - camera.x);
+    const right = Math.round((tile + 1) * backgroundTileWidth - camera.x);
+    context.drawImage(playarea.image, left, 0, right - left, canvas.height);
+  }
+}
+
+// These controls live OUTSIDE the simulated screen, never over gameplay.
+document.querySelector('#reset-scene').addEventListener('click', resetScene);
+document.querySelector('#toggle-bounds').addEventListener('click', event => {
+  showSpriteBounds = !showSpriteBounds;
+  event.currentTarget.setAttribute('aria-pressed', String(showSpriteBounds));
+});
+document.querySelector('#admin-tools').addEventListener('click', event => {
+  const panel = document.querySelector('#admin-panel');
+  panel.hidden = !panel.hidden;
+  event.currentTarget.setAttribute('aria-expanded', String(!panel.hidden));
+});
 
 /** Load a sheet before animation begins and report an actionable loading error. */
 function loadSheet(character) {
@@ -87,15 +171,32 @@ window.addEventListener('keyup', event => {
 window.addEventListener('blur', releaseControls);
 document.addEventListener('visibilitychange', releaseControls);
 
-document.querySelectorAll('[data-character]').forEach(button => {
-  // Switch only the controlled character; both characters stay visible.
-  button.addEventListener('click', () => {
-    selected = button.dataset.character;
-    releaseControls();
-    document.querySelectorAll('[data-character]').forEach(option => {
-      option.setAttribute('aria-pressed', String(option === button));
-    });
+/** Swap the development avatar in place, keeping one visible camera target. */
+function switchCharacter(name) {
+  if (!characters[name] || name === selected) return;
+  const previous = characters[selected];
+  const next = characters[name];
+
+  // Carry the player position across so swapping does not jump the camera.
+  next.x = previous.x;
+  next.y = previous.y;
+  next.direction = previous.direction;
+  next.elapsed = 0;
+  next.moving = false;
+  previous.elapsed = 0;
+  previous.moving = false;
+  selected = name;
+  releaseControls();
+  updateCamera();
+
+  document.querySelectorAll('[data-character]').forEach(button => {
+    button.setAttribute('aria-pressed', String(button.dataset.character === selected));
   });
+}
+
+document.querySelectorAll('[data-character]').forEach(button => {
+  // Development-only selection; the future game character picker is not built yet.
+  button.addEventListener('click', () => switchCharacter(button.dataset.character));
 });
 
 document.querySelectorAll('[data-direction]').forEach(button => {
@@ -145,8 +246,10 @@ function updateCharacter(character, delta, direction) {
   character.x += x * distance;
   character.y += y * distance;
   const margin = spriteSize / 2;
-  character.x = Math.max(margin, Math.min(canvas.width - margin, character.x));
-  character.y = Math.max(margin, Math.min(canvas.height - margin - 25, character.y));
+  // X is an unbounded world position, not a canvas position. Never wrap it:
+  // future enemy positions must remain stable when background tiles disappear.
+  character.y = Math.max(topMovementPadding + margin,
+    Math.min(canvas.height - margin - bottomMovementPadding, character.y));
 }
 
 /** Return a source rectangle using the sheet's uneven per-column row boundaries. */
@@ -161,18 +264,23 @@ function getFrameRectangle(character, frame) {
   };
 }
 
+/** Select a direction-specific walking cycle, or hold frame zero when idle. */
+function getAnimationFrame(character) {
+  if (!character.moving) return 0;
+  const frames = character.walkFrames?.[character.direction] || [1, 2, 3, 4];
+  return frames[Math.floor(character.elapsed / frameDuration) % frames.length];
+}
+
 /** Draw the entire measured frame without stretching, with optional crop debugging. */
 function drawCharacter(character) {
-  const frame = character.moving
-    ? 1 + Math.floor(character.elapsed / frameDuration) % (frameCount - 1)
-    : 0;
+  const frame = getAnimationFrame(character);
   const crop = getFrameRectangle(character, frame);
-  const scale = (spriteSize - spritePadding * 2) / 215;
+  const scale = (spriteSize - spritePadding * 2) / (character.referenceSize || 215);
   const width = crop.width * scale;
   const height = crop.height * scale;
 
   context.save();
-  context.translate(character.x, character.y);
+  context.translate(character.x - camera.x, character.y);
   if (character.mirroredDirections?.includes(character.direction)) {
     context.scale(-1, 1);
   }
@@ -187,31 +295,32 @@ function drawCharacter(character) {
   }
   context.restore();
 
-  context.font = '14px system-ui';
-  context.textAlign = 'center';
-  context.fillStyle = character === characters[selected] ? '#087fba' : '#526f87';
-  context.fillText(character.label, character.x, character.y + spriteSize / 2 + 18);
 }
 
-/** Render both characters every frame using the combined held movement inputs. */
+/** Update and render only the active avatar; the inactive character stays hidden. */
 function animate(time) {
   const delta = previousTime === undefined ? 0 : Math.min((time - previousTime) / 1000, 0.05);
   previousTime = time;
   const direction = getMovementDirection();
+  const activeCharacter = characters[selected];
+  updateCharacter(activeCharacter, delta, direction);
+  updateCamera();
   context.clearRect(0, 0, canvas.width, canvas.height);
-  for (const [name, character] of Object.entries(characters)) {
-    updateCharacter(character, delta, name === selected ? direction : undefined);
-    drawCharacter(character);
-  }
+  drawPlayarea();
+  drawCharacter(activeCharacter);
 
-  const description = `${characters[selected].label} / ${direction || 'idle'}`;
+  const description = `${characters[selected].label} / ${direction || 'idle'} / camera X ${Math.round(camera.x)} / Y locked`;
   if (status.textContent !== description) status.textContent = description;
   requestAnimationFrame(animate);
 }
 
 // Start the preview only for the authorized development account.
 if (authorized) {
-  Promise.all(Object.values(characters).map(loadSheet))
-    .then(() => requestAnimationFrame(animate))
+  Promise.all([...Object.values(characters), playarea].map(loadSheet))
+    .then(() => {
+      backgroundTileWidth = playarea.image.naturalWidth * canvas.height / playarea.image.naturalHeight;
+      resetScene();
+      requestAnimationFrame(animate);
+    })
     .catch(error => { status.textContent = error.message; });
 }

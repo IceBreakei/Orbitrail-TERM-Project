@@ -561,3 +561,302 @@ addressing the backwards facing and avoiding the clipped lower rows.
 
 Added comments for the mirroring settings and adjusted one crop boundary.
 Checks passed; changes remain in Development. Updated chat_log.txt.
+
+======================================================================
+ENTRY 014 | 2026-10-31
+======================================================================
+
+USER PROMPT
+Context from my IDE setup:
+Active file: script.js
+Open tabs: script.js, project.js, firebase-client.js, firebase-config.js,
+project.html
+
+now make Playarea sprite the background. You are to make it move horizontally
+and is locked vertically. The playarea should be full screen, so you are to
+scale it down and create a simulated "full screen" mode as to add dev and
+admin buttons for testing on the outside of the "screen" for testing purposes.
+
+ASSISTANT RESPONSES (PROGRESS)
+I'll turn the development preview into a simulated game screen using
+Playarea.png, with horizontal camera scrolling and a fixed vertical camera.
+I'll place the character controls and dev/admin buttons outside the game screen.
+
+The playarea now fills a scaled 16:9 screen. It follows the selected character
+horizontally while the camera stays fixed vertically; characters can still
+move in all eight directions. Outside the screen, I added Dev Lab, Admin Tools,
+Reset Scene, and Sprite Bounds controls. Camera and layout checks passed.
+
+ACTIONS AND CHANGES
+- Inspected sprites/Playarea.png.
+- Added proportional full-height background rendering, repeated across three
+  horizontal sections to provide a scrolling world.
+- Added world-space character bounds and a horizontally tracking camera with
+  fixed camera Y = 0. Vertical character movement remains enabled.
+- Added a floor boundary below the wall and depth-sorted character rendering.
+- Added a scaled 1280 x 720 simulated full-screen frame.
+- Placed Dev Lab, Admin Tools, Reset Scene, Sprite Bounds, character selection,
+  movement pad, and status outside the simulated screen.
+- Added an admin test panel and documented editable screen/world settings.
+- Kept all gameplay changes in Development; project and Firebase unchanged.
+
+VERIFICATION
+- JavaScript syntax and preview HTML nesting checks passed.
+- Mocked horizontal follow, vertical camera lock, camera/world bounds, and
+  full-height background draw checks passed.
+- Browser rendering has not been visually verified. Background repetition may
+  show seams because the supplied illustration is not a seamless texture.
+
+ASSISTANT RESPONSE (FINAL)
+Added Playarea.png to the development preview with horizontal camera scrolling
+and a vertically locked camera. Eight-direction character movement remains.
+
+The game fills a scaled 16:9 screen, with Dev Lab, Admin Tools, Reset Scene,
+and Sprite Bounds controls outside it.
+
+Checks passed. Everything remains in Development; chat_log.txt is updated.
+
+======================================================================
+ENTRY 015 | 2026-10-31
+======================================================================
+
+USER PROMPT
+Context from my IDE setup:
+Active file: script.js
+Open tabs: script.js, project.js, firebase-client.js, firebase-config.js,
+project.html
+
+plana downleft and left animations are incorrect and do not show a walking animation
+
+ASSISTANT RESPONSE (PROGRESS)
+I'll inspect Plana's down-left and left frame mappings and correct the
+walking animation.
+
+ACTIONS AND CHANGES
+- Inspected the Plana sheet against its directional mapping.
+- Changed Plana down-left to source row 2 and left to side-profile row 3.
+- Added commented, editable per-direction walkFrames sequences.
+- Included frame 0 in these two five-frame cycles to restore the neutral
+  leg pose between similar stride poses.
+- Added getAnimationFrame with a function comment; other cycles retain their
+  existing behavior and idle remains frame 0.
+- Changes remain in Development/movement.js only, plus this log.
+
+VERIFICATION
+- JavaScript syntax check passed.
+- Mocked checks passed for both directional rows, five unique animation frames,
+  valid source rectangles, and idle frame selection.
+- Final walking appearance has not been verified in a browser.
+
+ASSISTANT RESPONSE (FINAL)
+Corrected Plana's down-left and left sprite rows and added complete five-frame
+walking cycles, including the neutral leg pose.
+
+The editable walkFrames settings are commented in Development/movement.js.
+Checks passed; changes remain in Development. Updated chat_log.txt.
+
+======================================================================
+ENTRY 016 | 2026-10-31
+======================================================================
+
+USER PROMPT
+Context from my IDE setup:
+Active file: script.js
+Open tabs: script.js, project.js, firebase-client.js, firebase-config.js,
+project.html
+
+The main character is Plana and should not be Mob so the camera should follow
+plana. I will add a second main character that allows the user to choose
+between the two before starting the game later, however, there should still
+be a character switch development button to swap between characters. When
+one character is in use, the other should be hidden and vise versa
+
+ASSISTANT RESPONSE (PROGRESS)
+I'll make Plana the default active character, keep the camera on the active
+character, and hide the inactive one. The development character buttons will
+still let you switch between Plana and Mob for testing.
+
+ACTIONS AND CHANGES
+- Kept Plana as the default main character and camera target.
+- Render and update only the active avatar; the inactive one is hidden.
+- Added a commented switchCharacter function that transfers position and
+  facing to the replacement avatar without jumping the camera.
+- Retained development-only swap buttons, labeled Plana (main) and Mob (test).
+- Kept the future pre-game character chooser unimplemented as requested.
+- Changes remain in Development; main project and Firebase are unchanged.
+
+VERIFICATION
+- JavaScript syntax check passed.
+- Mocked rendering confirmed only Plana initially, only Mob after switching,
+  and only Plana when switching back.
+- Position continuity and active-character camera checks passed.
+- Live browser verification remains pending.
+
+ASSISTANT RESPONSE (FINAL)
+Plana is the default main character and camera target. Only the active avatar
+is visible; the other is hidden.
+
+Development swap buttons remain, preserving position and camera when switching.
+The future pre-game character picker is left for later. Checks passed and
+chat_log.txt is updated.
+
+======================================================================
+ENTRY 017 | 2026-10-31
+======================================================================
+
+USER PROMPT
+Context from my IDE setup:
+Active file: script.js
+Open tabs: script.js, project.js, firebase-client.js, firebase-config.js,
+project.html
+
+I have added the second character, Arona, the sprite sheet may not be the
+same as the others but will still follow the 5 columns and 8 rows. The user
+is normally supposed to be able choose between these 2, however add all
+characters to a admin button below to swap between them as for the
+development area.
+
+ASSISTANT RESPONSE (PROGRESS)
+I'll inspect Arona's sheet and add her alongside Plana and Mob in the
+development character controls. Plana and Arona will be identified as playable
+characters, with Mob kept as a test option.
+
+ACTIONS AND CHANGES
+- Inspected the 1086 x 1448 Arona sprite sheet.
+- Added an independent five-column/eight-row crop layout accounting for its
+  large transparent left margin and different cell spacing.
+- Added Arona movement mappings, right-side mirroring, and editable display scale.
+- Added Plana, Arona, and Mob admin swap buttons below the simulated game screen.
+- Retained single-avatar visibility, active-avatar camera tracking, and position
+  continuity when swapping. Plana remains the default.
+- Reset now handles every character consistently.
+- Left the eventual player-facing pre-game selection for later.
+- All implementation changes remain in Development.
+
+VERIFICATION
+- JavaScript syntax checks passed.
+- Mocked three-character switching, all 40 Arona crop rectangles, and single
+  visible Arona rendering passed.
+- Final browser appearance remains unverified.
+
+ASSISTANT RESPONSE (FINAL)
+Added Arona with her own sprite layout and eight-direction animations.
+Admin character buttons below the game screen now swap between Plana,
+Arona, and Mob. Only the active character is shown, and the camera follows it.
+
+Plana remains the default. The player-facing chooser is reserved for later.
+Checks passed; updated chat_log.txt.
+
+======================================================================
+ENTRY 018 | 2026-10-31
+======================================================================
+
+USER PROMPT
+Context from my IDE setup:
+Active file: script.js
+Open tabs: script.js, project.js, firebase-client.js, firebase-config.js,
+project.html
+
+Please make the horizontal scrolling infinite to the left or right, despawn
+or removing the irrelevent background area as to save resources when out of
+frame. But for any enemies their positions will need to be remembered when
+they are to be added.
+
+ASSISTANT RESPONSE (PROGRESS)
+I'll make horizontal scrolling endless in both directions and draw only the
+background tiles visible on screen. I'll keep character positions in world
+coordinates so future enemies can retain their positions independently of
+the camera.
+
+ACTIONS AND CHANGES
+- Removed horizontal world bounds and camera clamps.
+- Calculate visible tile indices directly, including negative world coordinates.
+- Draw only intersecting tiles using one shared background image, retaining no
+  off-screen background objects. Draw work stays bounded regardless of distance.
+- Round tile edges to avoid subpixel gaps; vertical camera remains locked.
+- Added documented world-state.js for future enemy world positions and state,
+  separate from background tile lifetimes. Off-screen filtering retains records.
+- No enemies are spawned. State is in memory for this page session, not reloads.
+- Updated development copy and README. Main project remains unchanged.
+
+VERIFICATION
+- JavaScript syntax checks passed.
+- Mocked checks passed for positive/negative tile coverage, bounded tile counts,
+  unbounded left travel, camera tracking and vertical lock.
+- Future enemy store checks passed for off-screen retention, returning visibility,
+  and partial state updates preserving positions.
+- Browser rendering remains unverified.
+
+ASSISTANT RESPONSE (FINAL)
+Horizontal scrolling is now infinite left and right. Only visible background
+tiles are drawn from one shared image, with no off-screen tile objects retained.
+
+Added a separate world-state store so future enemies retain their positions
+and state while off-screen during the current session.
+
+Checks passed. Changes remain in Development; chat_log.txt is updated.
+
+======================================================================
+ENTRY 019 | 2026-10-31
+======================================================================
+
+USER PROMPT
+Context from my IDE setup:
+Active file: script.js
+Open tabs: script.js, project.js, firebase-client.js, firebase-config.js,
+project.html
+
+I cannot walk up to the window area. Please fix that
+
+ASSISTANT RESPONSE (PROGRESS)
+I'll remove the floor restriction so the active character can walk up to the
+windows, while keeping the vertical camera fixed.
+
+ACTIONS AND CHANGES
+- Removed the 24-percent-height floor restriction blocking window access.
+- Added commented topMovementPadding = 0 for an optional editable top margin.
+- Preserved sprite containment, bottom boundary, and vertically locked camera.
+- Updated Development/README.md; main project unchanged.
+
+VERIFICATION
+- JavaScript syntax check passed.
+- Mocked window access, upper/lower bounds, and vertical camera lock passed.
+
+ASSISTANT RESPONSE (FINAL)
+Fixed: characters can now walk up to the window area. The vertical camera
+stays locked, and sprites remain within the screen.
+
+Added a commented topMovementPadding setting for future adjustments.
+Checks passed; updated chat_log.txt.
+
+======================================================================
+ENTRY 020 | 2026-10-31
+======================================================================
+
+USER PROMPT
+Context from my IDE setup:
+Active file: script.js
+Open tabs: script.js, project.js, firebase-client.js, firebase-config.js,
+project.html
+
+Remove the name under the character, and allow them to slightly further down.
+
+ASSISTANT RESPONSE (PROGRESS)
+I'll remove the character name labels and lower the bottom movement boundary
+slightly.
+
+ACTIONS AND CHANGES
+- Removed character name rendering beneath the sprite.
+- Removed the extra 25-pixel label reserve from the bottom movement boundary,
+  allowing characters to move 25 canvas pixels farther down.
+- Added commented bottomMovementPadding for future adjustments.
+- Changes remain in Development/movement.js; main project unchanged.
+
+VERIFICATION
+- JavaScript syntax check passed.
+- Confirmed name rendering is removed and the new bottom boundary is in use.
+
+ASSISTANT RESPONSE (FINAL)
+Removed the character name labels and allowed movement 25 pixels farther down.
+Added a commented bottomMovementPadding setting for future adjustments.
+Updated chat_log.txt; syntax check passed.

@@ -3,6 +3,7 @@
 // Each column has nine edges defining eight rows. Adjust an edge up/down to
 // move the shared boundary between two rows; keep values in increasing order.
 // Change columnEdges if horizontal frame cropping needs adjustment.
+// Arona has a large left margin and narrower columns; its layout is independent.
 export const spriteLayouts = {
   "plana": {
     "columnEdges": [
@@ -135,6 +136,73 @@ export const spriteLayouts = {
         1186,
         1375,
         1586
+      ]
+    ]
+  },
+  "arona": {
+    "columnEdges": [
+      160,
+      320,
+      480,
+      640,
+      800,
+      960
+    ],
+    "rowEdges": [
+      [
+        0,
+        177,
+        349,
+        523,
+        701,
+        876,
+        1053,
+        1237,
+        1448
+      ],
+      [
+        0,
+        177,
+        349,
+        523,
+        701,
+        876,
+        1053,
+        1237,
+        1448
+      ],
+      [
+        0,
+        177,
+        349,
+        523,
+        701,
+        876,
+        1053,
+        1237,
+        1448
+      ],
+      [
+        0,
+        177,
+        349,
+        523,
+        702,
+        876,
+        1053,
+        1237,
+        1448
+      ],
+      [
+        0,
+        177,
+        348,
+        523,
+        699,
+        876,
+        1053,
+        1237,
+        1448
       ]
     ]
   }

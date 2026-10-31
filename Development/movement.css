@@ -79,3 +79,59 @@ canvas {
   grid-template-columns: repeat(3, 60px);
   width: max-content;
 }
+
+/* A scaled 16:9 game screen, with all development tools outside its border. */
+.simulation-page main {
+  max-width: 1440px;
+  padding: 20px;
+}
+
+.test-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  background: #dceefa;
+  border: 1px solid #b5dcec;
+  border-radius: 12px;
+}
+
+.tool-button {
+  padding: 12px 22px;
+  color: white;
+  background: #087fba;
+  border-radius: 8px;
+  text-decoration: none;
+}
+
+.admin-panel {
+  margin-top: 12px;
+  padding: 18px;
+  background: white;
+  border: 1px solid #b5dcec;
+  border-radius: 10px;
+}
+
+.simulated-screen {
+  /* EDIT this maximum to scale the simulated screen without changing game pixels. */
+  width: min(100%, 1120px);
+  margin: 0 auto;
+  aspect-ratio: 16 / 9;
+  border: 6px solid #183654;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 12px 35px #18365426;
+}
+
+.simulated-screen canvas {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+/* Keep all admin avatar buttons usable on narrow screens. */
+.characters {
+  flex-wrap: wrap;
+}

@@ -16,3 +16,13 @@ These browser checks control navigation and visibility. Static HTML, JavaScript,
 - Each character's `rows` mapping in `movement.js` selects the source row for each of eight directions. Adjust mappings if an imported pose faces differently.
 
 Hold two perpendicular keys for diagonal movement. Diagonals are normalized to the same speed as cardinal movement. The on-screen pad also supports all eight directions.
+
+## Playarea simulation
+
+The canvas is a 1280 x 720 simulated full-screen view, scaled down by the `.simulated-screen` CSS width. The Playarea image is scaled proportionally to the canvas height and repeated infinitely in both horizontal directions. Only visible tiles are drawn from a single shared image; off-screen tiles have no retained objects. Tile seams may be visible because the supplied illustration is not a seamless texture.
+
+`topMovementPadding` controls optional space above the movement area; its default of zero allows access to the windows. Sprite bounds still keep the character inside the screen. Camera X follows the selected character with no horizontal clamp; camera Y stays zero. Characters still move in eight directions. Toolbar controls sit outside the simulated game screen: Dev Lab, Admin Tools, Reset Scene, and Sprite Bounds.
+
+## Future enemies
+
+Use `world-state.js` to remember enemy IDs, world X/Y, health, and other state independently of tile rendering. `getVisibleEnemies` returns nearby records without deleting off-screen enemies; update movement/state with `rememberEnemy` and explicitly remove defeated enemies with `removeEnemy`. No enemies are spawned yet. This store survives scrolling during the current page session, not browser reloads. Background tiles never own enemy records.
