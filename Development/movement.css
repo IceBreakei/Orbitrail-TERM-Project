@@ -1,0 +1,81 @@
+/* Standalone preview styling; login and project pages do not load this file. */
+[hidden] {
+  display: none !important;
+}
+
+:root {
+  font-family: system-ui, sans-serif;
+  color: #183654;
+  background: #edf8ff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 20px;
+}
+
+h1 {
+  margin: 10px 0;
+}
+
+.eyebrow {
+  color: #087fba;
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+
+.characters,
+.directions {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+button {
+  padding: 12px 22px;
+  border: 1px solid #b5dcec;
+  border-radius: 8px;
+  background: white;
+  color: #183654;
+  font: inherit;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+}
+
+button[aria-pressed="true"] {
+  color: white;
+  background: #087fba;
+}
+
+button:focus-visible,
+canvas:focus-visible {
+  outline: 3px solid #00a9e8;
+  outline-offset: 3px;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  background: white;
+  border: 1px solid #c9e3f2;
+  border-radius: 16px;
+}
+
+.note {
+  color: #526f87;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* Eight-direction pad, including diagonal controls for touch and mouse. */
+.directions {
+  display: grid;
+  grid-template-columns: repeat(3, 60px);
+  width: max-content;
+}

@@ -1,0 +1,141 @@
+// Per-column row boundaries in SOURCE IMAGE pixels, measured from the sheet top.
+// The imported rows are uneven: equal-height slicing cuts hair, feet, and halos.
+// Each column has nine edges defining eight rows. Adjust an edge up/down to
+// move the shared boundary between two rows; keep values in increasing order.
+// Change columnEdges if horizontal frame cropping needs adjustment.
+export const spriteLayouts = {
+  "plana": {
+    "columnEdges": [
+      0,
+      198,
+      397,
+      595,
+      794,
+      992
+    ],
+    "rowEdges": [
+      [
+        0,
+        198,
+        392,
+        589,
+        786,
+        991,
+        1185,
+        1378,
+        1586
+      ],
+      [
+        0,
+        198,
+        392,
+        588,
+        787,
+        991,
+        1185,
+        1377,
+        1586
+      ],
+      [
+        0,
+        198,
+        395,
+        588,
+        788,
+        991,
+        1187,
+        1378,
+        1586
+      ],
+      [
+        0,
+        198,
+        396,
+        592,
+        788,
+        991,
+        1187,
+        1378,
+        1586
+      ],
+      [
+        0,
+        198,
+        396,
+        592,
+        789,
+        991,
+        1186,
+        1377,
+        1586
+      ]
+    ]
+  },
+  "mob": {
+    "columnEdges": [
+      0,
+      198,
+      397,
+      595,
+      794,
+      992
+    ],
+    "rowEdges": [
+      [
+        0,
+        201,
+        396,
+        589,
+        793,
+        987,
+        1187,
+        1377,
+        1586
+      ],
+      [
+        0,
+        198,
+        396,
+        588,
+        793,
+        988,
+        1186,
+        1378,
+        1586
+      ],
+      [
+        0,
+        201,
+        397,
+        588,
+        793,
+        989,
+        1185,
+        1375,
+        1586
+      ],
+      [
+        0,
+        201,
+        396,
+        589,
+        793,
+        991,
+        1188,
+        1376,
+        1586
+      ],
+      [
+        0,
+        201,
+        396,
+        590,
+        793,
+        990,
+        1186,
+        1375,
+        1586
+      ]
+    ]
+  }
+};

@@ -369,3 +369,195 @@ Updated the login to use Sensei, Schale, Kivotos, students, sorties, and
 EX Skills. Registration now asks for a Sensei name.
 
 Authentication and the project page remain unchanged. Updated chat_log.txt.
+
+======================================================================
+ENTRY 010 | 2026-10-31
+======================================================================
+
+USER PROMPT
+Context from my IDE setup:
+Active file: script.js
+Open tabs: script.js, project.js, firebase-client.js, firebase-config.js,
+project.html
+
+I have imported 2 sprite sheets, can you use them to create a movement
+animation for all 4 directions.
+
+ASSISTANT RESPONSES (PROGRESS)
+I'll inspect the two sprite sheets and build a four-direction movement
+preview. I'll keep it separate from the project page for now.
+
+Both sheets contain five frames across eight rows. I'll use the front and
+back rows for down/up movement, and mirror a side-facing row for left/right
+movement. The separate preview will show both characters and support WASD,
+arrow keys, and on-screen controls.
+
+ACTIONS AND CHANGES
+- Inspected Plana Sprite Sheet.png and Mob Sprite Sheet.png (992 x 1586 RGBA).
+- Added movement.html, movement.css, and commented movement.js.
+- Implemented five-column/eight-row cropping, four-frame walking loops,
+  idle poses, four-direction movement, and mirrored right-facing side poses.
+- Added character selection, keyboard and touch controls, canvas bounds,
+  load errors, and stuck-input prevention on focus loss.
+- Left project.html, project.js, login, and authentication untouched.
+
+VERIFICATION
+- JavaScript syntax check passed.
+- Mocked movement checks passed for all four directions, idle reset, and bounds.
+- Browser rendering and frame alignment have not been visually verified.
+
+ASSISTANT RESPONSE (FINAL)
+Created movement.html with animated Plana and Mob sprites.
+Select a character and use WASD, arrow keys, or the on-screen buttons to move
+in all four directions. Release to idle.
+Open it through Live Server. The project page remains untouched.
+Updated chat_log.txt; syntax and movement checks passed.
+
+======================================================================
+ENTRY 011 | 2026-10-31
+======================================================================
+
+USER PROMPT
+Context from my IDE setup:
+Active file: script.js
+Open tabs: script.js, project.js, firebase-client.js, firebase-config.js,
+project.html
+
+put the movement into a new folder called Development. This is for developing
+the parts of the project for testing before implementing them into the project
+when I say it is ready. Add a button on the project screen for a specific admin
+account UID from firebase of k8ncp3tED8YjjxoTXHlYBSoxcFW2 to enter a dev page
+
+ASSISTANT RESPONSES (PROGRESS)
+I'll move the movement preview into Development, add a development hub, and
+show its entry button on the project screen only for Firebase UID
+k8ncp3tED8YjjxoTXHlYBSoxcFW2. I'll also check that UID on the development pages.
+
+The movement preview is now in Development, with a hub linking to it. The
+project button and both development pages check the specified UID. These
+checks control page visibility; private data or privileged actions added later
+will also need Firebase rules or server-side authorization.
+
+ACTIONS AND CHANGES
+- Moved movement.html, movement.css, and movement.js into Development/.
+- Fixed sprite URLs for the new folder location.
+- Added Development/index.html as the development hub.
+- Added shared admin UID policy and Firebase session guards.
+- Added a hidden-by-default Development link styled as a button on project.html.
+- Reveal that button only for the specified Firebase UID.
+- Hide development content until authorized; redirect other users and react
+  to sign-out/session changes.
+- Added Development/README.md documenting the testing and approval workflow
+  and the limits of browser-side access checks.
+- Main gameplay remains unimplemented; experiments remain in Development.
+
+VERIFICATION
+- Syntax checks passed for all changed/new JavaScript modules.
+- Mocked guard checks passed for admin, non-admin, signed-out, and revoked sessions.
+- Checked moved files and relative sprite paths.
+- Live Firebase sessions and browser rendering were not tested.
+
+ASSISTANT RESPONSE (FINAL)
+Moved the movement preview into Development/ and added a development hub.
+The project screen now shows a Development button only for Firebase UID
+k8ncp3tED8YjjxoTXHlYBSoxcFW2. Development pages also check that UID.
+
+Future experiments will stay there until you approve integration.
+Syntax and access-guard checks passed. Updated chat_log.txt.
+
+======================================================================
+ENTRY 012 | 2026-10-31
+======================================================================
+
+USER PROMPT
+Context from my IDE setup:
+Active file: script.js
+Open tabs: script.js, project.js, firebase-client.js, firebase-config.js,
+project.html
+
+during movement, there is slight cutoff, not only that, I also want the
+diagional movement to be possible as well, hence the 8 rows. Add a comment
+to indicate values I can change inside the HTML or JS controlling the sprite
+area as to fix the cutoffs if nessessary
+
+ASSISTANT RESPONSES (PROGRESS)
+I'll check the frame cropping, map all eight directional rows, and add
+diagonal movement. I'll also comment the sprite sizing and crop settings
+so you can adjust them easily.
+
+The artwork isn't evenly spaced between rows, so dividing each sheet into
+eight equal slices can clip parts of a frame. I'll use per-frame crop
+boundaries, add editable crop and display settings, and normalize diagonal
+movement so it stays the same speed as horizontal movement.
+
+ACTIONS AND CHANGES
+- Measured foreground gaps to define per-column source row boundaries.
+- Added commented sprite-layouts.js with editable source crop boundaries.
+- Replaced equal-height crops with per-frame rectangles and proportional
+  rendering with display padding.
+- Used all eight source rows directly instead of mirroring a side pose.
+- Added combined keyboard input, normalized diagonal speed, and an eight-way
+  on-screen movement pad. Opposing inputs cancel.
+- Added comments for canvas dimensions, sprite size, padding, cadence, speed,
+  row mappings, and optional debug crop outlines.
+- Updated development hub wording and README tuning instructions.
+- Kept changes in Development; main gameplay and authentication unchanged.
+
+VERIFICATION
+- JavaScript syntax checks passed.
+- Checks passed for all eight directions, equal diagonal speed, combined and
+  opposing inputs, all eight row mappings, and all 80 source rectangles.
+- Final frame appearance has not been verified in a browser.
+
+ASSISTANT RESPONSE (FINAL)
+Added eight-direction movement with matching sprite rows and equal diagonal
+speed. Replaced uniform crops with per-frame boundaries to address cutoffs.
+
+Tuning comments are in movement.html (canvas dimensions), movement.js
+(sprite size, padding, speed, and debug outlines), and sprite-layouts.js
+(source crop boundaries).
+
+All changes remain in Development. Syntax and movement checks passed;
+browser visual verification is still pending. Updated chat_log.txt.
+
+======================================================================
+ENTRY 013 | 2026-10-31
+======================================================================
+
+USER PROMPT
+Context from my IDE setup:
+Active file: script.js
+Open tabs: script.js, project.js, firebase-client.js, firebase-config.js,
+project.html
+
+the mob downright and right movement is backwards and has the same cutoff issue.
+
+ASSISTANT RESPONSES (PROGRESS)
+I'll correct the Mob's right and down-right facing and inspect those frames'
+crop boundaries for clipping.
+
+The Mob's right and down-right rows still contain left-facing poses, and the
+lower rows have overlapping artwork. I've switched those directions to mirrored
+versions of the cleaner left and down-left rows, avoiding the problematic crops.
+
+ACTIONS AND CHANGES
+- Re-inspected the Mob sprite sheet and crop settings.
+- Mapped Mob right to row 2 and down-right to row 1, mirrored horizontally.
+- Added an editable mirroredDirections list with explanatory comments.
+- Extended the Mob's down-left frame 2 lower edge by one source pixel to
+  include clear separation after its last foot pixel.
+- Kept Plana, the project page, and authentication unchanged.
+
+VERIFICATION
+- JavaScript syntax check passed.
+- Mocked draw checks confirmed both directions use horizontal mirroring and
+  the corrected source rows.
+- Inspected source pixel boundaries for the replacement rows.
+- Final browser appearance still needs visual verification.
+
+ASSISTANT RESPONSE (FINAL)
+Corrected Mob right and down-right movement using mirrored clean source rows,
+addressing the backwards facing and avoiding the clipped lower rows.
+
+Added comments for the mirroring settings and adjusted one crop boundary.
+Checks passed; changes remain in Development. Updated chat_log.txt.

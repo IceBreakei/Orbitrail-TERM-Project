@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schale | Movement preview</title>
+    <link rel="stylesheet" href="movement.css">
+    <script type="module" src="movement.js"></script>
+  </head>
+  <body>
+    <main id="development-content" hidden>
+      <p><a href="index.html">Back to development lab</a></p>
+      <p class="eyebrow">SCHALE / ANIMATION STUDY</p>
+      <h1>Movement preview</h1>
+      <p>Select a character. Hold two movement keys together to move diagonally, or use the eight-direction controls.</p>
+      <div class="characters" role="group" aria-label="Select character">
+        <button type="button" data-character="plana" aria-pressed="true">Plana</button>
+        <button type="button" data-character="mob" aria-pressed="false">Mob</button>
+      </div>
+      <!-- EDIT width and height below to change the movement AREA in canvas pixels.
+           For sprite size/padding use movement.js; for crop cutoffs use sprite-layouts.js. -->
+      <canvas id="arena" width="900" height="500" tabindex="0" aria-label="Character movement area. Use arrow keys or WASD to move the selected character."></canvas>
+      <p id="status" role="status">Loading sprite sheets…</p>
+      <div class="directions" role="group" aria-label="Eight-direction movement controls">
+        <button type="button" data-direction="upLeft" aria-label="Move up-left">&#8598;</button>
+        <button type="button" data-direction="up" aria-label="Move up">&#8593;</button>
+        <button type="button" data-direction="upRight" aria-label="Move up-right">&#8599;</button>
+        <button type="button" data-direction="left" aria-label="Move left">&#8592;</button>
+        <span aria-hidden="true"></span>
+        <button type="button" data-direction="right" aria-label="Move right">&#8594;</button>
+        <button type="button" data-direction="downLeft" aria-label="Move down-left">&#8601;</button>
+        <button type="button" data-direction="down" aria-label="Move down">&#8595;</button>
+        <button type="button" data-direction="downRight" aria-label="Move down-right">&#8600;</button>
+      </div>
+      <p class="note">Release to idle. Both sprite sheets are included. This preview is separate from the project page.</p>
+    </main>
+  </body>
+</html>
