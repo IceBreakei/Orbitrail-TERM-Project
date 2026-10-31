@@ -17,7 +17,7 @@
       </nav>
       <section id="admin-panel" class="admin-panel" hidden>
         <strong>Admin test session</strong>
-        <p>Infinite horizontal scrolling enabled. Vertical camera locked. All eight movement directions remain available.</p>
+        <p>Infinite horizontal scrolling enabled. Vertical camera locked. Normal characters move in eight directions. Bosses move in eight directions but face only left/right.</p>
         <a href="../project.html">Return to project</a>
       </section>
       <p class="eyebrow">SCHALE / ANIMATION STUDY</p>
@@ -33,9 +33,52 @@
         <div class="characters" role="group" aria-label="Admin character swap">
           <button type="button" data-character="plana" aria-pressed="true">Plana (playable)</button>
           <button type="button" data-character="arona" aria-pressed="false">Arona (playable)</button>
+          <button type="button" data-character="iroha" aria-pressed="false">Iroha Boss (large ? left/right)</button>
           <button type="button" data-character="mob" aria-pressed="false">Mob (test)</button>
         </div>
       </section>
+      <section id="boss-attacks" class="admin-panel" hidden aria-label="Boss attack testing">
+        <strong>Admin / Boss attacks</strong>
+        <div class="characters">
+          <button type="button" data-attack="cannon">Fire main cannon</button>
+          <button type="button" data-attack="artillery">Flag-wave artillery</button>
+        </div>
+        <p class="note">Animation tests: the boss pauses for one attack cycle, then resumes movement. No damage or projectiles are added yet.</p>
+      </section>
+      <details class="admin-panel">
+        <summary>Admin / Sprite sheet testing</summary>
+        <p>Swap a local sheet for this session only. Files are not uploaded or saved. Reloading restores built-in sheets.</p>
+        <form id="sprite-tester" class="sprite-settings">
+          <label>Character
+            <select name="target"><option value="plana">Plana</option><option value="arona">Arona</option><option value="mob">Mob</option><option value="iroha">Iroha Boss</option></select>
+          </label>
+          <label>Sprite image (5 columns × 8 rows)
+            <input name="sheet" type="file" accept="image/png,image/webp,image/jpeg">
+          </label>
+          <label>Frame columns (8 for Iroha Boss; 5 for Plana, Arona, and Mob)
+            <input name="columns" type="number" min="1" max="64" value="5" required>
+          </label>
+          <label>Crop layout
+            <select name="layout"><option value="grid">Regular 5 × 8 grid with margins</option><option value="builtin">Character's built-in crop boundaries</option></select>
+          </label>
+          <!-- Margins are SOURCE IMAGE pixels, not canvas display pixels. -->
+          <label>Left margin <input name="left" type="number" min="0" value="0" required></label>
+          <label>Top margin <input name="top" type="number" min="0" value="0" required></label>
+          <label>Right margin <input name="right" type="number" min="0" value="0" required></label>
+          <label>Bottom margin <input name="bottom" type="number" min="0" value="0" required></label>
+          <label>Rows: down, downLeft, left, upLeft, up, upRight, right, downRight
+            <input name="rows" type="text" required>
+          </label>
+          <label>Mirrored directions (comma-separated; leave empty for none)
+            <input name="mirrors" type="text">
+          </label>
+          <label>Display reference size (larger = smaller sprite)
+            <input name="reference" type="number" min="1" value="215" required>
+          </label>
+          <div><button type="submit">Apply test sheet</button> <button type="button" id="restore-sprite">Restore built-in sheet</button></div>
+        </form>
+        <p id="sprite-feedback" role="status" aria-live="polite"></p>
+      </details>
       <p id="status" role="status">Loading sprite sheets…</p>
       <div class="directions" role="group" aria-label="Eight-direction movement controls">
         <button type="button" data-direction="upLeft" aria-label="Move up-left">&#8598;</button>
