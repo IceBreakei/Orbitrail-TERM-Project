@@ -10,23 +10,99 @@
   <body class="simulation-page">
     <main id="development-content" hidden>
       <nav class="test-toolbar" aria-label="Development tools">
+        <div class="toolbar-volume">
+          <label for="music-volume">Music volume</label>
+          <input id="music-volume" type="range" min="0" max="100" value="35">
+          <output id="music-volume-value" for="music-volume">35%</output>
+        </div>
+        <button type="button" id="switch-map">Switch map (current: Playarea)</button>
         <a class="tool-button" href="index.html">Dev lab</a>
+        <button type="button" id="toggle-player-stats" aria-expanded="true" aria-controls="player-stats-panel">EXP / HP / Invincibility</button>
         <button type="button" id="admin-tools" aria-expanded="false" aria-controls="admin-panel">Admin tools</button>
         <button type="button" id="reset-scene">Reset scene</button>
         <button type="button" id="toggle-bounds" aria-pressed="false">Sprite bounds</button>
+        <button type="button" id="toggle-arrow" aria-pressed="true">Arrow: shown</button>
+        <span id="aim-mode" role="status">Aim: character facing</span>
       </nav>
+      <section id="player-stats-panel" class="admin-panel" aria-label="Player EXP HP and invincibility controls">
+        <fieldset id="player-stats-tools" class="sprite-settings">
+          <legend>Player EXP and HP testing</legend>
+          <label><span><input id="player-invincibility" type="checkbox" checked> Invincibility (Development default)</span></label>
+          <label>EXP amount <input name="exp-amount" type="number" min="1" max="1000000" value="25"></label>
+          <div class="characters">
+            <button type="button" data-player-stat="exp">Add EXP</button>
+            <button type="button" data-player-stat="level">Next level</button>
+          </div>
+          <label>HP amount <input name="hp-amount" type="number" min="1" max="1000000" value="25"></label>
+          <div class="characters">
+            <button type="button" data-player-stat="damage">Reduce HP</button>
+            <button type="button" data-player-stat="heal">Gain HP</button>
+            <button type="button" data-player-stat="full-heal">Full heal</button>
+            <button type="button" data-player-stat="reset">Reset player stats</button>
+          </div>
+          <p id="player-stats-status" role="status"></p>
+          <p id="player-loot-status" role="status">Credits: 0 | Secret Tech Notes: 0</p>
+          <p id="player-stats-feedback" role="status"></p>
+          <p class="note">Invincibility prevents death, but HP can still fall to zero and damage still flashes. Level 2 requires 79 EXP; later levels follow the HoloCure EXP curve. Stats are session-only; a game-over screen is not implemented yet.</p>
+        </fieldset>
+      </section>
+      <details id="loot-tools" class="admin-panel" open>
+        <summary>Admin / Drops and contact damage testing</summary>
+        <div class="sprite-settings">
+          <label>Pickup value <input name="loot-value" type="number" min="1" max="1000000" value="5"></label>
+          <div class="characters">
+            <button type="button" data-loot-action="exp">Spawn EXP report</button>
+            <button type="button" data-loot-action="credits">Spawn credits</button>
+            <button type="button" data-loot-action="secretTechNotes">Spawn Secret Tech Notes</button>
+            <button type="button" data-loot-action="collect">Collect all ground drops</button>
+            <button type="button" data-loot-action="clear">Clear ground drops</button>
+            <button type="button" data-loot-action="reset">Reset collected loot totals</button>
+          </div>
+          <label>Contact damage to player <input id="contact-player-damage" type="number" min="1" max="1000000" value="10"></label>
+          <label>Contact damage to enemy <input id="contact-enemy-damage" type="number" min="1" max="1000000" value="10"></label>
+          <p class="note">Test pickups appear 80px to your right. Report values select their tier automatically. Contact damages both sides; the player then has 0.5 seconds of I-frames against all enemies. Development invincibility prevents death, not HP loss.</p>
+        </div>
+      </details>
       <section id="admin-panel" class="admin-panel" hidden>
         <strong>Admin test session</strong>
-        <p>Infinite horizontal scrolling enabled. Vertical camera locked. Normal characters move in eight directions. Bosses move in eight directions but face only left/right.</p>
+        <fieldset>
+          <legend>Map soundtrack</legend>
+          <button id="music-toggle" type="button" aria-pressed="true">Pause music</button>
+          <p id="music-status" role="status">Music starts after your first interaction.</p>
+        </fieldset>
+        <p>Playarea scrolls horizontally; Playarea 2 vertically; Playarea 3 scrolls in both axes with seeded tiles; Playarea 4 is a finite island with angled obstacles. Use Switch Map to test the shrinking checkerboard ripple. Normal characters move in eight directions. Bosses move in eight directions but face only left/right.</p>
         <a href="../project.html">Return to project</a>
       </section>
       <p class="eyebrow">SCHALE / ANIMATION STUDY</p>
       <h1>Playarea simulation</h1>
+      <p>Left-click inside the game screen to toggle crosshair aiming. Click again to follow the character's facing. Arrow visibility is controlled separately.</p>
       <p>Plana and Arona are playable characters. Use the admin swap controls below the screen to test all avatars. Only one is visible at a time.</p>
-      <!-- EDIT width and height below to change the movement AREA in canvas pixels.
-           For sprite size/padding use movement.js; for crop cutoffs use sprite-layouts.js. -->
+      <!-- Canvas dimensions are resized to CSS pixels by viewport.js. A larger screen reveals
+           more world, not larger actors. Fixed actor sizes live in scene-metrics.js. -->
       <div class="simulated-screen">
       <canvas id="arena" width="1280" height="720" tabindex="0" aria-label="Character movement area. Use arrow keys or WASD to move the selected character."></canvas>
+        <!-- Screen-space HUD: EXP always spans the viewport; portrait/HP sit below. -->
+        <div class="game-hud" aria-label="Player status">
+          <div id="hud-exp" class="hud-exp" role="progressbar" aria-label="Experience" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="exp-track exp-track-empty" aria-hidden="true"><span></span><span></span><span></span></div>
+            <div id="hud-exp-fill" class="exp-track exp-track-filled" aria-hidden="true"><span></span><span></span><span></span></div>
+            <span id="hud-exp-edge" class="hud-exp-edge" aria-hidden="true" hidden></span>
+          </div>
+          <div class="hud-player-row">
+            <div class="hud-portrait-box"><canvas id="hud-portrait" width="80" height="80" role="img" aria-label="Character portrait"></canvas></div>
+            <div class="hud-player-info">
+              <div id="hud-hp" class="hud-hp" role="progressbar" aria-label="Player HP" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+                <img src="../sprites/hud/hp-empty.png" alt="">
+                <img id="hud-hp-fill" src="../sprites/hud/hp-filled.png" alt="">
+              </div>
+              <div class="hud-loadout">
+                <div id="hud-attack-slots" class="hud-slot-row" role="group" aria-label="Attack slots"></div>
+                <div id="hud-equipment-slots" class="hud-slot-row" role="group" aria-label="Equipment slots"></div>
+              </div>
+            </div>
+          </div>
+          <canvas id="hud-level" class="hud-level" width="100" height="20" role="img" aria-label="LV: 1"></canvas>
+        </div>
       </div>
       <section class="admin-panel" aria-label="Admin character testing">
         <strong>Admin / Character swap</strong>
@@ -34,6 +110,7 @@
           <button type="button" data-character="plana" aria-pressed="true">Plana (playable)</button>
           <button type="button" data-character="arona" aria-pressed="false">Arona (playable)</button>
           <button type="button" data-character="iroha" aria-pressed="false">Iroha Boss (large ? left/right)</button>
+          <button type="button" data-character="shiroko" aria-pressed="false">Shiroko Boss (GIF test)</button>
           <button type="button" data-character="mob" aria-pressed="false">Mob (test)</button>
         </div>
       </section>
@@ -45,6 +122,38 @@
         </div>
         <p class="note">Animation tests: the boss pauses for one attack cycle, then resumes movement. No damage or projectiles are added yet.</p>
       </section>
+      <details id="npc-tools" class="admin-panel">
+        <summary>Admin / NPC and enemy testing</summary>
+        <div class="sprite-settings">
+          <label>NPC sprite <select name="npc-type"><option value="shiroko">Shiroko Boss (GIF)</option><option value="mob" selected>Mob</option><option value="iroha">Iroha Boss</option><option value="plana">Plana (NPC test)</option><option value="arona">Arona (NPC test)</option></select></label>
+          <label><span><input name="npc-ai" type="checkbox" checked> Spawn with AI</span></label>
+          <label>AI behavior <select name="npc-behavior"><option value="chase">Chase player</option><option value="wander">Wander</option><option value="idle">Idle</option></select></label>
+          <label>Canvas tool <select name="npc-mode"><option value="random">Random spawn / normal aim clicks</option><option value="cursor">Cursor spawn (left-click places NPCs)</option><option value="inspect">Inspect NPC (left-click selects)</option><option value="delete">Delete NPC (left-click removes)</option></select></label>
+          <label>Batch count (1?50) <input name="npc-count" type="number" min="1" max="50" value="1"></label>
+          <label>EXP reward per NPC <input name="npc-exp" type="number" min="0" max="1000000" step="1" value="5"></label>
+          <button id="spawn-npc" type="button">Spawn random / arm cursor spawn</button>
+          <label>Selected NPC <select name="npc-selection"></select></label>
+          <p id="npc-inspector" role="status">No NPC selected.</p>
+          <div class="characters">
+            <button type="button" data-npc-action="apply-ai">Apply AI settings to selected</button>
+            <button type="button" data-npc-action="bring">Bring selected to player</button>
+            <button type="button" data-npc-action="damage">Damage selected (25 HP)</button>
+            <button type="button" data-npc-action="heal">Heal selected</button>
+            <button type="button" data-npc-action="delete">Delete selected</button>
+            <button type="button" data-npc-action="delete-visible">Delete visible</button>
+            <button type="button" data-npc-action="clear">Delete all NPCs</button>
+          </div>
+          <div class="characters">
+            <button type="button" data-npc-action="all-ai-on">All AI on</button>
+            <button type="button" data-npc-action="all-ai-off">All AI off</button>
+            <button type="button" data-npc-action="pause">Pause AI</button>
+            <button type="button" data-npc-action="step">Step AI (1 frame)</button>
+          </div>
+          <p class="note">NPC health is hidden in the game screen; damage produces a brief white pulse. Use the toolbar Sprite Bounds button for outlines.</p>
+          <p id="npc-feedback" role="status"></p>
+          <p class="note">Cursor tools override aiming clicks until Random spawn is selected again. State survives scrolling during this session. NPC contact triggers a flash and recoil: approaching NPCs bounce; running into them gives a shorter push. Contact damages both sides with 0.5 seconds of player I-frames. Automatic attacks are not enabled.</p>
+        </div>
+      </details>
       <details class="admin-panel">
         <summary>Admin / Sprite sheet testing</summary>
         <p>Swap a local sheet for this session only. Files are not uploaded or saved. Reloading restores built-in sheets.</p>
@@ -91,7 +200,7 @@
         <button type="button" data-direction="down" aria-label="Move down">&#8595;</button>
         <button type="button" data-direction="downRight" aria-label="Move down-right">&#8600;</button>
       </div>
-      <p class="note">Simulated full screen: the game fills the 16:9 screen above. Dev controls stay outside it. Travel endlessly left or right; only visible background tiles are drawn. The camera never scrolls vertically.</p>
+      <p class="note">Simulated full screen: the game fills the 16:9 screen above. Dev controls stay outside it. Playarea scrolls infinitely left/right. Playarea 2 scrolls infinitely up/down. Only visible background tiles are drawn.</p>
     </main>
   </body>
 </html>

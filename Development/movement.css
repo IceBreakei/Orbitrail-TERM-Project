@@ -114,7 +114,8 @@ canvas {
 }
 
 .simulated-screen {
-  /* EDIT this maximum to scale the simulated screen without changing game pixels. */
+  position: relative;
+  /* EDIT preview width. viewport.js matches its pixels; actors retain fixed display sizes. */
   width: min(100%, 1120px);
   margin: 0 auto;
   aspect-ratio: 16 / 9;
@@ -122,6 +123,162 @@ canvas {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 12px 35px #18365426;
+}
+
+/* Fixed-size HUD below a viewport-wide segmented EXP bar. Never captures input. */
+.game-hud {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 2;
+  pointer-events: none;
+  color: white;
+  font: 600 12px system-ui, sans-serif;
+  text-shadow: 0 1px 2px #10283f;
+}
+
+.hud-exp {
+  position: relative;
+  width: 100%;
+  height: 32px;
+}
+
+.exp-track {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  /* Preserve the supplied end artwork and repeat the middle between the caps. */
+  grid-template-columns: 90px minmax(0, 1fr) 15px;
+  overflow: hidden;
+}
+
+.exp-track span {
+  background-repeat: no-repeat;
+  background-size: 100% 32px;
+}
+
+.exp-track span:nth-child(2) {
+  background-repeat: repeat-x;
+  background-size: 3px 32px; /* Twice as many segments; fill is not quantized. */
+}
+
+.exp-track-empty span:nth-child(1) { background-image: url('../sprites/hud/exp-empty-left.png'); }
+.exp-track-empty span:nth-child(2) { background-image: url('../sprites/hud/exp-empty-middle.png'); }
+.exp-track-empty span:nth-child(3) { background-image: url('../sprites/hud/exp-empty-right.png'); }
+.exp-track-filled span:nth-child(1) { background-image: url('../sprites/hud/exp-filled-left.png'); }
+.exp-track-filled span:nth-child(2) { background-image: url('../sprites/hud/exp-filled-middle.png'); }
+.exp-track-filled span:nth-child(3) { background-image: url('../sprites/hud/exp-filled-right.png'); }
+
+#hud-exp-fill span:nth-child(1),
+#hud-exp-fill span:nth-child(3) { visibility: hidden; }
+#hud-exp-fill[data-has-exp="true"] span:nth-child(1),
+#hud-exp-fill[data-full="true"] span:nth-child(3) { visibility: visible; }
+
+#hud-exp-fill span:nth-child(2) {
+  clip-path: inset(0 var(--exp-unfilled, 100%) 0 0);
+  transition: clip-path 200ms ease-out;
+}
+
+/* A narrow bright leading edge makes fractional gains readable at any level. */
+.hud-exp-edge {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  width: 2px;
+  left: 0;
+  transform: translateX(-100%);
+  background: #e4ffff;
+  box-shadow: 0 0 5px #70eaff;
+  transition: left 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #hud-exp-fill span:nth-child(2), .hud-exp-edge { transition: none; }
+}
+
+.hud-player-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 8px;
+}
+
+.hud-portrait-box {
+  flex: 0 0 80px;
+  width: 80px;
+  height: 80px;
+  overflow: hidden;
+  border: 2px solid #a8efff;
+  background: linear-gradient(135deg, #e1faff, #326c9a);
+  box-shadow: 0 0 0 2px #15364f, inset 0 0 12px #ffffff88;
+}
+
+.hud-portrait-box canvas {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+.hud-player-info {
+  width: min(380px, calc(100% - 88px));
+  min-width: 0;
+}
+
+.hud-hp {
+  position: relative;
+  width: 100%;
+  height: 22px;
+  /* Align the HP bar's top edge with the portrait beside it. */
+  margin: 0 0 4px;
+}
+
+.hud-hp img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Both six-slot grids are 130% of their original 28px cells and 4px gaps. */
+.hud-loadout {
+  display: grid;
+  gap: 5.2px;
+}
+
+.hud-slot-row {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 36.4px));
+  gap: 5.2px;
+}
+
+.hud-slot {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+.hud-slot > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.hud-slot > .hud-slot-icon {
+  inset: 15%;
+  width: 70%;
+  height: 70%;
+}
+
+.game-hud .hud-level {
+  position: absolute;
+  top: 36px;
+  right: 8px;
+  width: 100px;
+  height: 20px;
+  background: transparent;
+  image-rendering: pixelated;
 }
 
 .simulated-screen canvas {
@@ -158,4 +315,21 @@ canvas {
   border: 1px solid #b5dcec;
   border-radius: 6px;
   background: white;
+}
+
+/* Always-visible soundtrack volume control at the start of the top toolbar. */
+.toolbar-volume {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.toolbar-volume input {
+  width: 140px;
+  max-width: 100%;
+}
+
+.toolbar-volume output {
+  min-width: 3ch;
 }
