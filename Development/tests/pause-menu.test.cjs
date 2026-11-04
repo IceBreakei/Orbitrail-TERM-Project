@@ -1,7 +1,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
 const elements=new Map();
-function el(id){if(!elements.has(id))elements.set(id,{hidden:true,value:'0',textContent:'',children:[],listeners:{},style:{setProperty(k,v){this[k]=v}},
- getContext(){return {}},setAttribute(k,v){this[k]=v},addEventListener(k,v){this.listeners[k]=v},focus(){},append(){},replaceChildren(){},
+function el(id){if(!elements.has(id))elements.set(id,{hidden:true,value:'0',textContent:'',classList:{toggle(){},contains(){return false}},children:[],listeners:{},style:{setProperty(k,v){this[k]=v}},
+ getContext(){return {}},setAttribute(k,v){this[k]=v},addEventListener(k,v){this.listeners[k]=v},focus(){},append(){},prepend(){},remove(){},replaceChildren(){},
  querySelector(){return el('summary')},querySelectorAll(selector){return selector==='.pause-weapon-divider'?[el('divider')]:selector==='[data-thin-text]'?[el('#pause-skill-equipped'),el('#pause-skill-effect')]:[]}});return elements.get(id)}
 const context=vm.createContext({document:{querySelector:el,createElement:()=>el('generated'),body:{classList:{contains:()=>false}}},
  window:{addEventListener(){}},Image:class{},URL,ResizeObserver:class{observe(){}},

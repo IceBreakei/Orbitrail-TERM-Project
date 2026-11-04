@@ -1,7 +1,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
 const enemies=new Map(),hits=[],knocks=[];
 const c=vm.createContext({getAllEnemies:()=>[...enemies.values()],getEnemy:id=>enemies.get(id),damageEnemy:(id,damage,p,type)=>{hits.push({id,damage,type});return damage},applySkillControl:(...args)=>knocks.push(args)});
-for(const name of ['game-config','combat-stats','combat-hitboxes','luminous-nova','princess-key','synergy-recipes','golden-crafter-rules'])vm.runInContext(fs.readFileSync('Development/'+name+'.js','utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export \{.*\} from .*;\r?\n/gm,'').replaceAll('export ',''),c);
+for(const name of ['game-config','combat-stats','combat-hitboxes','luminous-nova','enemy-spatial-index','princess-key','synergy-recipes','golden-crafter-rules'])vm.runInContext(fs.readFileSync('Development/'+name+'.js','utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export \{.*\} from .*;\r?\n/gm,'').replaceAll('export ',''),c);
 vm.runInContext('const settings=princessKeySettings',c);
 const run=s=>vm.runInContext(s,c);
 run('var player={label:"Plana",x:0,y:0,level:1,combatStats:{hastePercent:500},attackSlots:[{id:"princess-key",level:1,maxLevel:1}]};var attack=createPrincessKeyAttack({random:()=>0})');

@@ -5,7 +5,7 @@ function startLoginSplash() {
   const images=[...container.querySelectorAll('img')];
   let current=0,timer=null,transitioning=false;
 
-  /** Reveal the next decoded image from the left over the still-visible current artwork. */
+  /** Fade the next decoded image in from the right over the still-visible current artwork. */
   function showNext() {
     if(document.hidden||transitioning)return;
     const next=(current+1)%images.length;

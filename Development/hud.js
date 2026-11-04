@@ -111,7 +111,7 @@ export function createHud(getFrameRectangle) {
       entry.icon.hidden = !source;
       entry.caption.hidden = !source || item?.level === undefined;
       if (!entry.caption.hidden) {
-        entry.captionText = `${levelLabel}${item.enhancementRank ? ` +${item.enhancementRank}` : ''}`;
+        entry.captionText = levelLabel;
         entry.levelText.setText(entry.captionText);
       }
       const iconContext = entry.icon.getContext('2d');

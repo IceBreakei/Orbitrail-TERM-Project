@@ -5,6 +5,11 @@ import { onEnemyDamage,getAllEnemies,damageEnemy } from './world-state.js';
 import { getEnemyHurtbox } from './combat-hitboxes.js';
 import { rollAttackDamage,totalWeaponDamage } from './combat-stats.js';
 
+/** Add prior beam damage once, after the normal per-hit damage roll. No percentage or cap. */
+export function princessBeamTickDamage(base,previousBeamDamage) {
+  return Math.max(0,Math.round(base+previousBeamDamage));
+}
+
 /** Gentle blue residue pulse, followed by an inward collapse at the four-second detonation. */
 export function princessResiduePose(age) {
   const progress=Math.min(1,age/settings.residueSeconds);
@@ -25,25 +30,28 @@ export function createPrincessKeySkill({random=Math.random}={}) {
     rollSpecialDamage(player,target,multiplier) {
       const hit=rollAttackDamage(player,totalWeaponDamage(player,'princess-key',arisWeaponSettings.damageMultiplier,[],
         {projectileCount:1,hitCooldownFrames:settings.hitCooldown*60}),random,{target,damageMod:multiplier});
-      hit.damage+=luminousNovaFinisherDamage(state?.damageDealt||0,player);return hit;
+      hit.damage=princessBeamTickDamage(hit.damage,state?.tickBonus||0);return hit;
     },
     onSpecialHit(target,hit,player) {
       if(!state)return;
-      const body=getEnemyHurtbox(target),charge=luminousNovaFinisherDamage(state?.damageDealt||0,player);
+      const body=getEnemyHurtbox(target);
       // One residue per target per cast prevents rapid beam ticks creating thousands of effects.
       const existing=residues.find(r=>r.target===target&&r.cast===state);
-      if(existing){existing.damage=Math.max(existing.damage,charge);return;}
-      residues.push({target,cast:state,owner:player,x:body.x,y:body.y,age:0,damage:charge,exploded:false});
+      if(existing)return;
+      residues.push({target,cast:state,owner:player,x:body.x,y:body.y,age:0,exploded:false});
     }});
   beam.setAutoattackEnabled(false);
   const unsubscribe=onEnemyDamage(({source,damage})=>{
-    if(state&&state.elapsed<settings.buffSeconds&&source===state.owner)state.damageDealt+=Math.max(0,damage);
+    if(state&&state.elapsed<settings.buffSeconds&&source===state.owner) {
+      state.damageDealt+=Math.max(0,damage);
+      if(state.beamInProgress)state.beamDamageDealt+=Math.max(0,damage);
+    }
   });
   function removeBuff(){if(state?.owner.combatBuffs)delete state.owner.combatBuffs[buffKey];}
   function reset(){removeBuff();state=null;residues=[];beam.reset();}
   function cast(player,angle,multiplier=1.5,getAngle=()=>angle) {
     reset();player.combatBuffs??={};player.combatBuffs[buffKey]={damageBonusMultiplier:luminousNovaSkillSettings.damageBonus,critPercent:luminousNovaSkillSettings.critBonus};
-    state={owner:player,elapsed:0,damageDealt:0};beam.cast(player,angle,multiplier,getAngle);
+    state={owner:player,elapsed:0,damageDealt:0,beamDamageDealt:0,tickBonus:0};beam.cast(player,angle,multiplier,getAngle);
   }
   /** Substep beam ticks and residue timers on simulation time, so pausing freezes everything. */
   function update(delta,player,aim=0) {
@@ -51,11 +59,19 @@ export function createPrincessKeySkill({random=Math.random}={}) {
     let left=Math.max(0,delta);
     while(left>1e-8) {
       const step=Math.min(left,1/60);left-=step;
-      if(state){state.elapsed+=step;if(state.elapsed>=settings.buffSeconds)removeBuff();beam.update(step,player,aim);}
+      if(state){
+        state.elapsed+=step;if(state.elapsed>=settings.buffSeconds)removeBuff();
+        // All targets hit in this tick use the same prior total, independent of enemy iteration order.
+        state.tickBonus=state.beamDamageDealt;state.beamInProgress=true;
+        beam.update(step,player,aim);if(state)state.beamInProgress=false;
+      }
+      const accumulated=state?.damageDealt||0;
+      const explosionTotal=Math.round(accumulated)+luminousNovaFinisherDamage(accumulated,player);
       for(const residue of residues) {
         residue.age+=step;
         if(!residue.exploded&&residue.age>=settings.residueSeconds) {
           residue.exploded=true;
+          residue.damage=explosionTotal; // Full accumulated damage plus the old capped 10% charge.
           for(const enemy of getAllEnemies()) {
             const body=getEnemyHurtbox(enemy);
             if(Math.hypot(body.x-residue.x,body.y-residue.y)<=settings.residueRadius+Math.max(body.rx,body.ry))

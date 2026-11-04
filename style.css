@@ -828,7 +828,7 @@ input:focus {
   .login-page .auth-card { max-width: 400px; }
 }
 
-/* Keep the existing splash visible while the next art fades in from the left. */
+/* Fade the next splash over the current one from the right, without a clipped wipe edge. */
 .login-page .login-splash img {
   position: absolute;
   inset: 0;
@@ -841,8 +841,8 @@ input:focus {
   animation: login-splash-reveal 1.4s ease-in-out both;
 }
 @keyframes login-splash-reveal {
-  from { opacity: 0; clip-path: inset(0 100% 0 0); }
-  to { opacity: 1; clip-path: inset(0); }
+  from { opacity: 0; transform: translateX(4%); filter: blur(4px); }
+  to { opacity: 1; transform: translateX(0); filter: blur(0); }
 }
 @media (prefers-reduced-motion: reduce) {
   .login-page .login-splash img.is-entering { animation-name: login-splash-soft-fade; animation-duration: .4s; }

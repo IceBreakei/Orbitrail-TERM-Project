@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schale | Optimization test</title>
+  <link rel="stylesheet" href="movement.css">
+  <script type="module" src="movement-optimized.js"></script>
+</head>
+
+<body class="simulation-page">
+  <main id="development-content" hidden>
+    <nav class="test-toolbar" aria-label="Development tools">
+      <div class="toolbar-volume">
+        <label for="music-volume">Music volume</label>
+        <input id="music-volume" class="game-volume-slider" type="range" min="0" max="100" value="0">
+        <output id="music-volume-value" for="music-volume">0%</output>
+        <button type="button" id="music-soundtrack-toggle" aria-pressed="false" title="Switch the soundtrack for all current stages">Audio: Default</button>
+      </div>
+      <button type="button" id="switch-map">Switch map (current: Playarea)</button>
+      <a class="tool-button" href="index.html">Dev lab</a>
+      <a class="tool-button" href="movement.html">Optimization test ? return to original</a>
+      <button type="button" id="enter-fullscreen-preview" aria-pressed="false">Preview game area (1280x720)</button>
+      <button type="button" id="toggle-player-stats" aria-expanded="false" aria-controls="player-stats-panel">EXP / HP /
+        Invincibility</button>
+      <button type="button" id="admin-tools" aria-expanded="false" aria-controls="admin-panel">Admin tools</button>
+      <button type="button" id="reset-scene">Reset scene</button>
+      <button type="button" id="new-game">Reroll seed / new game</button>
+      <button type="button" id="admin-seed-zero">Admin seed 0 (tile preview + 1 HP)</button>
+      <button type="button" id="toggle-bounds" aria-pressed="false">Sprite bounds</button>
+      <button type="button" id="toggle-arrow" aria-pressed="true">Arrow: shown</button>
+      <span id="aim-mode" role="status">Aim: character facing</span>
+    </nav>
+    <details id="player-stats-panel" class="admin-panel">
+      <summary>Player EXP and HP testing</summary>
+      <fieldset id="player-stats-tools" class="sprite-settings">
+        <legend>Player stats</legend>
+        <label><span><input id="player-invincibility" type="checkbox" checked> Invincibility (Development
+            default)</span></label>
+        <label>EXP amount <input name="exp-amount" type="number" min="1" max="1000000" value="25"></label>
+        <div class="characters">
+          <button type="button" data-player-stat="exp">Add EXP</button>
+          <button type="button" data-player-stat="level">Next level</button>
+        </div>
+        <label>HP amount <input name="hp-amount" type="number" min="1" max="1000000" value="25"></label>
+        <div class="characters">
+          <button type="button" data-player-stat="damage">Reduce HP</button>
+          <button type="button" data-player-stat="heal">Gain HP</button>
+          <button type="button" data-player-stat="full-heal">Full heal</button>
+          <button type="button" data-player-stat="reset">Reset player stats</button>
+        </div>
+        <label>Shield amount <input name="shield-amount" type="number" min="1" max="1000000" value="40"></label>
+        <div class="characters">
+          <button type="button" data-player-stat="shield-add">Add shield</button>
+          <button type="button" data-player-stat="shield-remove">Remove shield</button>
+          <button type="button" data-player-stat="shield-clear">Clear shield</button>
+        </div>
+        <p id="player-stats-status" role="status"></p>
+        <div class="characters">
+          <button type="button" data-player-stat="preview-crit">Preview crit number</button>
+          <button type="button" data-player-stat="preview-supercrit">Preview supercrit number</button>
+        </div>
+        <div class="combat-stat-inputs">
+          <label>ATK% bonus <input data-combat-stat="atkPercent" type="number" min="0" max="1000" step="1" value="0"></label>
+          <label>SPD% bonus <input data-combat-stat="spdPercent" type="number" min="0" max="1000" step="1" value="0"></label>
+          <label>CRIT% chance <input data-combat-stat="critPercent" type="number" min="0" max="100" step="1" value="0"></label>
+          <label>PICKUP% bonus <input data-combat-stat="pickupPercent" type="number" min="0" max="1000" step="1" value="0"></label>
+          <label>Haste% bonus <input data-combat-stat="hastePercent" type="number" min="0" max="1000" step="1" value="0"></label>
+        </div>
+        <p class="note">0% bonus keeps base stats. ATK boosts damage, SPD movement, PICKUP attraction range, and Haste attack speed. CRIT is the chance of double damage. Changes apply when you finish editing a field.</p>
+        <p id="player-loot-status" role="status">Credits: 0 | Secret Tech Notes: 0</p>
+        <p id="player-stats-feedback" role="status"></p>
+        <p class="note">Invincibility prevents death, but HP can still fall to zero and damage still flashes. The
+          next-level cost starts at 50 EXP at level 1 and increases by round(15 + current level / 2) each level. Stats are session-only; a
+          game-over screen is not implemented yet.</p>
+      </fieldset>
+    </details>
+    <details id="loot-tools" class="admin-panel" open>
+      <summary>Admin / Drops and contact damage testing</summary>
+      <div class="sprite-settings">
+        <label>Pickup value <input name="loot-value" type="number" min="1" max="1000000" value="5"></label>
+        <div class="characters">
+          <button type="button" data-loot-action="exp">Spawn EXP report</button>
+          <button type="button" data-loot-action="credits">Spawn credits</button>
+          <button id="spawn-crafter" type="button">Spawn Crafter</button>
+          <button id="spawn-golden-crafter" type="button">Spawn Golden Crafter</button>
+          <button id="spawn-normal-file" type="button">Spawn Normal File</button>
+          <button id="spawn-triple-file" type="button">Spawn Triple File</button>
+          <button id="spawn-super-file" type="button">Spawn Super File</button>
+          <button type="button" data-loot-action="secretTechNotes">Spawn Secret Tech Notes</button>
+          <button type="button" data-loot-action="collect">Collect all ground drops</button>
+          <button type="button" data-loot-action="clear">Clear ground drops</button>
+          <button type="button" data-loot-action="reset">Reset collected loot totals</button>
+        </div>
+        <label>Contact damage to player <input id="contact-player-damage" type="number" min="1" max="1000000"
+            value="10"></label>
+        <label>Mob contact damage to player <input id="contact-mob-damage" type="number" min="1" max="1000000"
+            value="1"></label>
+        <p class="note">Test pickups appear 80px to your right. Report values select their tier automatically. Contact
+          damages the player only; the player then has 0.2 seconds of I-frames against all enemies. Development
+          invincibility prevents death, not HP loss.</p>
+      </div>
+    </details>
+    <section id="admin-panel" class="admin-panel" hidden>
+      <strong>Admin test session</strong>
+      <fieldset>
+        <legend>Map soundtrack</legend>
+        <button id="music-toggle" type="button" aria-pressed="true">Pause music</button>
+        <p id="music-status" role="status">Music starts after your first interaction.</p>
+      </fieldset>
+      <p>Playarea scrolls horizontally; Playarea 2 vertically; Playarea 3 scrolls in both axes with seeded tiles;
+        Playarea 4 is a finite island with angled obstacles. Use Switch Map to test the shrinking checkerboard ripple.
+        Normal characters move in eight directions. Bosses move in eight directions but face only left/right.</p>
+      <a href="../project.html">Return to project</a>
+    </section>
+    <p class="eyebrow">SCHALE / ANIMATION STUDY</p>
+    <h1>Playarea simulation</h1>
+    <p>Left-click inside the game screen to toggle crosshair aiming. Click again to follow the character's facing. Arrow
+      visibility is controlled separately.</p>
+    <p>Plana and Arona are playable characters. Use the admin swap controls below the screen to test all avatars. Only
+      one is visible at a time.</p>
+    <!-- Canvas dimensions are resized to CSS pixels by viewport.js. A larger screen reveals
+           more world, not larger actors. Fixed actor sizes live in scene-metrics.js. -->
+    <div class="playtest-layout">
+    <aside class="skill-test-sidebar" aria-label="Admin skill testing">
+      <strong>Admin / Skills</strong>
+      <label><input id="disable-autoattack" type="checkbox"> Disable autoattacks</label>
+      <button id="admin-equip-aris" type="button">Equip Aris laser</button>
+      <button id="admin-equip-luminous" type="button">Equip Luminous Nova</button>
+      <div id="admin-equip-synergies" aria-label="Equip synergy weapons for testing"></div>
+      <button id="admin-reset-cooldowns" type="button">Reset cooldowns</button>
+      <label><input id="admin-number-casting" type="checkbox"> Draw numbers 1-6 to cast</label>
+      <p>Right-click, then draw the attack slot number. Bypasses cooldowns.</p>
+      <div class="admin-skill-buttons" aria-label="Instant skill casts">
+        <button type="button" disabled data-admin-skill-slot="0">Cast 1</button>
+        <button type="button" disabled data-admin-skill-slot="1">Cast 2</button>
+        <button type="button" disabled data-admin-skill-slot="2">Cast 3</button>
+        <button type="button" disabled data-admin-skill-slot="3">Cast 4</button>
+        <button type="button" disabled data-admin-skill-slot="4">Cast 5</button>
+        <button type="button" disabled data-admin-skill-slot="5">Cast 6</button>
+
+      </div>
+      <p>Empty or undefined skill slots are disabled.</p>
+    </aside>
+    <div class="simulated-screen">
+      <button id="exit-fullscreen-preview" class="fullscreen-exit" type="button" hidden>Exit game preview</button>
+      <canvas id="arena" width="1280" height="720" tabindex="0"
+        aria-label="Character movement area. Use arrow keys or WASD to move the selected character."></canvas>
+      <div id="skill-feedback" class="skill-feedback" role="status" hidden></div>
+      <div id="skill-cast-overlay" class="skill-cast-overlay" aria-label="Draw a skill" hidden>
+        <canvas id="skill-drawing-canvas" aria-label="Hold left click to draw a skill"></canvas>
+        <div class="skill-cast-hint">DRAW YOUR SKILL <span id="skill-pattern-hint">Circle enclosing an arrow above an X</span><span>Left-click to draw | Right-click to cancel</span></div>
+        <div class="skill-cast-countdown">
+          <output id="skill-cast-timer">5.0s</output>
+          <div id="skill-cast-bar" class="skill-cast-bar" role="progressbar" aria-label="Drawing time remaining"
+            aria-valuemin="0" aria-valuemax="5" aria-valuenow="5">
+            <div class="skill-bar-track skill-bar-empty"><span></span><span></span><span></span></div>
+            <div id="skill-cast-fill" class="skill-bar-track skill-bar-filled"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+      </div>
+      <!-- Screen-space HUD: EXP always spans the viewport; portrait/HP sit below. -->
+      <div class="game-hud" aria-label="Player status">
+        <div id="hud-exp" class="hud-exp" role="progressbar" aria-label="Experience" aria-valuemin="0"
+          aria-valuemax="100" aria-valuenow="0">
+          <div class="exp-track exp-track-empty" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div id="hud-exp-fill" class="exp-track exp-track-filled" aria-hidden="true">
+            <span></span><span></span><span></span></div>
+          <span id="hud-exp-edge" class="hud-exp-edge" aria-hidden="true" hidden></span>
+        </div>
+        <div class="hud-player-row">
+          <div class="hud-portrait-box"><canvas id="hud-portrait" width="80" height="80" role="img"
+              aria-label="Character portrait"></canvas></div>
+          <div class="hud-player-info">
+            <div class="hud-health-row">
+              <div id="hud-hp" class="hud-hp" role="progressbar" aria-label="Player HP" aria-valuemin="0"
+                aria-valuemax="110" aria-valuenow="110">
+                <img src="../sprites/hud/hp-empty.png" alt="">
+                <img id="hud-hp-fill" src="../sprites/hud/hp-filled.png" alt="">
+                <img id="hud-shield-fill" src="../sprites/hud/hp-shield-fill-overlay.png" alt="" hidden>
+                <span id="hud-shield-edge" class="hud-shield-edge" aria-hidden="true" hidden></span>
+              </div>
+              <canvas id="hud-hp-numbers" width="90" height="20" role="img" aria-label="110/110"></canvas>
+            </div>
+            <div class="hud-loadout">
+              <div id="hud-attack-slots" class="hud-slot-row" role="group" aria-label="Attack slots"></div>
+              <div id="hud-equipment-slots" class="hud-slot-row" role="group" aria-label="Equipment slots"></div>
+            </div>
+          </div>
+        </div>
+        <canvas id="hud-level" class="hud-level" width="100" height="20" role="img" aria-label="LV: 1"></canvas>
+        <div class="hud-counters" aria-label="Run credits and kills">
+          <div class="hud-counter-row" role="group" aria-label="Credits collected">
+            <img src="../sprites/icons/credits.png" alt="Credits">
+            <canvas id="hud-credits" width="60" height="25" role="img" aria-label="0"></canvas>
+          </div>
+          <div class="hud-counter-row" role="group" aria-label="Enemies defeated">
+            <img src="../sprites/icons/MP_Gacha.png" alt="Kills">
+            <canvas id="hud-kills" width="60" height="25" role="img" aria-label="0"></canvas>
+          </div>
+        </div>
+      </div>
+      <!-- Mandatory upgrade selection freezes gameplay until every earned level is resolved. -->
+      <section id="level-up-menu" class="level-up-overlay" role="dialog" aria-modal="true" aria-labelledby="level-up-title" hidden>
+        <aside class="level-up-character">
+          <img id="level-up-portrait" class="pause-hologram" alt="" hidden>
+          <div class="level-up-character-copy">
+            <h2 id="level-up-title">LEVEL UP!</h2>
+            <h3 id="level-up-name"></h3>
+            <div id="level-up-stats"></div>
+          </div>
+        </aside>
+        <div class="level-up-selection">
+          <p id="level-up-progress"></p>
+          <div id="level-up-choices" aria-label="Choose a level-up upgrade"></div>
+          <button id="level-up-continue" type="button" hidden>Continue</button>
+          <p id="level-up-help" class="level-up-help">Choose an upgrade to continue. Up / Down to select, Enter to confirm.</p>
+        </div>
+      </section>
+      <section id="pause-menu" class="pause-overlay" role="dialog" aria-modal="true" aria-label="Game paused" hidden>
+        <div id="pause-character-panel" class="pause-character-stats" aria-label="Character stats">
+          <img id="pause-portrait" class="pause-hologram" alt="" hidden>
+          <div class="pause-stat-content">
+            <canvas id="pause-character-name" width="250" height="24" role="img" aria-label="Character name"></canvas>
+            <div id="pause-stat-rows"></div>
+          </div>
+        </div>
+        <section id="pause-skills-panel" class="pause-skills-panel" aria-label="EX Skills" hidden>
+          <header class="pause-skills-header">
+            <button id="pause-skills-back" type="button" data-thin-text>Back</button>
+            <span data-thin-text>EX Skills</span>
+          </header>
+          <details class="pause-weapon-divider" name="pause-ex-weapons" data-weapon="plana-umbrella" open>
+            <summary><h2 id="pause-skill-name" data-thin-text>Plana's Umbrella</h2><span class="pause-divider-marker" aria-hidden="true">+</span></summary>
+          <article class="pause-skill-entry">
+            <div class="pause-pattern-column">
+            <svg class="pause-cast-pattern" viewBox="0 0 200 200" role="img" aria-label="Casting pattern: a circle enclosing an arrow above an X">
+              <defs><linearGradient id="pause-ink" x2="1" y2="1"><stop stop-color="#69edff"/><stop offset="1" stop-color="#bcaaff"/></linearGradient></defs>
+              <g fill="none" stroke="url(#pause-ink)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="100" cy="100" r="86"/>
+                <path d="M100 94V43M76 67L100 43L124 67M75 119L125 160M125 119L75 160"/>
+              </g>
+            </svg>
+            <p data-thin-text>Pattern: Draw a circle, an arrow inside its upper half, and an X below the arrow. Stroke order is flexible.</p>
+            </div>
+            <div class="pause-description-column">
+              <canvas id="pause-skill-icon" width="160" height="160" role="img" aria-label="Weapon icon"></canvas>
+              <h3 data-thin-text>Umbrella Launch</h3>
+              <p id="pause-skill-equipped" data-thin-text></p>
+              <p id="pause-skill-effect" data-thin-text></p>
+            </div>
+          </article>
+          </details>
+          <details class="pause-weapon-divider" name="pause-ex-weapons" data-weapon="aris-laser">
+            <summary><h2 data-thin-text>Supernova</h2><span class="pause-divider-marker" aria-hidden="true">+</span></summary>
+            <article class="pause-skill-entry">
+              <div><svg viewBox="0 0 200 200" role="img" aria-label="Open-bottom three-spike crown below a diamond" style="width:100%;max-width:300px;fill:none;stroke:url(#cast-ink-supernova);stroke-width:7;stroke-linecap:round;stroke-linejoin:round"><defs><linearGradient id="cast-ink-supernova" x1="0%" y1="0%" x2="100%" y2="100%"><stop stop-color="#69edff"/><stop offset="1" stop-color="#bcaaff"/></linearGradient></defs>
+                <path d="M45 165 L35 110 L67.5 142 L100 110 L132.5 142 L165 110 L155 165 M100 25 L126 60 L100 95 L74 60 Z"/>
+              </svg><p data-thin-text>Draw an open-bottom crown with 3 spikes below a diamond.</p></div>
+              <div><img src="../sprites/attacks/Weapon_Icon_Arisu.png" alt="Supernova" width="100"><h3 data-thin-text>Supernova</h3><p data-thin-text>Fire a continuous beam for 3 seconds. Aim it while firing to sweep across enemies.</p></div>
+            </article>
+          </details>
+          <details class="pause-weapon-divider">
+            <summary><h2 data-thin-text>Luminous Nova</h2><span class="pause-divider-marker" aria-hidden="true">+</span></summary>
+            <article class="pause-skill-entry">
+              <div><svg viewBox="0 0 200 200" class="pause-cast-pattern" role="img" aria-label="Circle with a diamond inside" style="fill:none;stroke:url(#cast-ink-luminous);stroke-width:7;stroke-linecap:round;stroke-linejoin:round"><defs><linearGradient id="cast-ink-luminous" x1="0%" y1="0%" x2="100%" y2="100%"><stop stop-color="#69edff"/><stop offset="1" stop-color="#bcaaff"/></linearGradient></defs><circle cx="100" cy="100" r="90"/><path d="M100 48 L152 100 L100 152 L48 100 Z"/></svg><p data-thin-text>Draw a circle with a diamond inside.</p></div>
+              <div><img src="../sprites/attacks/Weapon_Icon_Kei.png" alt="Luminous Nova" width="100"><h3 data-thin-text>Luminous Nova</h3><p data-thin-text>A pink glowing aura grants 51% damage and 22.3% critical chance for 25 seconds. When Amplifier ends, stored charge bursts around the player as noncritical area damage. Then aim a large plasma shot dealing 281% ATK with unlimited piercing.</p></div>
+            </article>
+          </details>
+          <details class="pause-weapon-divider">
+            <summary><h2 data-thin-text>The Princess and the Key</h2><span class="pause-divider-marker" aria-hidden="true">+</span></summary>
+            <article class="pause-skill-entry">
+              <div><svg viewBox="0 0 210 210" class="pause-cast-pattern" role="img" aria-label="Three interlocking squares" style="fill:none;stroke:url(#cast-ink-synergy);stroke-width:7;stroke-linecap:round;stroke-linejoin:round"><defs><linearGradient id="cast-ink-synergy" x1="0%" y1="0%" x2="100%" y2="100%"><stop stop-color="#69edff"/><stop offset="1" stop-color="#bcaaff"/></linearGradient></defs><path d="M15 90H115V190H15Z M95 70H195V170H95Z M55 10H155V110H55Z"/></svg><p data-thin-text>Draw three interlocking squares in a triangle: left lower, right higher, and the third projecting upward between them.</p></div>
+              <div><h3 data-thin-text>The Princess and the Key</h3><p data-thin-text>Gain Luminous Nova's damage and critical buffs while firing an aimable Supernova beam. Each 0.6-second beam tick adds 100% of the damage previously dealt by the beam. Impact residue explodes after 4 seconds for 100% of total damage dealt during the active buff.</p></div>
+            </article>
+          </details>
+          <p class="pause-skill-note" data-thin-text>More weapon EX Skills will appear here as they are added.</p>
+        </section>
+        <div class="pause-menu-card">
+          <canvas id="pause-title" width="180" height="40" role="img" aria-label="Paused"></canvas>
+          <button id="pause-resume" type="button">Resume</button>
+          <button id="pause-skills-open" type="button" aria-controls="pause-skills-panel" aria-expanded="false">EX Skills</button>
+          <button id="pause-settings-toggle" type="button" aria-expanded="false" aria-controls="pause-settings">Settings</button>
+          <div id="pause-settings" class="pause-settings" hidden>
+            <label for="pause-music-volume">Music volume</label>
+            <input id="pause-music-volume" class="game-volume-slider" type="range" min="0" max="100" value="0">
+            <output id="pause-volume-value" for="pause-music-volume">0%</output>
+          </div>
+          <button id="pause-exit-preview" type="button" hidden>Exit game preview</button>
+          <a class="pause-dev-link" href="index.html">EXIT</a>
+        </div>
+        <p class="pause-help">RESUME: ESC / ENTER</p>
+      </section>
+    </div>
+    <aside class="playtest-sidebar" aria-label="Playtesting controls">
+      <strong>Playtesting</strong>
+      <p id="campaign-clock-status" class="note">Internal chart: 0:00</p>
+      <p id="campaign-event-status" class="note">Events: chart active</p>
+      <details class="playtest-more">
+        <summary>Score testing</summary>
+        <p id="score-test-status">No completion score yet. Campaign clears and endless defeat create snapshots.</p>
+      </details>
+      <button id="pause-game" type="button" aria-pressed="false">Pause game (Esc)</button>
+      <button id="toggle-random-spawning" type="button" aria-pressed="false">Start random spawning</button>
+      <details class="playtest-more" open>
+        <summary>Event testing</summary>
+        <button type="button" data-dev-event="eliteSurge">Start Mega wave</button>
+        <button type="button" data-dev-event="midori">Start Midori invasion</button>
+        <button type="button" data-dev-event="end">End event (no drops)</button>
+        <button type="button" data-dev-event="stop">Stop event</button>
+        <p id="event-test-status" role="status">Event shortcuts bypass the endless-mode wait.</p>
+      </details>
+      <p id="random-spawn-status" role="status">Stopped: 8/s
+On screen: 0/50
+Offscreen chase spawns</p>
+      <p id="boss-spawn-status" role="status">Boss charge: 0/3000
+0.00% chance per kill.
+Stages 1?4</p>
+      <details class="playtest-more">
+        <summary>? Show more</summary>
+        <p id="run-seed-status" class="note"></p>
+        <p id="boss-spawn-details" class="note"></p>
+        <p id="skill-cast-status" class="note" role="status">Right-click the play area to draw a weapon skill.</p>
+        <p id="endless-buildup-status" class="note"></p>
+        <p id="yuuka-spawn-status" class="note"></p>
+        <p class="note">Mob: 8 HP. Mega Mob (previous elite): 600 HP, 6 damage, 150 EXP. Random Mega rolls retain existing odds. Population limit: 400; visible Mega enemies use 3 slots.</p>
+        <p class="note">Enemies arrive individually at 5?8/s, evenly across valid offscreen edges. Timing varies slightly to avoid waves.</p>
+        <p class="note">Endless waves allow one of each boss: 2 by default, 3 after 5,000 endless kills when a third boss is available. Boss charge stays frozen while any boss lives.</p>
+      </details>
+    </aside>
+    </div>
+    <section class="admin-panel" aria-label="Admin character testing">
+      <strong>Admin / Character swap</strong>
+      <div class="characters" role="group" aria-label="Admin character swap">
+        <button type="button" data-character="plana" aria-pressed="true">Plana (playable)</button>
+        <button type="button" data-character="arona" aria-pressed="false">Arona (playable)</button>
+        <button type="button" data-character="iroha" aria-pressed="false">Iroha Boss (large ? left/right)</button>
+        <button type="button" data-character="shiroko" aria-pressed="false">Shiroko Boss (GIF test)</button>
+        <button type="button" data-character="mob" aria-pressed="false">Mob (test)</button>
+      </div>
+    </section>
+    <section id="boss-attacks" class="admin-panel" hidden aria-label="Boss attack testing">
+      <strong>Admin / Boss attacks</strong>
+      <div class="characters">
+        <button type="button" data-attack="cannon">Fire main cannon</button>
+        <button type="button" data-attack="artillery">Flag-wave artillery</button>
+      </div>
+      <p class="note">Animation tests: the boss pauses for one attack cycle, then resumes movement. No damage or
+        projectiles are added yet.</p>
+    </section>
+    <details id="npc-tools" class="admin-panel">
+      <summary>Admin / NPC and enemy testing</summary>
+      <div class="sprite-settings">
+        <div class="npc-spawn-buttons" role="group" aria-label="Spawn enemy variant">
+          <button id="spawn-npc" type="button">Spawn normal</button>
+          <button id="spawn-elite-npc" type="button">Spawn Mega</button>
+        </div>
+        <button id="spawn-animation-lineup" type="button">Spawn animation lineup (AI off)</button>
+        <label>NPC sprite <select name="npc-type">
+            <option value="shiroko">Shiroko Boss (GIF)</option>
+            <option value="arisu">Arisu Boss</option>
+            <option value="neru">Neru Boss</option>
+            <option value="pedrozilla">Pedrozilla</option>
+            <option value="megaMob">Mega Mob</option>
+            <option value="megaMob3">Mega Mob 3</option>
+            <option value="megaSweeper">Mega Sweeper</option>
+            <option value="megaHeavySweeper">Mega Heavy Sweeper</option>
+            <option value="megaOpsSweeper">Mega OPS Sweeper</option>
+            <option value="megaArius2">Mega Arius 2</option>
+            <option value="megaArius3">Mega Arius 3</option>
+            <option value="megaPedrozilla">Mega Pedrozilla</option>
+            <option value="mob" selected>Mob</option>
+            <option value="mob2">Mob 2</option>
+            <option value="mob3">Mob 3</option>
+            <option value="whiteSweeper">White Sweeper</option>
+            <option value="heavySweeper">Heavy Sweeper</option>
+            <option value="opsSweeper">OPS Sweeper</option>
+            <option value="arius1">Arius 1</option>
+            <option value="arius2">Arius 2</option>
+            <option value="arius3">Arius 3</option>
+            <option value="highlander1">Highlander 1</option>
+            <option value="highlander2">Highlander 2</option>
+            <option value="highlander3">Highlander 3</option>
+            <option value="midori">Midori (Special Event)</option>
+            <option value="yuuka">Yuuka (Credit Drop)</option>
+            <option value="sensei">Sensei (Credit Drop)</option>
+            <option value="iroha">Iroha Boss</option>
+            <option value="plana">Plana (NPC test)</option>
+            <option value="arona">Arona (NPC test)</option>
+          </select></label>
+        <label><span><input id="enemy-one-hp" type="checkbox" disabled> Admin seed 0: all enemies have 1 HP (including bosses)</span></label>
+        <label><span><input name="npc-ai" type="checkbox" checked> Spawn with AI</span></label>
+        <label>AI behavior <select name="npc-behavior">
+            <option value="chase">Chase player</option>
+            <option value="wander">Wander</option>
+            <option value="idle">Idle</option>
+          </select></label>
+        <label>Canvas tool <select name="npc-mode">
+            <option value="random">Random spawn / normal aim clicks</option>
+            <option value="cursor">Cursor spawn (left-click places NPCs)</option>
+            <option value="inspect">Inspect NPC (left-click selects)</option>
+            <option value="delete">Delete NPC (left-click removes)</option>
+          </select></label>
+        <label>Batch count (1?50) <input name="npc-count" type="number" min="1" max="50" value="1"></label>
+        <label>Enemy variant <select name="npc-variant">
+            <option value="random">Random (Mega chance scales in endless)</option>
+            <option value="normal">Normal only</option>
+            <option value="elite">Force Mega variant</option>
+          </select></label>
+        <label><span><input name="npc-exp-override" type="checkbox"> Override random EXP reward</span></label>
+        <label>Custom EXP reward per NPC <input name="npc-exp" type="number" min="0" max="1000000" step="1" value="5"></label>
+        <p class="note">Mega enemies replace the former elite variants. Mega Mob uses its dedicated mini-boss stats and the previous 198% sprite size; its base stats are not multiplied again. Other Mega variants retain existing per-type bonuses until defined.</p>
+        <label>Selected NPC <select name="npc-selection"></select></label>
+        <p id="npc-inspector" role="status">No NPC selected.</p>
+        <div class="characters">
+          <button type="button" data-npc-action="apply-ai">Apply AI settings to selected</button>
+          <button type="button" data-npc-action="bring">Bring selected to player</button>
+          <button type="button" data-npc-action="damage">Damage selected (25 HP)</button>
+          <button type="button" data-npc-action="heal">Heal selected</button>
+          <button type="button" data-npc-action="delete">Delete selected</button>
+          <button type="button" data-npc-action="delete-visible">Delete visible</button>
+          <button type="button" data-npc-action="clear">Delete all NPCs</button>
+        </div>
+        <div class="characters">
+          <button type="button" data-npc-action="all-ai-on">All AI on</button>
+          <button type="button" data-npc-action="all-ai-off">All AI off</button>
+          <button type="button" data-npc-action="pause">Pause AI</button>
+          <button type="button" data-npc-action="step">Step AI (1 frame)</button>
+        </div>
+        <p class="note">NPC health is hidden in the game screen; damage produces a brief white pulse. Use the toolbar
+          Sprite Bounds button for outlines.</p>
+        <p id="npc-feedback" role="status"></p>
+        <p class="note">Cursor tools override aiming clicks until Random spawn is selected again. State survives
+          scrolling during this session. NPC contact triggers a flash and recoil: approaching NPCs bounce; running into
+          them gives a shorter push. Contact damages only the player, with 0.2 seconds of player I-frames. Automatic
+          attacks are not enabled.</p>
+      </div>
+    </details>
+    <details class="admin-panel">
+      <summary>Admin / Sprite sheet testing</summary>
+      <p>Swap a local sheet for this session only. Files are not uploaded or saved. Reloading restores built-in sheets.
+      </p>
+      <form id="sprite-tester" class="sprite-settings">
+        <label>Character
+          <select name="target">
+            <option value="plana">Plana</option>
+            <option value="arona">Arona</option>
+            <option value="pedrozilla">Pedrozilla</option>
+            <option value="megaMob3">Mega Mob 3</option>
+            <option value="megaHeavySweeper">Mega Heavy Sweeper</option>
+            <option value="megaOpsSweeper">Mega OPS Sweeper</option>
+            <option value="megaArius2">Mega Arius 2</option>
+            <option value="megaArius3">Mega Arius 3</option>
+            <option value="megaPedrozilla">Mega Pedrozilla</option>
+            <option value="arisu">Arisu Boss</option>
+            <option value="neru">Neru Boss</option>
+            <option value="megaMob">Mega Mob (Mini-boss)</option>
+            <option value="megaSweeper">Mega Sweeper (Mini-boss)</option>
+            <option value="mob">Mob</option>
+            <option value="iroha">Iroha Boss</option>
+          </select>
+        </label>
+        <label>Sprite image (5 columns Ãƒâ€” 8 rows)
+          <input name="sheet" type="file" accept="image/png,image/webp,image/jpeg">
+        </label>
+        <label>Frame columns (8 for Iroha Boss; 5 for Plana, Arona, and Mob)
+          <input name="columns" type="number" min="1" max="64" value="5" required>
+        </label>
+        <label>Crop layout
+          <select name="layout">
+            <option value="grid">Regular 5 Ãƒâ€” 8 grid with margins</option>
+            <option value="builtin">Character's built-in crop boundaries</option>
+          </select>
+        </label>
+        <!-- Margins are SOURCE IMAGE pixels, not canvas display pixels. -->
+        <label>Left margin <input name="left" type="number" min="0" value="0" required></label>
+        <label>Top margin <input name="top" type="number" min="0" value="0" required></label>
+        <label>Right margin <input name="right" type="number" min="0" value="0" required></label>
+        <label>Bottom margin <input name="bottom" type="number" min="0" value="0" required></label>
+        <label>Rows: down, downLeft, left, upLeft, up, upRight, right, downRight
+          <input name="rows" type="text" required>
+        </label>
+        <label>Mirrored directions (comma-separated; leave empty for none)
+          <input name="mirrors" type="text">
+        </label>
+        <label>Display reference size (larger = smaller sprite)
+          <input name="reference" type="number" min="1" value="215" required>
+        </label>
+        <div><button type="submit">Apply test sheet</button> <button type="button" id="restore-sprite">Restore built-in
+            sheet</button></div>
+      </form>
+      <p id="sprite-feedback" role="status" aria-live="polite"></p>
+    </details>
+    <p id="status" role="status">Loading sprite sheetsÃ¢â‚¬Â¦</p>
+    <div class="directions" role="group" aria-label="Eight-direction movement controls">
+      <button type="button" data-direction="upLeft" aria-label="Move up-left">&#8598;</button>
+      <button type="button" data-direction="up" aria-label="Move up">&#8593;</button>
+      <button type="button" data-direction="upRight" aria-label="Move up-right">&#8599;</button>
+      <button type="button" data-direction="left" aria-label="Move left">&#8592;</button>
+      <span aria-hidden="true"></span>
+      <button type="button" data-direction="right" aria-label="Move right">&#8594;</button>
+      <button type="button" data-direction="downLeft" aria-label="Move down-left">&#8601;</button>
+      <button type="button" data-direction="down" aria-label="Move down">&#8595;</button>
+      <button type="button" data-direction="downRight" aria-label="Move down-right">&#8600;</button>
+    </div>
+    <p class="note">Game preview uses a centered 1280x720 area on a 1080p display, fitting smaller windows at 16:9. Dev controls stay outside it. Playarea
+      scrolls infinitely left/right. Playarea 2 scrolls infinitely up/down. Only visible background tiles are drawn.</p>
+  </main>
+</body>
+
+</html>

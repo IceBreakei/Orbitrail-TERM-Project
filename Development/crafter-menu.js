@@ -92,7 +92,7 @@ export function createCrafterMenu({canvas,getPlayer,onCancel,onAction,golden=fal
     const heading=document.createElement('div');heading.className='crafter-detail-heading';
     const name=document.createElement('h3'),category=document.createElement('span');
     const displayTarget=golden&&currentChoice?currentChoice.target:target;
-    const levelText=currentChoice?.id.endsWith(':level')?upgradeLevelLabel(target):`LV ${target?.level||1}${target?.enhancementRank?` +${target.enhancementRank}`:''}`;
+    const levelText=currentChoice?.id.endsWith(':enhance')?`+${target?.enhancementRank||0} -> +${currentChoice.rank}`:currentChoice?.id.endsWith(':level')?upgradeLevelLabel(target):`LV ${target?.level||1}${target?.enhancementRank?` +${target.enhancementRank}`:''}`;
     text(name,golden&&currentChoice?currentChoice.name:target?`${target.name||target.id||'Equipment'} ${levelText}`:'Empty slot',1.4);
     text(category,golden?'>> Synergy':selected<6?'>> Weapon':'>> Equipment',1.05);heading.append(name,category);
     const body=document.createElement('div');body.className='crafter-detail-body';

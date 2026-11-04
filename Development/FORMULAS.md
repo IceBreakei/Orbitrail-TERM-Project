@@ -520,3 +520,12 @@ Default timing:Kei's25second amplifier (+51%damage,+22.3percentage points critic
 Each enemy first hit leaves one stationary residue per cast. Its4second timer does not restart; further hits increase its stored charge. On expiry,it deals that noncritical charge as a240pxAoE using the same formula/cap as Kei's ending blast. Residues are independent of enemy movement/death. Buff,residue and beam timers pause with gameplay. Settings in princessKeySkillSettings. This supersedes earlier notes that this synergy had no EX skill.
 
 - Princess/Key EX replaces its normal autoattack during beam presentation: no bullets during emergence/retraction; during the3secondbeam it sprays blue plasma at60bullets/sec (80*.75),with24degree full cone (12*2). Same damage/hit limit/knockback,still unaffected byHaste. Normal pink80/s resumes after presentation while remainingbuffcontinues. Ratios are editable in princessKeySettings.
+
+### Princess and the Key EX — revised accumulation (supersedes old10%charge/cap)
+For beam tick n: hitDamage = normalRolledBeamDamage + sum(actualHPDamageDealtByEarlierBeamTicks). All targets in the same simulation tick use the same pre-tick sum: base10 hitting3targets gives10,10,10;nexttick deals40per target. Single-target progression with10base:10,20,40,80,etc. Prior amplified beam damage is included; non-beam weapons do not increase this beam-only accumulator. No former10%multiplier or5000%ATKcap applies.
+Residue explosion damage per target =100%of actual damage dealt by the player during the active25secondbuff,measured at detonation. This includes other attacks,blue spray,and beam damage;overkill remains excluded. Detonates4secondsafterfirstimpact,240pxAoE,noncritical,fixed amount without reapplying ATK/crit/drawing multipliers. Residues detonating in the same simulation step use one shared total snapshot to avoid enemy-loop order dependence. Normal damage events still count secondary explosions toward the running buff total for later detonations.
+
+### Princess/Key residue — additive capped bonus restored
+D = actual player damage accumulated during the active buff at detonation.
+Residue Damage = round(D) + min(round(0.10 * D), floor(50 * (10 * totalATK / 100))).
+The cap applies only to the added10%bonus;the full-Dcomponent remains uncapped. Beam accumulation unchanged. Residue remains noncritical and does not reapply other damage multipliers.

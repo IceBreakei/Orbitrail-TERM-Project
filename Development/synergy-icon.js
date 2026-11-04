@@ -4,7 +4,7 @@ export function drawSynergyIcon(canvas,item,isCurrent=()=>true) {
   if(item?.id!=='princess-key')return false;
   const layers=[
     {id:'aris-laser',name:'Arisu',angle:-Math.PI/4,color:'#65cfff',crop:[138,12,678,217]},
-    {id:'luminous-nova',name:'Kei',angle:Math.PI/4,color:'#ff71d5',crop:[130,2,716,226]}
+    {id:'luminous-nova',name:'Kei',angle:-3*Math.PI/4,color:'#ff71d5',crop:[130,2,716,226]}
   ];
   layers.sort((a,b)=>Number(a.id===item.synergyTopWeaponId)-Number(b.id===item.synergyTopWeaponId));
   Promise.all(layers.map(layer=>{

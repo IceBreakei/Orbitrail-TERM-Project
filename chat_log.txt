@@ -8577,3 +8577,73 @@ VERIFICATION
 Level-upandCraftermenutestspassed;newassertionscoverLV1->LV2,LV6->MAX,anditem-specificmaxlevel.
 ASSISTANT FINAL
 Upgrade titles now show LV1->LV2 or LV6->MAX,in bothlevel-upandCraftermenus.Tests passed.
+
+ENTRY 470
+USER PROMPT
+loginsplashartchangecomeinfromotherside,imagefadeinontop,no transitionline
+CHANGES
+Replacedleft-to-rightclip-pathwipewithright-originopacityfadeandsubtle4%slide/softblur. Incomingartstaysaboveexistingimage;nohardclippingboundary. Preserved10secondrotation,layerpromotionandreducedmotionpurefade.
+VERIFICATION
+Checkedanimationendstillusesexistingnameandcompleteslayerpromotion;clip-pathremovedfromtransitionkeyframes.
+ASSISTANT FINAL
+Splashartnowfadesinfromtherightoverthecurrentimage,withoutthevisiblewipe line.
+
+ENTRY 471
+USER PROMPT
+Princess/Keybothweaponbarrels shouldpointup
+CHANGES
+InspectedoriginalPNGorientations,bothbarrelspointright. Keirotationchanged+45?-135degrees;Arisu remains-45.Crossediconnowpointsbothbarrelsupwardinoppositediagonals,retainingrespectiveglowsandfirstMAXtoplayer.UpdatedlegacySVGcompositiontoo.
+VERIFICATION
+Icontestsverifybothanglespointup,bothglowsrenderandMAXorderingpreserved.
+ASSISTANT FINAL
+Both barrels now point upward in the crossed icon,with their glows and layering preserved.Tests passed.
+
+ENTRY 472
+USER PROMPT
+Residueexplosiondamage=totaldamageduringactiveSkill.Beamdamage=base+itscumulativedamage.Example10?20?40;hitting3targets10each,nexttick40.
+CHANGES
+ReplacedKei10%/cappedchargeinPrincessKeyEXwithfullbeam-onlyaccumulation. Snapshotspriorbeamdamageoncepersimulationticksoallconcurrenttargetsgetequalbonus;bankrecordsactualHPdamageduringbeamprocessing. Residuesnowtakefullbuff-activeplayerdamagetotalatdetonation,insteadofmaxstoredimpactcharge,anduseasharedperstepburst snapshot. Removedoldcapforboth. Updateddescription/formulas.
+VERIFICATION
+Testscover10?20?40,sametime3targets10eachthen40each,andresidue100%totalwithoutoldcap. Fullsuite47files:46passed;PauseUIstubneedednewDOMmethodsafterearlierlayoutchange.Updatedstub;Pausecheckpassed.
+ASSISTANT FINAL
+Beamnowaddsallpreviousbeamdamage,matching10?20?40andmulti-targetexample.Residueexplosionsdeal100%ofbuff-activedamageatdetonation.Old10%capremoved.Tests passed.
+
+ENTRY 473
+USER PROMPT
+tellwhereoptimizetoreducelagwithoutchangingexistinggraphics/effects
+REVIEW FINDINGS
+Likelyhighestcost:projectile×all-enemycollisionloopsandper-substepgetAllEnemiesarrayallocations;recommendspatialgridbroadphasewithunchangednarrowphaseandstablecandidateorder. Plasmahead/tailgradientsrebuilteverydraw;cacheexact-size/palettecomponents. Laserusesfiveblurredlayersperbeamframe;profileGPU/compositingbeforechangingrenderer,preserveeffects. RepeatedNPCvisibility/sortpassesforeachrenderlayer;shareframe-localbuckets. Damagepopupnewcumulativevaluescreatenewtintedcanvases;cacheglyphsandreusecanvases. DOMqueriestextupdates/adminlistscanbebatchedwithoutchanginggamerendering. Firstuseanimationwidehurtboxfitshouldprecomputeafterassetdecodeorworker,keepingexactfitoutput. Findingsfromcodereview,notmeasuredprofilerdata.Noimplementationchangesrequestedormade.
+ASSISTANT FINAL CONTENT
+Prioritizedfile-linkedoptimizationlist,preservegraphicsandgameplayconstraints,profilebefore/afterandcompareframes. Startspatialgrid,sharedsnapshots,glyphcache.
+
+ENTRY 474
+USER PROMPT
+Addold10%multiplierandcapbackon topofresiduedamageforextradamage
+CHANGES
+Residueexplosionnow=fullbuff-activedamagetotal+oldKeicharge(min10%total,50xplayerbaseattackafterATK). Caponlyappliestoaddedbonus.Beamformulaunchanged.
+VERIFICATION
+SynergyEXtests passedwithassertionforfulltotalpluscappedcharge.
+ASSISTANT FINAL
+ResiduedamageisnowD+min(10%ofD,50xbaseattackafterATK).Onlyextrabonusiscapped;beamunchanged.Tests passed.
+
+ENTRY 475
+USER PROMPT
+Run optimizations on a second test file for testing and easy rollback.
+CHANGES
+Added isolated movement-optimized.html and movement-optimized.js plus princess-key.optimized.js. Added conservative enemy spatial grid for rapid-fire projectile collision broadphase. Existing exact collision/rendering/gameplay remain shared. Dev lab links to the experiment; test toolbar links back to original. Added OPTIMIZATION_TEST.md comparison/rollback instructions.
+VERIFICATION
+1000 seeded sweeps with 400 enemies found no omitted overlapping bounds or ordering/duplicate errors; 7903 candidates versus400000 full scan checks. Original synergy gameplay assertions passed against optimized copy. Optimized module graph linked102 modules. Browser FPS not yet measured.
+ASSISTANT FINAL
+Separate optimization test is available from Dev lab. Original page remains available. Collision tests pass; candidate checks reduced to2percent in seeded benchmark, actual FPS requires playtesting.
+
+ENTRY 476
+USER PROMPT
+Apply the tested optimizations to Development. Hide enhancement suffixes under item LV labels; show ranks when enhancing or viewing Crafter transitions.
+CHANGES
+Promoted spatial broadphase into the main princess-key.js. HUD captions display LV/MAX without persistent +rank suffixes. Crafter enhancement detail shows current rank -> next rank, retaining enhancement result feedback and inventory rank visibility. Updated test VM dependencies and optimization documentation.
+VERIFICATION
+Full Development test suite executed; results reported in assistant response.
+VERIFICATION RESULT
+48 test files passed, zero failures.
+ASSISTANT FINAL
+Applied optimization to main Development preview. HUD LV labels omit enhancement suffixes; Crafter shows rank transitions such as +1 -> +2. All48 test files passed.

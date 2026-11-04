@@ -1,7 +1,8 @@
+import { createEnemySpatialIndex } from './enemy-spatial-index.js';
 import { princessKeySettings as settings, luminousNovaSettings } from './game-config.js';
 import { rollAttackDamage, totalWeaponDamage } from './combat-stats.js';
 import { getAllEnemies, getEnemy, damageEnemy } from './world-state.js';
-import { getCombatHitbox } from './combat-hitboxes.js';
+import { getEnemyHurtbox, getCombatHitbox } from './combat-hitboxes.js';
 import { luminousNovaHits, drawLuminousPlasma } from './luminous-nova.js';
 import { applySkillControl } from './enemy-control.js';
 
@@ -34,11 +35,12 @@ export function createPrincessKeyAttack({random=Math.random}={}) {
         }
         cooldown=gaps[shotIndex];shotIndex=(shotIndex+1)%settings.attackCount;
       }
-      const step=Math.min(remaining,cooldown,1/60),enemies=getAllEnemies();
+      const step=Math.min(remaining,cooldown,1/60);
+      const index=createEnemySpatialIndex(getAllEnemies(),getEnemyHurtbox);
       for(let i=bullets.length-1;i>=0;i--) {
         const bullet=bullets[i],from={x:bullet.x,y:bullet.y},dt=step;
         bullet.age+=dt;bullet.x+=Math.cos(bullet.angle)*settings.speed*dt;bullet.y+=Math.sin(bullet.angle)*settings.speed*dt;
-        for(const enemy of enemies) {
+        for(const enemy of index.querySegment(from,bullet,settings.diameter*1.8)) {
           if(bullet.hitCount>=bullet.pierceLimit)break;
           if(bullet.age-(bullet.hits.get(enemy.id)??-Infinity)<settings.hitCooldown||!luminousNovaHits(enemy,from,bullet,settings.diameter*1.8))continue;
           bullet.hits.set(enemy.id,bullet.age);bullet.hitCount++;
