@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><base href="../"><title>Crafter layout preview</title><link rel="stylesheet" href="movement.css"><style>body{margin:0;background:#102b40}.simulated-screen{position:relative;width:min(1280px,100vw);margin:0 auto}canvas#preview{display:block;width:100%;height:auto;background:#193c2c}</style></head>
+<body><div class="simulated-screen"><canvas id="preview" width="1280" height="720"></canvas></div><script type="module">
+import {createCrafterMenu} from './crafter-menu.js';
+const player={label:'Plana',hp:110,maxHp:110,combatStats:{atkPercent:30,spdPercent:10,critPercent:15,pickupPercent:20,hastePercent:5},attackSlots:[{id:'plana-umbrella',name:"Plana's Umbrella",level:4,icon:'../sprites/attacks/plana umbrella.png',iconCrop:{x:100,y:228,width:68,height:304},iconRotation:45},{id:'aris-laser',name:'Supernova',level:3,icon:'../sprites/attacks/Weapon_Icon_Arisu.png',iconRotation:45}],equipmentSlots:[]};
+// Page-relative paths are adjusted because this isolated visual fixture is in tests/.
+
+const canvas=document.querySelector('#preview');const context=canvas.getContext('2d');context.fillStyle='#18412e';context.fillRect(0,0,1280,720);
+const menu=createCrafterMenu({canvas,getPlayer:()=>player,onCancel:()=>menu.close(),onAction:()=>{}});menu.open();
+</script></body></html>

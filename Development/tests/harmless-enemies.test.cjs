@@ -1,0 +1,17 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const c=vm.createContext({enemyViewportDistance:(e,c,w,h)=>Math.max(c.x-e.x,e.x-c.x-w,c.y-e.y,e.y-c.y-h,0),normalSpriteSize:90});
+for(const name of ['game-config','yuuka'])vm.runInContext(fs.readFileSync('Development/'+name+'.js','utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export \{.*\} from .*;\r?\n/gm,'').replaceAll('export ',''),c);
+const run=s=>vm.runInContext(s,c);
+assert.equal(run('yuukaHealth(23)'),9999999999);
+run('var spawns=[];var schedule=createHarmlessSpawnSchedule(()=>0);schedule.update(181,t=>spawns.push(t));schedule.update(182,t=>spawns.push(t))');assert.equal(run('spawns.length'),1);
+run('schedule.update(1021,t=>spawns.push(t))');assert.equal(run('spawns.length'),3);
+run("var enemy={type:'sensei',x:50,y:50};var camera={x:0,y:0}");
+assert.equal(run('updateYuukaPresence(enemy,camera,100,100,25)'),false);
+assert.equal(run('enemy.harmlessEscaping'),true);
+run('enemy.x=-200');assert.equal(run('updateYuukaPresence(enemy,camera,100,100,.1)'),true);
+console.log('PASS: harmless HP, scheduled one-shot rolls, Sensei lifetime and offscreen escape.');
+assert.equal(run('harmlessHitsToDefeatFormula(1)'),1);
+assert.equal(run('harmlessHitsToDefeatFormula(12)'),12);
+assert.equal(run('harmlessHitsToDefeatFormula(23)'),23);
+assert.equal(run('harmlessHitsToDefeatFormula(0)'),1);
+console.log('PASS: harmless hit requirement equals player level, minimum1.');

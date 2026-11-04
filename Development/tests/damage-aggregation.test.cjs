@@ -1,0 +1,14 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const c=vm.createContext({});
+for(const file of ['game-config','font-metrics','damage-numbers'])vm.runInContext(fs.readFileSync('Development/'+file+'.js','utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export \{.*\} from .*;\r?\n/gm,'').replaceAll('export ',''),c);
+const run=s=>vm.runInContext(s,c);
+run('var target={x:0,y:0};showDamageNumber(target,300,false,"normal","princess-key");updateDamageNumbers(.1);showDamageNumber(target,300,false,"normal","princess-key")');
+assert.equal(run('numbers.length'),1);assert.equal(run('numbers[0].text'),'600');
+run('updateDamageNumbers(.1);showDamageNumber(target,12,false,"critical","princess-key")');
+assert.equal(run('numbers.length'),2);assert.equal(run('numbers[1].text'),'12!');assert.equal(run('numbers[0].elapsed'),.1);
+run('showDamageNumber(target,8,false,"critical","princess-key")');assert.equal(run('numbers[1].text'),'20!');
+run('showDamageNumber(target,3,false,"normal","princess-key")');assert.equal(run('numbers.length'),3);assert.equal(run('numbers[0].text'),'600');assert.equal(run('numbers[2].text'),'3');
+run('showDamageNumber(target,10,false,"supercritical","princess-key")');assert.equal(run('numbers[3].text'),'10!!!');
+run('updateDamageNumbers(.31);showDamageNumber(target,5,false,"supercritical","princess-key")');assert.equal(run('numbers.length'),5);
+run('showDamageNumber({x:0,y:0},2,false,"normal","princess-key");showDamageNumber(target,9)');assert.equal(run('numbers.length'),7);
+console.log('PASS: consecutive same-type hits stack; switches start fresh popups without reviving earlier runs; old numbers continue fading;0.3s timeout and target/source isolation.');

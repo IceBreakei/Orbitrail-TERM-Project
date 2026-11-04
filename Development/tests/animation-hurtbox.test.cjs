@@ -1,0 +1,13 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+let reads=0;const draws=[];
+const pixels=new Uint8ClampedArray(32*32*4);
+for(let y=0;y<32;y++)for(let x=0;x<32;x++)if(((x-16)/12)**2+((y-16)/14)**2<=1)pixels[(y*32+x)*4+3]=255;
+const c=vm.createContext({document:{createElement:()=>({getContext:()=>({drawImage(...args){draws.push({args,alpha:this.globalAlpha})},getImageData(){reads++;return {data:pixels}}})})}});
+vm.runInContext(fs.readFileSync('Development/sprite-hurtbox.js','utf8').replaceAll('export ',''),c);
+c.image={};c.getCrop=(character,frame)=>({x:frame*20,y:character.direction==='down'?0:20,width:20,height:20,footY:character.direction==='down'?20:40});
+vm.runInContext('var actor={image,rows:{down:0,up:1},layout:{columnEdges:[0,20,40]},spriteSize:90,referenceSize:20};var first=animationSpriteHurtbox(actor,getCrop,0)',c);
+assert.equal(draws.filter(d=>d.args[0]===c.image).length,4);assert(draws.filter(d=>d.args[0]===c.image).every(d=>d.alpha===.25));
+const initialReads=reads;
+vm.runInContext('actor.direction="up";actor.elapsed=10;actor.moving=true;var second=animationSpriteHurtbox(actor,getCrop,0)',c);
+assert(vm.runInContext('first===second',c));assert.equal(reads,initialReads);
+console.log('PASS: all four aligned poses contribute equally; one cached hurtbox remains identical across animation changes.');

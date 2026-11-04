@@ -1,9 +1,15 @@
 import { getFirebaseAuth } from '../firebase-client.js';
 import { isAdmin } from '../admin-access.js';
+import { isGuestSession } from '../guest-session.js';
 
 /** Reveal development content only after Firebase confirms the admin session. */
 export async function requireAdmin() {
   const content = document.querySelector('#development-content');
+  if (isGuestSession()) {
+    content.hidden = true;
+    window.location.replace('../project.html');
+    return false;
+  }
 
   try {
     const { auth, sdk } = await getFirebaseAuth();

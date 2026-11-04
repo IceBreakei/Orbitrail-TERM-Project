@@ -1,0 +1,12 @@
+<!doctype html><html><head><meta charset="utf-8"><base href="../"><title>Aris laser preview</title><style>body{background:#142e44;color:white;font:16px system-ui}canvas{display:block;background:#284d5b;max-width:100%}button{padding:10px;margin:8px}</style></head><body>
+<button id="fire-front">Fire level1</button><button id="fire-max">Fire MAX front/rear</button><p id="status">Loading</p><canvas width="1100" height="600"></canvas>
+<script type="module">
+import{createArisAttack,createArisWeapon}from'./aris-weapon.js';
+import{setOneHpEnemies,clearEnemies,rememberEnemy,getAllEnemies}from'./world-state.js';
+import{updateEnemyControl}from'./enemy-control.js';
+const weapon=createArisWeapon(),player={x:300,y:300,attackSlots:[weapon],combatStats:{atkPercent:0,critPercent:0}},attack=createArisAttack();await attack.ready;setOneHpEnemies(false);
+function fire(level){weapon.level=level;attack.reset();clearEnemies();for(const [id,x,y]of[['front1',550,300],['front2',850,300],['rear',100,300],['outside',550,480]])rememberEnemy(id,{type:'mob',x,y,spriteSize:89.6,hp:1000,maxHp:1000});}
+document.querySelector('#fire-front').onclick=()=>fire(1);document.querySelector('#fire-max').onclick=()=>fire(7);fire(1);
+const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d');let last;
+function frame(now){const dt=last?Math.min(.05,(now-last)/1000):0;last=now;for(const enemy of getAllEnemies())updateEnemyControl(enemy,dt,(e,x,y)=>{e.x+=x;e.y+=y});attack.update(dt,player,0);ctx.clearRect(0,0,1100,600);attack.draw(ctx,{x:0,y:0});ctx.fillStyle='#8eeaff';ctx.beginPath();ctx.arc(player.x,player.y,24,0,Math.PI*2);ctx.fill();for(const e of getAllEnemies()){ctx.fillStyle='#f2b5d4';ctx.beginPath();ctx.arc(e.x,e.y,20,0,Math.PI*2);ctx.fill();ctx.fillStyle='white';ctx.fillText(e.id+': '+e.hp,e.x-35,e.y+45)}document.querySelector('#status').textContent='LV '+weapon.level+' | '+getAllEnemies().map(e=>e.id+':'+e.hp).join(' ');requestAnimationFrame(frame)}requestAnimationFrame(frame);
+</script></body></html>

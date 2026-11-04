@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8"><base href="../"><link rel="stylesheet" href="movement.css"><title>Level-up upgrade preview</title></head><body class="simulation-page">
+<main id="development-content"><div class="playtest-layout" style="grid-template-columns:minmax(0,1fr)"><aside class="skill-test-sidebar" style="display:none">Admin tools</aside><div class="simulated-screen" style="width:min(100%,1120px);background:#285865"><canvas id="arena" width="1120" height="630"></canvas><section id="level-up-menu" class="level-up-overlay" role="dialog" aria-modal="true" aria-labelledby="level-up-title" hidden>
+        <aside class="level-up-character">
+          <img id="level-up-portrait" class="pause-hologram" alt="" hidden>
+          <div class="level-up-character-copy">
+            <h2 id="level-up-title">LEVEL UP!</h2>
+            <h3 id="level-up-name"></h3>
+            <div id="level-up-stats"></div>
+          </div>
+        </aside>
+        <div class="level-up-selection">
+          <p id="level-up-progress"></p>
+          <div id="level-up-choices" aria-label="Choose a level-up upgrade"></div><button id="level-up-continue" type="button" hidden>Continue</button>
+          <p id="level-up-help" class="level-up-help">Choose an upgrade to continue. Up / Down to select, Enter to confirm.</p>
+        </div>
+      </section></div><aside class="playtest-sidebar" style="display:none">Playtest controls</aside></div>
+<button id="exit-fullscreen-preview">Exit preview</button><button id="add-test-level">Add level</button><p id="upgrade-result">Waiting for selection</p></main>
+<script type="module">
+import {createLevelUpMenu} from './level-up-menu.js';
+import {ensurePlayerStats,addPlayerExp} from './player-stats.js';
+const player=ensurePlayerStats({label:'Plana',maxHp:110,attackSlots:[{id:'plana-umbrella',name:"Plana's Umbrella",level:1,icon:'../sprites/attacks/plana umbrella.png',iconCrop:{x:100,y:228,width:68,height:304}}]});
+const menu=createLevelUpMenu({canvas:document.querySelector('#arena'),getPlayer:()=>player,isPauseMenuOpen:()=>false,releaseControls(){},onOpen(){},onChoose(){document.querySelector('#upgrade-result').textContent=JSON.stringify(player.attackSlots)+' pending='+player.pendingUpgrades}});
+document.querySelector('#add-test-level').onclick=()=>{addPlayerExp(player,player.maxExp);menu.update()};
+addPlayerExp(player,player.maxExp);menu.update();
+</script></body></html>

@@ -1,0 +1,6 @@
+<!doctype html><html><head><meta charset="utf-8"><base href="../"><link rel="stylesheet" href="movement.css"></head><body style="margin:0;background:#203f60"><button id="pause-game">Pause</button><input id="music-volume" type="range" value="50"><main id="development-content"><div class="playtest-layout"><div class="simulated-screen" style="position:relative;width:1280px;height:720px"><canvas id="arena" width="1280" height="720" tabindex="0"></canvas></div><aside class="playtest-sidebar"></aside><aside class="skill-test-sidebar"></aside></div></main><button id="exit-fullscreen-preview">Exit preview</button><script type="module">
+import {createPauseMenu} from './pause-menu.js';
+const html=await (await fetch('movement.html')).text();const source=new DOMParser().parseFromString(html,'text/html');document.querySelector('.simulated-screen').append(document.importNode(source.querySelector('#pause-menu'),true));
+const player={label:'Plana',x:0,y:0,hp:110,maxHp:110,attackSlots:[{id:'plana-umbrella',level:1}],combatStats:{}};
+createPauseMenu({canvas:document.querySelector('#arena'),getPlayer:()=>player,releaseControls(){}});
+</script></body></html>

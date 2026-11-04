@@ -1,4 +1,4 @@
-// Losslessly decoded display frames from sprites/Shiroko Boss.gif.
+// Losslessly decoded display frames from sprites/enemies/bosses/Shiroko Boss.gif.
 // Keep original GIF timing; canvas drawing of an animated Image is unreliable.
 export const shirokoFrames = [
   {

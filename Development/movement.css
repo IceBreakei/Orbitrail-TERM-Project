@@ -113,6 +113,46 @@ canvas {
   border-radius: 10px;
 }
 
+.playtest-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  align-items: start;
+  gap: 12px;
+  max-width: 1372px;
+  margin: 0 auto;
+}
+
+.playtest-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #b5dcec;
+  border-radius: 8px;
+  background: white;
+  height: 620px;
+  max-height: calc(100dvh - 60px);
+  overflow: hidden;
+  overflow-anchor: none;
+}
+.playtest-sidebar button { width: 100%; min-height: 48px; padding: 10px; flex: none; }
+.playtest-sidebar p { margin: 0; }
+#random-spawn-status, #boss-spawn-status {
+  height: 4.8em;
+  flex: none;
+  white-space: pre-line;
+  font-variant-numeric: tabular-nums;
+  overflow: auto;
+}
+.playtest-more { flex: 1; min-height: 0; overflow: auto; }
+.playtest-more summary { position: sticky; top: 0; background: white; cursor: pointer; padding: 4px 0; }
+.playtest-more p { margin: 10px 0; overflow-wrap: anywhere; }
+
+@media (max-width: 740px) {
+  .playtest-layout { grid-template-columns: minmax(0, 1fr); }
+  .playtest-sidebar { justify-self: stretch; height: 360px; }
+}
+
 .simulated-screen {
   position: relative;
   /* EDIT preview width. viewport.js matches its pixels; actors retain fixed display sizes. */
@@ -123,6 +163,139 @@ canvas {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 12px 35px #18365426;
+}
+
+/* Reference game area: 1280x720 centered on a 1080p display, fitting smaller windows. */
+body.fullscreen-preview { overflow: hidden; }
+body.fullscreen-preview::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: #070c14;
+}
+.fullscreen-preview .simulated-screen {
+  position: fixed;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  width: min(1280px, 100vw, calc(100vh * 16 / 9));
+  width: min(1280px, 100vw, calc(100dvh * 16 / 9));
+  height: auto;
+  max-width: none;
+  margin: 0;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: 0;
+}
+.fullscreen-preview #arena {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.fullscreen-exit {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 5;
+  box-shadow: 0 2px 10px #10283f55;
+}
+
+.pause-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  background: #020a05ad;
+  color: white;
+  font-family: monospace;
+}
+.pause-character-stats {
+  position: absolute;
+  left: 5%;
+  top: 13%;
+  width: 26%;
+  height: 72%;
+}
+.pause-hologram {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: left center;
+  opacity: 0.28;
+  filter: grayscale(1) sepia(1) hue-rotate(135deg) saturate(2.5);
+  pointer-events: none;
+}
+.pause-character-stats::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent 0 3px, #7cefff16 3px 4px);
+  pointer-events: none;
+}
+.pause-stat-content {
+  position: absolute;
+  top: 30%;
+  left: 0;
+  right: 0;
+  z-index: 1;
+}
+.pause-stat-row {
+  display: grid;
+  grid-template-columns: 32px auto minmax(0, 1fr);
+  align-items: center;
+  gap: 5px;
+  min-height: 39px;
+  border-bottom: 1px solid #e5fff0;
+}
+.pause-stat-row img { width: 30px; height: 30px; object-fit: contain; }
+.pause-stat-row canvas:last-child { justify-self: end; }
+.pause-overlay canvas { background: transparent; max-width: 100%; object-fit: contain; }
+.pause-menu-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 250px;
+  max-width: 35%;
+  max-height: 90%;
+  overflow-y: auto;
+  padding: 24px 28px;
+  display: grid;
+  justify-items: center;
+  gap: 20px;
+  border: 2px solid #e8fcff;
+  box-shadow: 0 0 0 2px #173d52;
+  background: repeating-linear-gradient(45deg, #ffffff00 0 18px, #ffffff1a 18px 22px), #41bcec;
+}
+.pause-menu-card button, .pause-dev-link {
+  width: 100%;
+  padding: 9px 4px;
+  border: 2px solid white;
+  border-radius: 0;
+  background: #245775cf;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  font: 18px monospace;
+}
+.pause-menu-card button:hover, .pause-menu-card button:focus-visible,
+.pause-dev-link:hover, .pause-dev-link:focus-visible { background: white; color: #10283f; }
+.pause-settings { width:100%; box-sizing:border-box; display:grid; gap:10px; padding:12px; border:2px solid #d7f6ff; background:#123c59bb; }
+.pause-settings canvas { border:0; border-radius:0; background:transparent; max-width:100%; height:auto!important; }
+.pause-settings output { justify-self:end; }
+.pause-settings input { width: 100%; }
+.pause-help { position: absolute; right: 20px; bottom: 10px; margin: 0; font-size: 16px; }
+@media (max-width: 800px) {
+  .pause-character-stats { left: 3%; width: 35%; top: 5%; height: 85%; }
+  .pause-menu-card { left: 68%; max-width: 48%; padding: 15px; gap: 10px; }
+  .pause-stat-content { top: 18%; }
+  .pause-stat-row { grid-template-columns: 24px auto minmax(0, 1fr); gap: 2px; min-height: 30px; }
+  .pause-stat-row img { width: 24px; height: 24px; }
+  .pause-help { font-size: 12px; }
 }
 
 /* Fixed-size HUD below a viewport-wide segmented EXP bar. Never captures input. */
@@ -179,7 +352,7 @@ canvas {
 }
 
 /* A narrow bright leading edge makes fractional gains readable at any level. */
-.hud-exp-edge {
+.hud-exp-edge, .hud-shield-edge {
   position: absolute;
   top: 3px;
   bottom: 3px;
@@ -191,8 +364,16 @@ canvas {
   transition: left 200ms ease-out;
 }
 
+/* Only shield gets this marker; keep it inside the HP artwork's fill area. */
+.hud-shield-edge {
+  top: 28%;
+  bottom: 28%;
+  z-index: 1;
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  #hud-exp-fill span:nth-child(2), .hud-exp-edge { transition: none; }
+  #hud-exp-fill span:nth-child(2), .hud-exp-edge, .hud-shield-edge { transition: none; }
 }
 
 .hud-player-row {
@@ -219,16 +400,33 @@ canvas {
 }
 
 .hud-player-info {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 100px; /* Reserve HP text space so damage cannot resize bars/slots. */
+  column-gap: 6px;
+  row-gap: 4px;
   width: min(380px, calc(100% - 88px));
   min-width: 0;
 }
 
+.hud-health-row {
+  display: contents; /* HP and slot rows share the first parent grid column. */
+}
+
+#hud-hp-numbers {
+  align-self: center;
+  flex: none;
+  background: transparent;
+  image-rendering: pixelated;
+}
+
 .hud-hp {
+  flex: 1;
+  min-width: 0;
   position: relative;
   width: 100%;
   height: 22px;
   /* Align the HP bar's top edge with the portrait beside it. */
-  margin: 0 0 4px;
+  margin: 0;
 }
 
 .hud-hp img {
@@ -238,15 +436,23 @@ canvas {
   height: 100%;
 }
 
-/* Both six-slot grids are 130% of their original 28px cells and 4px gaps. */
+/* Smooth exact-health changes without any brightness flashing. */
+#hud-hp-fill, #hud-shield-fill { transition: clip-path 200ms ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  #hud-hp-fill, #hud-shield-fill { transition: none; }
+}
+
+/* Six boxes and their gaps exactly span the same column as the HP bar. */
 .hud-loadout {
+  grid-column: 1;
   display: grid;
-  gap: 5.2px;
+  min-width: 0;
+  gap: 2px; /* Keep equipment just below the attack-level captions. */
 }
 
 .hud-slot-row {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 36.4px));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 5.2px;
 }
 
@@ -266,9 +472,63 @@ canvas {
 }
 
 .hud-slot > .hud-slot-icon {
+  position: absolute;
+  background: transparent; /* Override the general canvas background. */
   inset: 15%;
   width: 70%;
   height: 70%;
+}
+
+/* Weapon artwork is 20% larger (70% -> 84%) and sits above its frame and overlays. */
+#hud-attack-slots .hud-slot > .hud-slot-icon {
+  inset: 8%;
+  width: 84%;
+  height: 84%;
+  z-index: 4;
+}
+
+/* Compact caption space keeps the equipment row tucked beneath attack levels. */
+.hud-slot-row:has(.hud-slot-level:not([hidden])) { padding-bottom: var(--level-space, 18px); }
+.hud-slot > .hud-slot-level {
+  position: absolute;
+  top: calc(100% - 6px); /* Slightly overlap the lower frame so the text touches it. */
+  z-index: 3; /* Render the level above the box and item artwork. */
+  left: 50%;
+  transform: translateX(-50%);
+  background: transparent;
+  image-rendering: pixelated;
+}
+
+/* Synergy level captions use gold-yellow ink while preserving the bitmap's dark outline. */
+.hud-slot.weapon-synergy > .hud-slot-level { filter:sepia(1) saturate(8); }
+
+/* Inset from the right edge, leaving room for the level display beside it. */
+.hud-counters {
+  position: absolute;
+  top: 36px;
+  right: clamp(120px, 12%, 220px);
+  display: grid;
+  gap: 3px;
+}
+
+.hud-counter-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+}
+
+.hud-counter-row img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.hud-counter-row canvas {
+  flex: none;
+  background: transparent;
+  image-rendering: pixelated;
 }
 
 .game-hud .hud-level {
@@ -294,6 +554,20 @@ canvas {
 }
 
 /* Session-only sprite importer and crop controls. */
+.combat-stat-inputs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+}
+
+.npc-spawn-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.npc-spawn-buttons button { min-width: 0; }
+
 .sprite-settings {
   display: grid;
   gap: 14px;
@@ -333,3 +607,518 @@ canvas {
 .toolbar-volume output {
   min-width: 3ch;
 }
+
+/* Drawing skill overlay dims the simulated screen, keeping ink and timer fully visible. */
+.skill-cast-overlay { position: absolute; inset: 0; z-index: 4; background: rgb(0 12 28 / 50%); overflow: hidden; }
+#skill-drawing-canvas { position: absolute; inset: 0; width: 100%; height: 100%; background: transparent; touch-action: none; cursor: crosshair; }
+.skill-cast-hint { position: absolute; top: 20%; left: 0; right: 0; text-align: center; pointer-events: none; color: #dbfbff; font-weight: 800; letter-spacing: 3px; text-shadow: 0 2px 4px #123d65; }
+.skill-cast-hint span { display: block; margin-top: 8px; font-size: 12px; letter-spacing: 1px; }
+.skill-cast-countdown { position: absolute; bottom: 7%; left: 25%; width: 50%; pointer-events: none; color: white; text-align: center; font: bold 18px monospace; }
+.skill-cast-bar { position: relative; height: 24px; margin-top: 6px; }
+/* Continuous countdown edge, matching EXP/shield without flashing. */
+.skill-cast-bar.has-time::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: var(--timer-fill, 100%);
+  width: 2px;
+  transform: translateX(-100%);
+  background: #e4ffff;
+  box-shadow: 0 0 5px #70eaff;
+  pointer-events: none;
+}
+.skill-bar-track { position: absolute; inset: 0; display: grid; grid-template-columns: 12px minmax(0,1fr) 12px; }
+.skill-bar-track span { background-size: 100% 100%; background-repeat: no-repeat; }
+.skill-bar-track span:first-child, .skill-bar-track span:nth-child(2) { transform: scaleX(-1); }
+.skill-bar-track span:nth-child(2) { background-size: 3px 100%; background-repeat: repeat-x; }
+.skill-bar-empty span:first-child, .skill-bar-empty span:last-child { background-image: url('../sprites/hud/exp-empty-right.png'); }
+.skill-bar-empty span:nth-child(2) { background-image: url('../sprites/hud/exp-empty-middle.png'); }
+.skill-bar-filled span:first-child, .skill-bar-filled span:last-child { background-image: url('../sprites/hud/exp-filled-right.png'); }
+.skill-bar-filled span:nth-child(2) { background-image: url('../sprites/hud/exp-filled-middle.png'); }
+/* Inset one extra pixel per side: cooldown diameter is 2px smaller. */
+.hud-slot > .hud-slot-cooldown { position: absolute; inset: calc(8% + 1px); z-index: 1; border-radius: 50%; pointer-events: none;
+  background: conic-gradient(transparent 0deg var(--cooldown-sweep, 0deg), #66717cdd var(--cooldown-sweep, 0deg) 360deg); }
+.hud-slot > .hud-slot-icon { z-index: 2; }
+
+.skill-feedback { position: absolute; bottom: 2%; left: 50%; transform: translateX(-50%); z-index: 5; max-width: 88%; padding: 6px 12px; border: 1px solid #8eeaff; border-radius: 4px; background: #123a59df; color: #e5fbff; font: 12px/1.4 system-ui,sans-serif; text-align: center; pointer-events: none; }
+
+/* Independent EX Skills reference, contained within the simulated game screen. */
+.pause-skills-panel {
+  position: absolute;
+  inset: 5% 8% 10%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 20px 28px;
+  border: 2px solid #8cecff;
+  background: linear-gradient(135deg, #163f60f5, #102438fa);
+  font: 16px/1.5 system-ui, sans-serif;
+}
+.pause-skills-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.pause-skills-header button, .pause-skills-header select {
+  padding: 8px 12px;
+  color: white;
+  background: #245775;
+  border: 1px solid #b8f3ff;
+  font: inherit;
+}
+.pause-skills-header label { display: flex; align-items: center; gap: 10px; }
+.pause-skills-panel h2 { text-align: center; margin: 16px 0; color: #a1f3ff; }
+.pause-skills-panel h3 { margin: 8px 0; color: #a1f3ff; }
+.pause-skill-entry { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+.pause-skills-panel p { margin: 8px 0; }
+.pause-cast-pattern { display: block; width: 230px; max-width: 100%; margin: 12px auto; }
+.pause-description-column { text-align: left; }
+#pause-skill-icon { display: block; width: 110px; height: 110px; margin: 0 auto 8px; }
+.pause-skill-note { color: #b9d7e6; font-size: 12px; }
+@media (max-width: 850px) {
+  .pause-skills-panel { inset: 3% 3% 10%; padding: 12px; font-size: 12px; }
+  .pause-skill-entry { gap: 16px; }
+  .pause-cast-pattern { width: 150px; }
+  #pause-skill-icon { width: 80px; height: 80px; }
+}
+
+/* Skill testing stays outside the simulated screen, on its left. */
+.simulation-page main { max-width: 1644px; }
+.playtest-layout { grid-template-columns: 220px minmax(0, 1fr) 240px; max-width: 1604px; }
+.skill-test-sidebar { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; gap: 10px; padding: 12px; border: 1px solid #b5dcec; border-radius: 8px; background: white; }
+.skill-test-sidebar button { width: 100%; min-width: 0; min-height: 40px; padding: 10px 8px; overflow-wrap: anywhere; }
+.skill-test-sidebar p { margin: 0; font-size: 12px; line-height: 1.5; }
+.skill-test-sidebar label { font-size: 13px; }
+.admin-skill-buttons { display: grid; min-width: 0; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+@media (max-width: 900px) {
+  .playtest-layout { grid-template-columns: 200px minmax(0, 1fr); }
+  .playtest-sidebar { grid-column: 1 / -1; width: 100%; }
+}
+@media (max-width: 600px) {
+  .playtest-layout { grid-template-columns: minmax(0, 1fr); }
+  .skill-test-sidebar { grid-template-columns: 1fr 1fr; }
+  .skill-test-sidebar strong, .skill-test-sidebar p { grid-column: 1 / -1; }
+}
+@media (min-width: 1700px) {
+  .fullscreen-preview .skill-test-sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 220px; z-index: 1001; }
+}
+
+/* Translucent EX reference with one-click accordion dividers. */
+.pause-overlay:has(#pause-skills-panel:not([hidden])) { background: #020a054d; }
+.pause-skills-panel { background: linear-gradient(135deg, #163f60cc, #102438c4); }
+.pause-skills-header { margin-bottom: 16px; }
+.pause-skills-header > span { display: block; }
+.pause-weapon-divider { border-top: 1px solid #87dfffa6; border-bottom: 1px solid #87dfff65; }
+.pause-weapon-divider + .pause-weapon-divider { border-top: 0; }
+.pause-weapon-divider > summary { display: flex; align-items: center; justify-content: center; position: relative; padding: 12px 30px; cursor: pointer; list-style: none; }
+.pause-weapon-divider > summary::-webkit-details-marker { display: none; }
+.pause-weapon-divider > summary:hover { background: #8deaff16; }
+.pause-weapon-divider > summary:focus-visible { outline: 2px solid #8febff; outline-offset: -2px; }
+.pause-weapon-divider h2 { margin: 0; min-width: 0; }
+.pause-divider-marker { position: absolute; right: 12px; font-size: 22px; color: #a1f3ff; }
+.pause-weapon-divider[open] .pause-divider-marker { font-size: 0; }
+.pause-weapon-divider[open] .pause-divider-marker::after { content: '\2212'; font-size: 22px; }
+.pause-weapon-divider .pause-skill-entry { padding: 12px 0; }
+.pause-skills-panel [data-thin-text] canvas { max-width: 100%; border: 0; border-radius: 0; image-rendering: pixelated; vertical-align: middle; }
+.pause-skills-panel h2 canvas { margin: 0 auto; }
+
+/* EX reference browser: independent scrolling weapon list and selected skill details. */
+.pause-skills-panel { display:flex; flex-direction:column; overflow:hidden; }
+.pause-skills-panel[hidden] { display:none; }
+.pause-ex-browser { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); flex:1; min-height:0; gap:22px; }
+.pause-ex-list,.pause-ex-detail { overflow-y:auto; min-height:0; scrollbar-width:thin; scrollbar-color:#7cddff #12334a; }
+.pause-ex-list { border-right:1px solid #8cdbff66; padding-right:16px; }
+.pause-ex-weapon { display:flex; align-items:center; gap:14px; width:100%; min-height:76px; padding:12px; color:white; background:#0b2c4666; border:0; border-bottom:1px solid #8ce7ff55; border-radius:0; text-align:left; cursor:pointer; }
+.pause-ex-weapon:hover,.pause-ex-weapon.selected { background:#5ed8ff24; }
+.pause-ex-weapon.selected { box-shadow:inset 4px 0 #77eaff; }
+.pause-ex-weapon > canvas { width:54px!important; height:54px!important; flex:0 0 54px; background:transparent; border:0; border-radius:0; }
+.pause-ex-weapon > span { min-width:0; flex:1; }
+.pause-ex-weapon > span canvas { max-width:100%; height:auto!important; }
+.pause-ex-detail { padding:0 12px; }
+.pause-ex-detail .pause-skill-entry { display:flex; flex-direction:column; gap:14px; padding:0; }
+.pause-ex-detail .pause-skill-entry[hidden] { display:none; }
+.pause-ex-detail .pause-skill-entry > div { width:100%; }
+.pause-ex-detail svg { display:block; width:100%!important; max-width:220px!important; margin:0 auto; }
+.pause-ex-detail #pause-skill-icon,.pause-ex-detail .pause-skill-entry > div > img { display:none; }
+.pause-ex-list::-webkit-scrollbar,.pause-ex-detail::-webkit-scrollbar { width:8px; }
+.pause-ex-list::-webkit-scrollbar-track,.pause-ex-detail::-webkit-scrollbar-track { background:#12334a; }
+.pause-ex-list::-webkit-scrollbar-thumb,.pause-ex-detail::-webkit-scrollbar-thumb { background:#7cddff; border:2px solid #12334a; border-radius:4px; }
+
+/* Menu labels share a fixed bitmap line box; titles never word-wrap. */
+.pause-menu-card button, .pause-dev-link { display: flex; align-items: center; justify-content: center; min-height: 50px; }
+.pause-menu-card button canvas, .pause-dev-link canvas { border: 0; border-radius: 0; margin: 0 auto; image-rendering: pixelated; }
+.pause-skills-header > span { flex: 0 0 auto; white-space: nowrap; }
+.pause-weapon-divider h2, .pause-skills-panel h3 { white-space: nowrap; }
+.pause-skills-header, .pause-weapon-divider summary { min-height: 52px; }
+
+/* Level-up selection: holographic character summary beside four cyan-edged cards. */
+.level-up-overlay {
+  position: absolute; inset: 0; z-index: 30; padding: 4% 4% 3%;
+  display: grid; grid-template-columns: 28% minmax(0, 1fr); gap: 4%;
+  color: white; background: #03131cc9; overflow-y: auto;
+}
+.level-up-overlay canvas { display: block; max-width: 100%; background: transparent; border: 0; border-radius: 0; image-rendering: pixelated; }
+.level-up-character { position: relative; min-width: 0; }
+.level-up-character .pause-hologram { opacity: .24; height: 90%; object-position: center; }
+.level-up-character-copy { position: relative; z-index: 1; padding-top: 18%; }
+.level-up-character h2 { margin: 0 0 18px; }
+.level-up-character h3 { margin: 0 0 24px; }
+.level-up-stat { display: grid; grid-template-columns: 28px auto minmax(0, 1fr); align-items: center; gap: 6px; min-height: 40px; border-bottom: 1px solid #b4f2ff75; }
+.level-up-stat img { width: 26px; height: 26px; object-fit: contain; }
+.level-up-stat span:last-child { justify-self: end; }
+.level-up-selection { min-width: 0; }
+#level-up-progress { margin: 0 0 10px; }
+#level-up-choices { display: grid; gap: 12px; }
+.level-up-choice {
+  position: relative; width: 100%; min-width: 0; padding: 8px 14px;
+  text-align: left; color: white; background: #031211bf;
+  border: 1px solid transparent; border-left: 6px solid #2797b8; border-radius: 0;
+  cursor: pointer;
+}
+.level-up-choice.selected, .level-up-choice:hover, .level-up-choice:focus-visible {
+  border-color: #6ce7ff; border-left-color: #56deff; background: #0b354bd9;
+  box-shadow: inset 0 0 0 1px #41c9ef, 0 0 12px #2db6dc33;
+  outline: none;
+}
+.level-up-choice.selected::before { content: ''; position: absolute; left: -24px; top: 42%; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-left: 16px solid #53e8ff; }
+.level-up-choice-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 4px; border-bottom: 1px solid #dcfaff; }
+.level-up-choice-header span { min-width: 0; }
+.level-up-choice-header span:last-child { opacity: .8; }
+.level-up-choice-body { display: grid; grid-template-columns: 54px minmax(0, 1fr); align-items: center; gap: 14px; padding-top: 6px; }
+.level-up-choice-body img { width: 50px; height: 50px; object-fit: contain; border: 2px solid #d2f8ff; padding: 4px; background: #12304488; }
+.level-up-choice-body p { margin: 0; min-width: 0; }
+.level-up-help { margin: 12px 0 0; font: 12px/1.5 system-ui, sans-serif; color: #bfeeff; }
+@media (max-width: 850px) {
+  .level-up-overlay { padding: 3%; gap: 3%; grid-template-columns: 26% minmax(0, 1fr); }
+  .level-up-character-copy { padding-top: 8%; }
+  .level-up-character h3 { margin-bottom: 10px; }
+  .level-up-stat { grid-template-columns: 20px auto minmax(0, 1fr); gap: 3px; min-height: 32px; }
+  .level-up-stat img { width: 20px; height: 20px; }
+  #level-up-choices { gap: 7px; }
+  .level-up-choice { padding: 5px 8px; }
+  .level-up-choice-body { grid-template-columns: 38px minmax(0, 1fr); gap: 8px; }
+  .level-up-choice-body img { width: 36px; height: 36px; }
+}
+
+/* Only implemented weapon upgrades occupy cards; other slots remain empty. */
+.level-up-empty-slot { min-height: 104px; border-left: 6px solid #23829a40; border-top: 1px solid #8adfff12; background: #03121122; }
+.level-up-choice-body .level-up-weapon-icon { width: 50px; height: 50px; border: 2px solid #d2f8ff; padding: 3px; background: #12304488; }
+.level-up-choice:disabled { opacity: .7; cursor: default; }
+#level-up-continue { margin-top: 12px; padding: 8px 20px; color: white; background: #16435b; border-color: #8deaff; }
+.awakened-icon, .hud-slot.weapon-awakened > .hud-slot-icon {
+  filter: drop-shadow(1px 0 #ffdb55) drop-shadow(-1px 0 #ffdb55) drop-shadow(0 1px #ffdb55) drop-shadow(0 -1px #ffdb55) drop-shadow(0 0 3px #ffe68b);
+}
+.hud-slot.weapon-awakened::before, .hud-slot.weapon-awakened::after {
+  content: ''; position: absolute; z-index: 3; width: 7px; height: 7px;
+  background: #fff2a1; pointer-events: none;
+  clip-path: polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);
+  animation: weapon-sparkle 1.8s ease-in-out infinite;
+}
+.hud-slot.weapon-awakened::before { top: 8%; right: 5%; }
+.hud-slot.weapon-awakened::after { bottom: 22%; left: 8%; animation-delay: .8s; }
+@keyframes weapon-sparkle { 0%,100% { opacity: .25; transform: scale(.6); } 50% { opacity: 1; transform: scale(1); } }
+@media(prefers-reduced-motion:reduce) { .hud-slot.weapon-awakened::before, .hud-slot.weapon-awakened::after { animation: none; } }
+
+/* EX Skills scrollbar: cyan rail and a narrow, luminous blue drag handle. */
+.pause-skills-panel {
+  scrollbar-width: thin;
+  scrollbar-color: #48c9f0 #102c45;
+  scrollbar-gutter: stable;
+}
+.pause-skills-panel::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.pause-skills-panel::-webkit-scrollbar-track {
+  background: #102c45;
+  border-left: 1px solid #69ddff80;
+}
+.pause-skills-panel::-webkit-scrollbar-thumb {
+  min-height: 36px;
+  border: 2px solid #102c45;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #a6f1ff, #39bce9);
+}
+.pause-skills-panel::-webkit-scrollbar-thumb:hover {
+  background: #baf7ff;
+}
+.pause-skills-panel::-webkit-scrollbar-thumb:active {
+  background: #29a8df;
+}
+.pause-skills-panel::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+/* Chromium supports both APIs; use its richer gradient/thumb hover styling. */
+@supports selector(::-webkit-scrollbar) {
+  .pause-skills-panel { scrollbar-width: auto; scrollbar-color: auto; }
+}
+
+/* Stationary animation inspection: one mob per row, all directions side by side. */
+#animation-lineup { width: min(96vw, 1900px); max-width: 96vw; max-height: 90vh; padding: 16px;
+  color: #dcf8ff; background: #102a41; border: 2px solid #7ce8ff; }
+#animation-lineup::backdrop { background: #00121fcc; }
+#animation-lineup header { display:flex; align-items:center; justify-content:space-between; gap:20px; }
+#animation-lineup h2 { font-size:20px; }
+.animation-lineup-scroll { overflow:auto; max-height:75vh; scrollbar-color:#48c9f0 #102c45; }
+.animation-lineup-row { display:grid; grid-template-columns:160px repeat(8,220px); align-items:center;
+  width:max-content; border-bottom:1px solid #67dfff55; }
+.animation-lineup-row h3 { position:sticky; left:0; background:#102a41; padding:12px; z-index:1; }
+.animation-lineup-row figure { margin:0; text-align:center; background:linear-gradient(135deg,#163750,#1e4662); }
+.animation-lineup-row figcaption { padding:4px; font:12px system-ui,sans-serif; }
+
+/* Blue Archive-style volume control, shared by Settings and the developer toolbar. */
+input.game-volume-slider {
+  --volume-fill: 0%;
+  appearance: none;
+  -webkit-appearance: none;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+  accent-color: #59ddff;
+}
+input.game-volume-slider::-webkit-slider-runnable-track {
+  height: 10px;
+  border: 1px solid #8aeaff;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #37b8ee 0%, #a4f5ff var(--volume-fill), #12334b var(--volume-fill), #12334b 100%);
+  box-shadow: inset 0 1px 3px #001a32aa, 0 0 5px #4edaff44;
+}
+input.game-volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 17px;
+  height: 24px;
+  margin-top: -8px;
+  border: 2px solid #edfdff;
+  border-radius: 2px;
+  background: linear-gradient(135deg, #c4faff, #36b9ec);
+  box-shadow: 0 0 0 1px #1777a1, 0 0 8px #60ddff99;
+  transform: skewX(-12deg);
+}
+input.game-volume-slider::-moz-range-track {
+  height: 8px;
+  border: 1px solid #8aeaff;
+  border-radius: 2px;
+  background: #12334b;
+  box-shadow: inset 0 1px 3px #001a32aa;
+}
+input.game-volume-slider::-moz-range-progress {
+  height: 8px;
+  background: linear-gradient(90deg, #37b8ee, #a4f5ff);
+}
+input.game-volume-slider::-moz-range-thumb {
+  width: 13px;
+  height: 20px;
+  border: 2px solid #edfdff;
+  border-radius: 2px;
+  background: linear-gradient(135deg, #c4faff, #36b9ec);
+  box-shadow: 0 0 0 1px #1777a1, 0 0 8px #60ddff99;
+  transform: skewX(-12deg);
+}
+input.game-volume-slider:focus-visible { outline: 2px solid #80e9ff; outline-offset: 3px; }
+input.game-volume-slider:hover { filter: brightness(1.12); }
+input.game-volume-slider:active { filter: brightness(1.2); }
+.pause-settings output { color: #9eecff; font-variant-numeric: tabular-nums; }
+
+/* Crafters use a paused, keyboard-accessible game dialog; Cancel preserves the ground drop. */
+.crafter-menu { width:min(620px,90vw); max-height:85vh; overflow:auto; box-sizing:border-box;
+  padding:24px; border:2px solid #8eeaff; border-radius:3px; color:#e8faff;
+  background:linear-gradient(135deg,#184667f5,#0d2238fa); box-shadow:0 0 25px #32bcff66;
+  font:16px/1.5 system-ui,sans-serif; scrollbar-color:#48c9f0 #102c45; }
+.crafter-menu::backdrop { background:#00101eaa; }
+.crafter-menu h2 { margin:0 0 12px; color:#9befff; letter-spacing:3px; }
+.crafter-menu button { display:block; width:100%; margin:10px 0; padding:12px;
+  border:1px solid #7ee3ff; background:#175778; color:white; font:inherit; cursor:pointer; text-align:left; }
+.crafter-menu button:hover:not(:disabled),.crafter-menu button:focus-visible { background:#2889ad; outline:2px solid #b4f7ff; }
+.crafter-menu button:disabled { opacity:.45; cursor:not-allowed; }
+.crafter-toast { position:absolute; top:30%; left:50%; transform:translateX(-50%); z-index:25;
+  max-width:85%; padding:14px 22px; color:white; background:#123b60ed; border:2px solid #9cefff;
+  text-align:center; pointer-events:none; font:16px/1.5 system-ui,sans-serif; }
+
+/* Crafter inventory screen: the modal is aligned to the game canvas, leaving its HUD visible. */
+.crafter-menu {
+  position:fixed; inset:auto; margin:0; max-width:none; max-height:none; padding:0;
+  border:0; border-radius:0; box-shadow:none; overflow:auto;
+  background:rgb(0 10 18 / 65%); container-type:inline-size;
+}
+.crafter-menu::backdrop { background:transparent; }
+.crafter-layout { min-height:100%; box-sizing:border-box; display:grid;
+  grid-template-columns:28% minmax(0,1fr); gap:4%; padding:8% 3% 2% 5%; }
+.crafter-character { position:relative; align-self:center; padding:12% 0 6%; min-width:0; isolation:isolate; }
+.crafter-hologram { position:absolute; inset:0; width:100%; height:100%; object-fit:contain;
+  opacity:.25; filter:grayscale(.3) saturate(.6) drop-shadow(0 0 12px #70e6ff); z-index:-1; pointer-events:none; }
+.crafter-character h3 { margin:0 0 2cqw; }
+.crafter-stat-row { display:grid; grid-template-columns:2.7cqw minmax(0,1fr) auto; gap:.6cqw;
+  align-items:center; border-bottom:1px solid #e5fcffb3; padding:.45cqw 0; }
+.crafter-stat-row img { width:2.7cqw; height:2.7cqw; object-fit:contain; }
+.crafter-menu canvas { display:block; max-width:100%; height:auto; image-rendering:pixelated; }
+.crafter-workspace { min-width:0; }
+.crafter-workspace > h2 { display:flex; justify-content:center; margin:0 0 1.3cqw; }
+.crafter-balance { display:flex; justify-content:center; margin:.4cqw 0 1.2cqw; }
+.crafter-slot-grid { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:1.6cqw;
+  width:72%; margin:0 auto 2.7cqw; }
+.crafter-menu .crafter-slot { position:relative; display:block; width:100%; aspect-ratio:1; margin:0; padding:0;
+  border:3px solid #f2fcff; border-radius:0; background:#00101855; cursor:pointer; }
+.crafter-menu .crafter-slot:disabled { opacity:.7; cursor:default; }
+.crafter-menu .crafter-slot:hover:not(:disabled),.crafter-menu .crafter-slot.selected {
+  border-color:#40d9ff; background:#0c627355; outline:2px solid #40d9ff; box-shadow:0 0 12px #3cd8ff66; }
+.crafter-menu .crafter-slot:focus-visible { outline:3px solid #a7f6ff; outline-offset:3px; }
+.crafter-slot .crafter-inventory-icon { width:100%; height:100%; }
+.crafter-slot-level { position:absolute; top:100%; left:0; right:0; display:flex; justify-content:center; pointer-events:none; }
+.crafter-upgrade-detail { border:2px solid #40d9ff; border-left:7px solid #40d9ff;
+  background:#000b10ba; box-shadow:0 3px 0 #25a4c4; padding:.8cqw 1.5cqw; min-height:8cqw; }
+.crafter-detail-heading { display:flex; align-items:center; justify-content:space-between; gap:1cqw;
+  padding-bottom:.5cqw; border-bottom:1px solid #d7faff; }
+.crafter-detail-heading h3 { margin:0; min-width:0; }
+.crafter-detail-heading > span { max-width:28%; }
+.crafter-detail-body { display:grid; grid-template-columns:6.5cqw minmax(0,1fr); gap:1.5cqw; align-items:start; padding-top:.6cqw; }
+.crafter-detail-body > .crafter-inventory-icon { width:6.5cqw; height:6.5cqw; border:2px solid white; box-sizing:border-box; }
+.crafter-action-modes { display:flex; gap:.8cqw; margin-top:.7cqw; }
+.crafter-menu .crafter-mode { width:auto; margin:0; padding:.5cqw 1.2cqw; }
+.crafter-menu .crafter-mode.selected { border-color:#c6faff; background:#1787aa; }
+.crafter-footer { display:flex; gap:1.5cqw; margin-top:1.5cqw; }
+.crafter-menu .crafter-footer button { margin:0; padding:.8cqw 1cqw; display:flex; justify-content:center; align-items:center; }
+.crafter-confirm { flex:1; }
+.crafter-menu .crafter-cancel { width:auto; min-width:20%; background:#021521bb; }
+.crafter-key-help { display:flex; justify-content:flex-end; margin:1.2cqw 0 0; }
+@media (max-width:700px) {
+  .crafter-layout { padding:4% 3%; grid-template-columns:24% minmax(0,1fr); gap:3%; }
+  .crafter-slot-grid { width:90%; }
+  .crafter-stat-row { grid-template-columns:3cqw minmax(0,1fr); }
+  .crafter-stat-row > span:last-child { grid-column:2; }
+}
+/* Override the development canvas defaults for transparent game-font and inventory graphics. */
+.crafter-menu canvas { background:transparent; border:0; border-radius:0; box-shadow:none; }
+.crafter-slot-grid { width:65%; }
+.crafter-detail-body > .crafter-inventory-icon { border:2px solid white; border-radius:0; }
+/* Keep MAX-weapon Enhance/Awaken modes in the footer instead of adding another menu row. */
+.crafter-footer .crafter-action-modes { margin:0; align-items:stretch; }
+.crafter-footer .crafter-action-modes:empty { display:none; }
+.crafter-menu .crafter-footer .crafter-mode { width:auto; }
+
+/* Reuse the Pause panel itself: same cyan portrait filter, scanlines, rows and bitmap formatting. */
+.crafter-menu .crafter-character.pause-character-stats {
+  position:relative; left:auto; top:auto; width:100%; height:100%; min-height:36cqw;
+  align-self:stretch; padding:0;
+}
+.crafter-menu .pause-stat-row,.gacha-file-menu .pause-stat-row {
+  grid-template-columns:2.5cqw auto minmax(0,1fr); gap:.4cqw; min-height:3.05cqw;
+}
+.crafter-menu .pause-stat-row img,.gacha-file-menu .pause-stat-row img { width:2.35cqw; height:2.35cqw; }
+
+/* Golden Crafters share the inventory layout while making fusion pairs unmistakable. */
+.golden-crafter-menu .crafter-workspace > h2 { filter:sepia(1) saturate(4); }
+.golden-crafter-menu .crafter-upgrade-detail { border-color:#ffe285; box-shadow:0 3px 0 #b78a2b; }
+.golden-crafter-menu .crafter-slot.selected,.golden-crafter-menu .crafter-slot.fusion-partner {
+  border-color:#ffe285; outline:2px solid #ffe285; background:#78591e55; box-shadow:0 0 14px #ffcf5b66;
+}
+.golden-crafter-menu .crafter-confirm { border-color:#ffe285; background:#70551d; }
+.golden-crafter-menu .crafter-mode.selected { background:#70551d; border-color:#ffe285; }
+
+/* Golden Crafters share the normal two-row layout and character stats panel. */
+.golden-crafter-menu .crafter-slot:disabled { opacity:.55; cursor:not-allowed; }
+.golden-crafter-menu .crafter-upgrade-detail { background:transparent; border:0; box-shadow:none; }
+.golden-fusion-preview { position:relative; width:65%; height:10cqw; margin:0 auto; }
+.golden-fusion-preview > .golden-fusion-ingredient { position:absolute; top:0; transform:translateX(-50%); width:max-content; max-width:12cqw; }
+.golden-fusion-preview > .golden-fusion-ingredient:first-child { left:20%; align-items:center; }
+.golden-fusion-preview > .golden-fusion-ingredient:last-child { left:80%; align-items:center; }
+.golden-fusion-preview > span { position:absolute; left:50%; top:3.4cqw; transform:translateX(-50%); }
+.golden-fusion-preview > span { min-width:max-content; flex-shrink:0; }
+.golden-fusion-ingredient { display:flex; flex-direction:column; align-items:center; gap:.7cqw; min-width:0; }
+.golden-fusion-ingredient p { margin:0; max-width:100%; }
+.golden-fusion-ingredient p canvas { max-width:100%; object-fit:contain; }
+.golden-fusion-box { width:5cqw; height:5cqw; border:3px solid white; background:#10263455; display:grid; place-items:center; }
+.golden-fusion-box .crafter-inventory-icon { width:90%; height:90%; }
+/* Two soft tapered wind arcs, confined to compatible selected ingredients. */
+.golden-wind-active::before,.golden-wind-active::after {
+  content:''; position:absolute; inset:-22%; border-radius:50%; pointer-events:none;
+  border:2px solid transparent; border-top-color:#fff; border-left-color:#ffffff60;
+  filter:drop-shadow(0 0 3px #ffffff70); animation:golden-wind-ring 2.6s linear infinite;
+}
+.golden-wind-active::after { inset:-13% -28%; border-top-color:transparent; border-bottom-color:white;
+  border-right-color:#ffffff60; animation-duration:3.1s; animation-delay:-1.2s; }
+@keyframes golden-wind-ring {
+  0% { transform:rotate(0deg) scale(.92); opacity:0; }
+  20% { opacity:.85; }
+  65% { opacity:.5; }
+  100% { transform:rotate(360deg) scale(1.12); opacity:0; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .golden-wind-active::before,.golden-wind-active::after { animation:none; opacity:.6; }
+}
+@media (max-width:700px) { .golden-crafter-menu .crafter-workspace { width:94%; } }
+
+.golden-fusion-ingredient:first-child { align-items:flex-end; }
+.golden-fusion-ingredient:last-child { align-items:flex-start; }
+
+/* Files pause the world while their delivery opening and rewards remain interactive. */
+.gacha-file-menu { position:fixed; margin:0; padding:0; max-width:none; max-height:none; border:0; color:white; background:#071a3499; overflow:hidden; }
+.gacha-file-menu::backdrop { background:transparent; }
+.gacha-file-panel { position:absolute; inset:8% 23%; display:flex; flex-direction:column; align-items:center; gap:14px; padding:20px;
+  border:2px solid #b8f1ff; background:linear-gradient(145deg,#43bce9e8,#1d659ce8); box-sizing:border-box; }
+.gacha-file-panel h2 { margin:0; }
+.gacha-file-counter { display:flex; align-items:center; gap:10px; font-size:24px; font-variant-numeric:tabular-nums; }
+.gacha-file-counter img { width:26px; height:26px; object-fit:contain; }
+.gacha-file-panel button { color:white; background:#124563; border:2px solid #a1edff; padding:8px 12px; cursor:pointer; }
+.gacha-file-panel button:disabled { opacity:.45; cursor:default; }
+.gacha-file-package { margin:auto; background:transparent!important; border:0!important; }
+.gacha-file-package img { width:130px; height:150px; object-fit:contain; filter:drop-shadow(0 0 12px #a8ecff); }
+.gacha-file-package.opening { animation:file-open .5s ease-out forwards; }
+.super-file .gacha-file-panel { border-color:#ffe998; box-shadow:inset 0 0 35px #ffd87d66; }
+.super-file .gacha-file-package.opening { animation:super-file-open 1.2s ease-out forwards; }
+.gacha-file-products { width:100%; overflow:auto; flex:1; }
+.gacha-file-products[hidden] { display:none; }
+.gacha-file-product { display:grid; grid-template-columns:48px 1fr auto auto; align-items:center; gap:8px; padding:9px 0; border-bottom:1px solid #ffffff55; }
+.gacha-file-product > img { width:48px; height:48px; object-fit:contain; }
+.gacha-file-product p { min-width:0; }
+.gacha-file-product p canvas { max-width:100%; height:auto!important; }
+.gacha-file-product.resolved { opacity:.45; }
+.gacha-credit-mote { position:absolute; width:22px; height:22px; object-fit:contain; pointer-events:none; left:var(--start-x); top:var(--start-y); opacity:0; animation:file-credit-fly 1.1s ease-in forwards; }
+@keyframes file-credit-fly { 0%{opacity:0;transform:scale(.7);} 15%{opacity:1;} 90%{opacity:1;} 100%{left:50%;top:17%;opacity:0;transform:scale(.45);} }
+@keyframes file-open { 0%{transform:scale(1);} 45%{transform:scale(1.16) rotate(-5deg);} 100%{transform:scale(.8);opacity:.25;} }
+@keyframes super-file-open { 0%{transform:scale(1);filter:drop-shadow(0 0 10px #ffdc73);} 50%{transform:scale(1.35) rotate(8deg);filter:drop-shadow(0 0 30px #ffdc73);} 100%{transform:scale(.85);opacity:.3;} }
+@media(prefers-reduced-motion:reduce) { .gacha-credit-mote { display:none; } .gacha-file-package.opening { animation:none;opacity:.4; } }
+
+/* File reveal: a central delivery stage, right-hand choice, and lower description card. */
+.gacha-file-menu { container-type:inline-size; }
+.gacha-file-menu canvas { background:transparent; border:0; border-radius:0; box-shadow:none; }
+.gacha-file-panel { inset:5% 30% 22% 34%; padding:1.2cqw; gap:1cqw; overflow:hidden; background:linear-gradient(155deg,#58c8f1f5,#279bd1f5); }
+.gacha-file-panel h2 { position:relative; z-index:3; }
+.gacha-file-counter { position:relative; z-index:3; font-size:1.7cqw; }
+.gacha-file-stats { position:absolute; left:5%; top:13%; width:26%; height:72%; }
+.gacha-file-package { position:absolute; bottom:2%; left:50%; transform:translateX(-50%); z-index:3; margin:0; padding:0!important; perspective:300px; }
+.gacha-file-package img { width:8cqw; height:10cqw; }
+.gacha-file-package .gacha-file-base { display:block; clip-path:inset(45% 0 0); }
+.gacha-file-package .gacha-file-lid { position:absolute; inset:0; clip-path:inset(0 0 55%); transform-origin:50% 45%; transition:transform .65s ease-out,opacity .65s ease-out; }
+.gacha-file-package.opening .gacha-file-lid { transform:rotateX(-110deg) translateY(-8%); opacity:.35; }
+.gacha-file-sheet { position:absolute; left:22%; right:22%; top:40%; bottom:12%; border:1px solid #b2efff; background:linear-gradient(145deg,#fff,#bcefff); opacity:0; transform:translateY(10%); transition:transform .75s ease-out,opacity .4s ease-out; box-shadow:0 0 12px #d3f9ff66; }
+.gacha-file-package.opening .gacha-file-sheet { opacity:.9; transform:translateY(-48%) rotate(-5deg); }
+.gacha-file-package.opening { animation:none; }
+.gacha-file-package.revealed { opacity:1!important; }
+.gacha-file-package:disabled { opacity:1; }
+.gacha-file-reward-icon { position:absolute; width:11cqw; height:11cqw; left:50%; top:28%; transform:translateX(-50%); background:transparent; border:0; border-radius:0; box-shadow:none; z-index:2; filter:drop-shadow(0 0 8px #c9f9ff); }
+.gacha-file-cone { position:absolute; top:26%; left:5%; right:5%; bottom:var(--file-mouth-bottom,calc(2% + 5.4cqw)); filter:blur(7px); mask-image:linear-gradient(to bottom,transparent,black 24%,black 90%,transparent); transform-origin:50% 100%; animation:file-light-rise .7s ease-out both; }
+.gacha-file-cone::before { content:''; position:absolute; inset:0; background:linear-gradient(to top,#fff1a699 0%,#e8fbcf55 35%,#d5fcff19 78%,transparent 100%); clip-path:polygon(0 0,100% 0,calc(50% + var(--file-mouth-width,5cqw)/2) 100%,calc(50% - var(--file-mouth-width,5cqw)/2) 100%); }
+.gacha-file-rays { position:absolute; width:24cqw; height:24cqw; left:50%; top:42%; background:repeating-conic-gradient(from 0deg,transparent 0deg 6deg,#e7ffff33 15deg,transparent 29deg 45deg); border-radius:50%; mask-image:radial-gradient(black 5%,transparent 67%); animation:file-rays 16s linear infinite; }
+.gacha-file-actions { position:absolute; left:75%; top:32%; width:15%; display:flex; flex-direction:column; gap:1cqw; }
+.gacha-file-actions[hidden] { display:none; }
+.gacha-file-actions button,.gacha-file-done { border:2px solid white; border-radius:0; background:#071c2dbb; padding:.6cqw 1cqw; color:white; cursor:pointer; }
+.gacha-file-actions button:first-child { background:#f7fcff; }
+.gacha-file-actions button:first-child canvas { filter:none; }
+.gacha-file-actions button:hover { outline:2px solid #73e9ff; }
+.gacha-file-detail { position:absolute; left:19%; right:7%; bottom:3%; min-height:13%; max-height:18%; overflow:auto; border:2px solid #70e5ff; border-left-width:7px; background:#061b26dd; padding:.6cqw 1.2cqw; }
+.gacha-file-detail[hidden] { display:none; }
+.gacha-file-detail header { display:flex; justify-content:space-between; gap:1cqw; border-bottom:1px solid #d6f8ff; padding-bottom:.4cqw; }
+.gacha-file-detail h3,.gacha-file-detail p { margin:.4cqw 0; }
+.gacha-file-detail canvas { max-width:100%; height:auto!important; }
+.gacha-file-done { position:absolute; left:75%; top:40%; }
+.gacha-file-done[hidden] { display:none; }
+.gacha-file-sparkle { position:absolute; width:.8cqw; height:.8cqw; background:#eaffff; clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%); animation:file-sparkle 2.4s ease-in-out infinite; pointer-events:none; }
+@keyframes file-rays { from{transform:translate(-50%,-50%) rotate(0);} to{transform:translate(-50%,-50%) rotate(360deg);} }
+@keyframes file-sparkle { 0%,100%{opacity:.1;transform:scale(.6);} 50%{opacity:.65;transform:scale(1);} }
+@keyframes file-light-rise { from{opacity:0;transform:scaleY(.05);} to{opacity:1;transform:scaleY(1);} }
+.super-file .gacha-file-package.opening { animation:none; }
+.super-file .gacha-file-sheet { box-shadow:0 0 16px #ffe8a788; }
+@media(prefers-reduced-motion:reduce) { .gacha-file-cone { animation:none; } .gacha-file-lid,.gacha-file-sheet { transition:none!important; } }
+@media(prefers-reduced-motion:reduce) { .gacha-file-rays { animation:none;transform:translate(-50%,-50%); } .gacha-file-sparkle { animation:none;opacity:.3; } }

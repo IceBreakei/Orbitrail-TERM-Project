@@ -1,6 +1,7 @@
 import { normalSpriteSize, spriteDisplayPadding } from './scene-metrics.js';
+import { mapSizeMultiplier } from './map-bounds.js';
 // EDIT zoom and source-pixel polygons to tune this finite, angled map.
-export const islandScale = 2; // EDIT zoom: larger values show a closer view.
+export const islandScale = 2 * mapSizeMultiplier; // Map and obstacle geometry scale together.
 export const islandWidth = 1448 * islandScale;
 export const islandHeight = 1086 * islandScale;
 // Inner seawall/paving edge, including the concave inlet on the south side.
@@ -75,25 +76,33 @@ function insideShore(x, y) {
   return true;
 }
 
+/** Keep an entire ground-loot footprint on paving and outside obstacle polygons. */
+export function canPlaceIslandLoot(x, y, radius, map) {
+  const sx = (x - map.originX) / islandScale, sy = (y - map.originY) / islandScale;
+  const r = radius / islandScale;
+  return [[sx-r,sy-r],[sx+r,sy-r],[sx+r,sy+r],[sx-r,sy+r]].every(([px,py]) => insideShore(px,py)) &&
+    !islandObstacles.some(polygon => intersectsBox(polygon, sx-r, sy-r, sx+r, sy+r));
+}
+
 /** Validate island containment and all obstacle footprints at an actor location. */
-export function canStandOnIsland(character,x,y,map) {
+export function canStandOnIsland(character,x,y,map,ignoreObstacles=false) {
   const size=character.spriteSize||normalSpriteSize;
   const sx=(x-map.originX)/islandScale;
   const sy=(y+size/2-spriteDisplayPadding-map.originY)/islandScale;
   const rx=size*.12/islandScale, ry=size*.05/islandScale;
   const corners=[[sx-rx,sy-ry],[sx+rx,sy-ry],[sx+rx,sy+ry],[sx-rx,sy+ry]];
   return corners.every(([x,y])=>insideShore(x,y)) &&
-    !islandObstacles.some(p=>intersectsBox(p,sx-rx,sy-ry,sx+rx,sy+ry));
+    (ignoreObstacles || !islandObstacles.some(p=>intersectsBox(p,sx-rx,sy-ry,sx+rx,sy+ry)));
 }
 
 /** Find nearby boundary tangents for natural sliding along sloped collision edges. */
-function contactTangents(character, x, y, map) {
+function contactTangents(character, x, y, map, ignoreObstacles = false) {
   const size = character.spriteSize || normalSpriteSize;
   const px = (x - map.originX) / islandScale;
   const py = (y + size / 2 - spriteDisplayPadding - map.originY) / islandScale;
   const reach = Math.hypot(size * .12, size * .05) / islandScale + shoreClearance + 6;
   const tangents = [];
-  for (const polygon of [islandBoundary, ...islandObstacles]) {
+  for (const polygon of ignoreObstacles ? [islandBoundary] : [islandBoundary, ...islandObstacles]) {
     for (let i = 0; i < polygon.length; i++) {
       const [ax, ay] = polygon[i];
       const [bx, by] = polygon[(i + 1) % polygon.length];
@@ -109,12 +118,12 @@ function contactTangents(character, x, y, map) {
 }
 
 /** Sweep to contact, then project remaining motion onto the actual angled edge. */
-export function resolveIslandMotion(character, fromX, fromY, toX, toY, map) {
+export function resolveIslandMotion(character, fromX, fromY, toX, toY, map, ignoreObstacles = false) {
   const steps = Math.max(1, Math.ceil(Math.max(Math.abs(toX - fromX), Math.abs(toY - fromY)) / 6));
   const dx = (toX - fromX) / steps, dy = (toY - fromY) / steps;
   let x = fromX, y = fromY;
   for (let i = 0; i < steps; i++) {
-    if (canStandOnIsland(character, x + dx, y + dy, map)) {
+    if (canStandOnIsland(character, x + dx, y + dy, map, ignoreObstacles)) {
       x += dx; y += dy;
       continue;
     }
@@ -122,20 +131,20 @@ export function resolveIslandMotion(character, fromX, fromY, toX, toY, map) {
     let low = 0, high = 1;
     for (let iteration = 0; iteration < 10; iteration++) {
       const fraction = (low + high) / 2;
-      if (canStandOnIsland(character, x + dx * fraction, y + dy * fraction, map)) low = fraction;
+      if (canStandOnIsland(character, x + dx * fraction, y + dy * fraction, map, ignoreObstacles)) low = fraction;
       else high = fraction;
     }
     x += dx * low; y += dy * low;
     const remainingX = dx * (1 - low), remainingY = dy * (1 - low);
     const candidates = [[remainingX, 0], [0, remainingY]];
-    for (const [tx, ty] of contactTangents(character, x, y, map)) {
+    for (const [tx, ty] of contactTangents(character, x, y, map, ignoreObstacles)) {
       const along = remainingX * tx + remainingY * ty;
       candidates.push([tx * along, ty * along]);
     }
     let best = [0, 0], bestProgress = 0;
     for (const [sx, sy] of candidates) {
       const progress = sx * remainingX + sy * remainingY;
-      if (progress > bestProgress && canStandOnIsland(character, x + sx, y + sy, map)) {
+      if (progress > bestProgress && canStandOnIsland(character, x + sx, y + sy, map, ignoreObstacles)) {
         best = [sx, sy]; bestProgress = progress;
       }
     }
@@ -159,11 +168,12 @@ export function drawIsland(context,map,camera,debug=false) {
 }
 
 /** Occlude a behind-tower actor only inside its sprite area and the tower silhouette. */
-export function drawTowerOcclusion(context,character,map,camera) {
+export function drawTowerOcclusion(context,character,map,camera,opacity=1) {
   const size=character.spriteSize||normalSpriteSize;
   const foot=(character.y+size/2-spriteDisplayPadding-map.originY)/islandScale;
   if(foot>=440)return;
   context.save();
+    context.globalAlpha *= opacity;
   context.beginPath();context.rect(character.x-camera.x-size/2,character.y-camera.y-size/2,size,size);context.clip();
   context.beginPath();towerSilhouette.forEach(([x,y],i)=>{
     const args=[map.originX+x*islandScale-camera.x,map.originY+y*islandScale-camera.y];

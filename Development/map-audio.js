@@ -1,3 +1,5 @@
+import { trackVolumeScale } from './game-config.js';
+export { trackVolumeScale } from './game-config.js';
 // Stream only the current and fading-out music; never decode whole long tracks.
 export const mapTracks = {
   first: 'stage 1 - Feverdream.mp3',
@@ -6,18 +8,34 @@ export const mapTracks = {
   fourth: 'stage 4 - USAGI FLAP.mp3'
 };
 
+// Existing stages only; the supplied secret-area track is intentionally unassigned.
+export const secondaryMapTracks = {
+  first: 'alt music/Playarea 1.mp3',
+  second: 'alt music/Playarea 2.mp3',
+  third: 'alt music/Playarea 3.mp3',
+  fourth: 'alt music/playarea 4.mp3'
+};
+
 // Per-track source volume at 100% on the master slider.
-export const trackVolumeScale = { first: 0.6, second: 1, third: 0.6, fourth: 0.6 };
+
 
 /** Manage gesture-started looping music, volume, and map-change crossfades. */
 export function createMapAudio(initialMap) {
   const slider = document.querySelector('#music-volume');
+  const soundtrackToggle = document.querySelector('#music-soundtrack-toggle');
   const output = document.querySelector('#music-volume-value');
   const button = document.querySelector('#music-toggle');
   const status = document.querySelector('#music-status');
   const fadeDuration = 900; // EDIT milliseconds to match the checkerboard ripple.
   const tracks = new Map();
   let mapId = initialMap;
+  let secondary = false;
+
+  /** Resolve the selected stage within its soundtrack bank. */
+  function selectedTrack() {
+    const file = (secondary ? secondaryMapTracks : mapTracks)[mapId];
+    return { id: `${secondary ? 'secondary' : 'default'}:${mapId}`, file };
+  }
   let volume = Number(slider.value) / 100;
   let enabled = true;
   let unlocked = false;
@@ -41,31 +59,33 @@ export function createMapAudio(initialMap) {
       track.elapsed = 0;
     }
     if (!unlocked || !enabled || disposed) return;
-    let track = tracks.get(mapId);
+    const selection = selectedTrack();
+    if (!selection.file) return;
+    let track = tracks.get(selection.id);
     if (!track) {
       const audio = new Audio();
       audio.preload = 'none';
       audio.loop = true;
       audio.volume = 0;
-      audio.src = `../Audio/${encodeURIComponent(mapTracks[mapId])}`;
+      audio.src = `../Audio/${selection.file.split('/').map(encodeURIComponent).join('/')}`;
       track = { audio, gain: 0, from: 0, target: 1, elapsed: 0, volumeScale: trackVolumeScale[mapId] };
-      tracks.set(mapId, track);
-      const trackMap = mapId;
+      tracks.set(selection.id, track);
+      const trackId = selection.id;
       audio.addEventListener('error', () => {
-        if (mapId === trackMap) status.textContent = `Could not load ${mapTracks[trackMap]}.`;
+        if (selectedTrack().id === trackId) status.textContent = `Could not load ${selection.file}.`;
       });
     }
     track.from = track.gain;
     track.target = 1;
     track.elapsed = 0;
-    const selectedMap = mapId;
+    const selectedId = selection.id;
     track.audio.play().then(() => {
-      if (mapId === selectedMap && enabled) {
+      if (selectedTrack().id === selectedId && enabled) {
         blocked = false;
-        status.textContent = mapTracks[selectedMap];
+        status.textContent = selection.file;
       }
     }).catch(() => {
-      if (mapId === selectedMap) {
+      if (selectedTrack().id === selectedId) {
         blocked = true;
         button.textContent = 'Play music';
         status.textContent = 'Press Play music to enable audio.';
@@ -105,7 +125,16 @@ export function createMapAudio(initialMap) {
   slider.addEventListener('input', () => {
     volume = Number(slider.value) / 100;
     output.textContent = `${slider.value}%`;
+    slider.style.setProperty('--volume-fill', `${slider.value}%`);
     for (const track of tracks.values()) track.audio.volume = volume * track.volumeScale * track.gain;
+  });
+  soundtrackToggle.addEventListener('click', () => {
+    secondary = !secondary;
+    soundtrackToggle.textContent = secondary ? 'Audio: Secondary' : 'Audio: Default';
+    soundtrackToggle.setAttribute('aria-pressed', String(secondary));
+    // This explicit gesture also unlocks playback, preserving the mute/pause setting.
+    unlocked = true;
+    selectTrack();
   });
   button.addEventListener('click', () => {
     // The first explicit click enables playback; later clicks toggle it.

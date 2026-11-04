@@ -1,0 +1,22 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const c=vm.createContext({});
+for(const name of ['game-config','combat-hitboxes','knockback','enemy-control'])vm.runInContext(fs.readFileSync(`Development/${name}.js`,'utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ',''),c);
+const run=s=>vm.runInContext(s,c);
+run('var enemy={id:"a",type:"mob",x:0,y:0};var first=beginKnockback(enemy,100,0,1);var second=beginKnockback(enemy,100,0,1);');
+assert.equal(run('first.dx'),100);assert.equal(run('second.dx'),90);assert.equal(run('enemy.knockbackResistance'),.2);
+for(let i=0;i<20;i++)run('beginKnockback(enemy,100,0,1)');
+assert.equal(run('enemy.knockbackResistance'),.9);assert(Math.abs(run('beginKnockback(enemy,100,0,1).dx')-10)<1e-8);
+run('updateKnockbackResistance(enemy,9.99)');assert.equal(run('enemy.knockbackResistance'),.9);
+run('updateKnockbackResistance(enemy,.01)');assert.equal(run('enemy.knockbackResistance'),0);
+assert.equal(run('beginKnockback(enemy,100,0,1).dx'),100);
+run('enemy.baseKnockbackResistance=.25;updateKnockbackResistance(enemy,10)');assert.equal(run('enemy.knockbackResistance'),.25);
+assert.equal(run('beginKnockback(enemy,100,0,1,{ignoreKnockbackResistance:true}).dx'),100);
+run('enemy.knockbackImmune=true');assert.equal(run('beginKnockback(enemy,100,0,1,{ignoreKnockbackResistance:true})'),null);
+run('var source={x:0,y:0};var moving={id:"moving",type:"mob",x:0,y:0,spriteSize:40};var other={id:"other",type:"mob",x:60,y:0,spriteSize:40};applySkillControl(moving,200,0,3,1);applySkillControl(other,-100,0,3,1);var mover=createKnockbackMover(()=>[moving,other],()=>true);');
+run('updateEnemyControl(moving,.5,mover)');assert(run('moving.x<60'));
+assert(run('other.skillKnockback.stopped'));const x=run('other.x');run('updateEnemyControl(other,.5,mover)');assert.equal(run('other.x'),x);
+assert(run('moving.stunRemaining>0')); // Collision does not erase independent stun.
+run('var wallEnemy={id:"wall",type:"mob",x:0,y:0,spriteSize:40};applySkillControl(wallEnemy,100,0,1,1);var wallMove=createKnockbackMover(()=>[wallEnemy],(e,x)=>x<30);updateEnemyControl(wallEnemy,.5,wallMove)');
+assert(run('wallEnemy.x<30'));const wallX=run('wallEnemy.x');run('updateEnemyControl(wallEnemy,.2,wallMove)');assert.equal(run('wallEnemy.x'),wallX);
+run('var linear={x:0,y:0};var motion=beginKnockback(linear,100,0,1);advanceKnockback(linear,motion,.5,(e,x,y)=>{e.x+=x;e.y+=y})');assert.equal(run('linear.x'),50);
+console.log('PASS: linear speed,10%stack/90%cap,10secondreset/base resistance,bypass/immunity,swept enemy collision stops both,wall stop and independent stun preservation.');

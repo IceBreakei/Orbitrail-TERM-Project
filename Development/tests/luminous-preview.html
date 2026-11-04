@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><base href="../"><title>Luminous Nova projectile preview</title><style>body{margin:0;background:#08182b}canvas{display:block;width:100%;max-width:1280px;height:auto;margin:auto}</style></head><body><canvas id="preview" width="1280" height="720"></canvas><script type="module">
+import {createLuminousNovaAttack,createLuminousNovaWeapon} from './luminous-nova.js';
+const canvas=document.querySelector('#preview'),context=canvas.getContext('2d');
+const player={label:'Plana',x:400,y:350,spriteSize:89.6,level:1,attackSlots:[createLuminousNovaWeapon()],combatStats:{}};
+const attack=createLuminousNovaAttack();attack.update(.18,player,0);
+context.fillStyle='#08182b';context.fillRect(0,0,1280,720);context.fillStyle='#d5f7ff';context.font='22px sans-serif';context.fillText('Luminous Nova: no-target firing preview',40,45);
+context.strokeStyle='#94eaff';context.lineWidth=2;context.strokeRect(42,75,90,90);context.beginPath();context.arc(400,356,25,0,Math.PI*2);context.stroke();context.font='16px sans-serif';context.fillText('Player',375,410);context.fillText('45-degree icon',40,195);context.fillText('Pink plasma head, short tapered tail and bloom',500,435);
+attack.draw(context,{x:0,y:0});
+const icon=new Image();icon.onload=()=>{context.save();context.translate(87,120);context.rotate(player.attackSlots[0].iconRotation*Math.PI/180);const scale=72/Math.max(icon.naturalWidth,icon.naturalHeight);context.drawImage(icon,-icon.naturalWidth*scale/2,-icon.naturalHeight*scale/2,icon.naturalWidth*scale,icon.naturalHeight*scale);context.restore()};icon.src=player.attackSlots[0].icon;
+</script></body></html>

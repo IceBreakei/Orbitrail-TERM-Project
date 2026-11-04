@@ -3,70 +3,29 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schale | Log in</title>
+    <title>Operation Orbitrail | Log in</title>
     <link rel="stylesheet" href="style.css">
     <script type="module" src="script.js"></script>
+    <script type="module" src="login-splash.js"></script>
   </head>
-  <body>
+  <body class="login-page">
     <main class="auth-layout">
-      <!-- Game introduction and decorative spell sigil. -->
-      <section class="intro" aria-label="Welcome">
-        <!-- Decorative halo: hidden from assistive technology and mouse input. -->
-        <div class="halo-scene" aria-hidden="true">
-          <div class="halo-ring halo-ring-outer"></div>
-          <div class="halo-ring halo-ring-inner"></div>
-          <span class="halo-core"></span>
-          <span class="halo-marker halo-marker-left"></span>
-          <span class="halo-marker halo-marker-right"></span>
-        </div>
-        <a class="brand" href="index.html">
-          <span class="brand-icon" aria-hidden="true">&#10023;</span>
-          SCHALE
-        </a>
-        <div class="intro-copy">
-          <span class="eyebrow">KIVOTOS / SCHALE OPERATIONS</span>
-          <h1>
-            Welcome to Kivotos.
-            <br>
-            Your students await.
-          </h1>
-          <p>
-            Take command, Sensei.
-            <br>
-            Draw your skills. Lead your students into battle.
-          </p>
-        </div>
-        <!-- A static spell diagram suggests gesture casting without adding gameplay. -->
-        <div class="spell-art" aria-hidden="true">
-          <span class="spell-caption">EX SKILL / TRACE SEQUENCE</span>
-          <svg class="spell-sigil" viewBox="0 0 440 300" fill="none">
-            <defs>
-              <linearGradient id="spell-ink" x1="100" y1="240" x2="340" y2="50" gradientUnits="userSpaceOnUse">
-                <stop stop-color="#087fba"/>
-                <stop offset="1" stop-color="#48d7f5"/>
-              </linearGradient>
-            </defs>
-            <ellipse class="sigil-orbit" cx="220" cy="160" rx="170" ry="105"/>
-            <ellipse class="sigil-orbit sigil-orbit-inner" cx="220" cy="160" rx="142" ry="87"/>
-            <path class="sigil-guide" d="M70 160H370M220 35V285"/>
-            <path class="sigil-stroke" d="M130 225L218 64L310 225L130 225L266 151L178 151L220 105"/>
-            <circle class="sigil-node" cx="130" cy="225" r="7"/>
-            <circle class="sigil-node" cx="218" cy="64" r="7"/>
-            <circle class="sigil-node" cx="310" cy="225" r="7"/>
-            <path class="sigil-star" d="M344 71V97M331 84H357M81 224V242M72 233H90"/>
-          </svg>
-          <div class="spell-legend"><span>01 / TRACE</span><span>02 / EX SKILL</span><span>03 / SORTIE</span></div>
-        </div>
-        <p class="intro-footer">
-          SCHALE &nbsp; / &nbsp; OPERATIONS IN KIVOTOS
-        </p>
+      <!-- Full-screen splash sits behind the form; CSS blends the two along a soft diagonal. -->
+      <section class="intro splash-intro" aria-label="Operation Orbitrail">
+        <figure class="login-splash">
+          <img class="is-current" src="sprites/OrbitrailTitle1.png" width="1672" height="941"
+            alt="Operation Orbitrail: Plana and Arona lead the way through a Schale hallway filled with enemies."
+            fetchpriority="high" decoding="async">
+          <img src="sprites/OrbitrailTitle2.png" alt="" aria-hidden="true" decoding="async">
+          <img src="sprites/OrbitrailTitle3.png" alt="" aria-hidden="true" decoding="async">
+          <img src="sprites/OrbitrailTitle4.png" alt="" aria-hidden="true" decoding="async">
+        </figure>
       </section>
       <section class="form-panel">
         <div class="auth-card">
-          <span class="eyebrow">SCHALE AUTHENTICATION</span>
           <h2 id="form-title">Welcome back, Sensei</h2>
           <p class="subtitle" id="form-description">
-            Log in to Schale and prepare for your next sortie.
+            Log in to continue.
           </p>
           <!-- JavaScript switches this form between login and registration. -->
           <form id="auth-form">
@@ -95,14 +54,21 @@
               <span aria-hidden="true">→</span>
             </button>
           </form>
+          <button id="continue-as-guest" class="guest-button" type="button">Continue as guest</button>
           <p class="switch-copy">
             <span id="switch-prompt">Don't have an account?</span>
             <button id="switch-mode" type="button">Create an account</button>
           </p>
-          <p class="demo-note">Your students are counting on you, Sensei.</p>
         </div>
-        <footer class="panel-footer">KIVOTOS AWAITS YOU, SENSEI.</footer>
       </section>
     </main>
+    <dialog id="guest-confirmation" aria-labelledby="guest-title" aria-describedby="guest-warning">
+      <h2 id="guest-title">Continue as guest?</h2>
+      <p id="guest-warning">Your upgrades, progress, and other game data will not be saved. Do you wish to proceed?</p>
+      <form method="dialog" class="guest-dialog-actions">
+        <button type="submit" value="cancel" autofocus>Cancel</button>
+        <button type="submit" value="continue">Continue as guest</button>
+      </form>
+    </dialog>
   </body>
 </html>

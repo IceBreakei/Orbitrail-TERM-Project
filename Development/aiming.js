@@ -21,7 +21,7 @@ function loadAimImage(source) {
 export function createAiming(canvas) {
   const toggle = document.querySelector('#toggle-arrow');
   const modeLabel = document.querySelector('#aim-mode');
-  const state = { visible: true, cursorAim: false, inside: false, pointer: { x: 0, y: 0 } };
+  const state = { visible: true, cursorAim: false, directionalOverride: false, inside: false, pointer: { x: 0, y: 0 } };
   let arrow;
   let crosshair;
 
@@ -39,8 +39,8 @@ export function createAiming(canvas) {
   function updateControls() {
     toggle.setAttribute('aria-pressed', String(state.visible));
     toggle.textContent = state.visible ? 'Arrow: shown' : 'Arrow: hidden';
-    modeLabel.textContent = state.cursorAim ? 'Aim: crosshair' : 'Aim: character facing';
-    canvas.style.cursor = state.cursorAim && state.inside ? 'none' : 'default';
+    modeLabel.textContent = state.cursorAim && !state.directionalOverride ? 'Aim: crosshair' : 'Aim: character facing';
+    canvas.style.cursor = state.cursorAim && !state.directionalOverride && state.inside ? 'none' : 'default';
   }
 
   /** Track the pointer in screen space, so camera scrolling cannot offset aiming. */
@@ -68,20 +68,27 @@ export function createAiming(canvas) {
     updateControls();
   });
 
-  /** Draw an upward-native arrow rotated toward facing or the custom cursor. */
-  function draw(context, character, cameraX, vector, cameraY = 0) {
-    if (!arrow || !crosshair) return;
+  /** Share the exact arrow angle with attacks, including cursor aiming. */
+  function getAngle(character, cameraX, vector, cameraY = 0) {
     const x = character.x - cameraX;
     const y = character.y - cameraY;
     let dx = vector[0];
     let dy = vector[1];
-    if (state.cursorAim) {
+    if (state.cursorAim && !state.directionalOverride) {
       dx = state.pointer.x - x;
       dy = state.pointer.y - y;
       // Preserve facing if the cursor is precisely on the character anchor.
       if (dx === 0 && dy === 0) [dx, dy] = vector;
     }
-    const angle = Math.atan2(dy, dx);
+    return Math.atan2(dy, dx);
+  }
+
+  /** Draw an upward-native arrow rotated toward facing or the custom cursor. */
+  function draw(context, character, cameraX, vector, cameraY = 0) {
+    if (!arrow || !crosshair) return;
+    const x = character.x - cameraX;
+    const y = character.y - cameraY;
+    const angle = getAngle(character, cameraX, vector, cameraY);
     if (state.visible) {
       const distance = ((character.spriteSize || normalSpriteSize) / 2 + 25) * arrowDistanceMultiplier;
       context.save();
@@ -90,7 +97,7 @@ export function createAiming(canvas) {
       context.drawImage(arrow, -arrowWidth / 2, -arrowHeight / 2, arrowWidth, arrowHeight);
       context.restore();
     }
-    if (state.cursorAim && state.inside) {
+    if (state.cursorAim && !state.directionalOverride && state.inside) {
       context.drawImage(crosshair,
         state.pointer.x - crosshairSize / 2, state.pointer.y - crosshairSize / 2,
         crosshairSize, crosshairSize);
@@ -104,5 +111,8 @@ export function createAiming(canvas) {
   }
 
   updateControls();
-  return { ready, draw, reset, state };
+  return { ready, draw, reset, state, getAngle, trackPointer,
+    setPointerInside(inside) { state.inside = inside; updateControls(); },
+    setDirectionalOverride(enabled) { state.directionalOverride = Boolean(enabled); updateControls(); }
+  };
 }

@@ -1,18 +1,30 @@
-/** HoloCure EXP curve: 79 to reach level 2, then differences of power totals. */
+import { developmentSettings, damageReductionFormula } from './game-config.js';
+import { levelExpFormula } from './game-config.js';
+import { startingLevelExp, expIncreasePerLevel } from './game-config.js';
+export { startingLevelExp, expIncreasePerLevel } from './game-config.js';
+import { showDamageNumber } from './damage-numbers.js';
+import { ensureCombatStats, defaultCombatStats } from './combat-stats.js';
+
+// Level costs and formulas live in game-config.js.
+
+
+
+/** Add round(15 + currentLevel / 2) to the next requirement on each level-up. */
 export function experienceForLevel(level) {
-  const current = Math.max(1, Math.floor(level));
-  if (current === 1) return 79;
-  return Math.round((4 * (current + 1)) ** 2.1) - Math.round((4 * current) ** 2.1);
+  return levelExpFormula(level);
 }
 
 /** Initialize session stats once; Development defaults to invincibility on. */
 export function ensurePlayerStats(character) {
   character.level ??= 1;
+  character.pendingUpgrades ??= 0;
   character.exp ??= 0;
   character.maxExp = experienceForLevel(character.level);
   character.maxHp ??= 100;
   character.hp ??= character.maxHp;
-  character.invincible ??= true;
+  character.shield = Math.max(0, Math.min(character.maxHp, character.shield ?? 0));
+  character.invincible ??= developmentSettings.invincible;
+  ensureCombatStats(character);
   return character;
 }
 
@@ -24,7 +36,9 @@ export function addPlayerExp(character, amount) {
   while (character.exp >= character.maxExp) {
     character.exp -= character.maxExp;
     character.level++;
+    character.pendingUpgrades++; // Each gained level gets its own choice, including overflow.
     character.maxExp = experienceForLevel(character.level);
+    character.hp = character.maxHp; // Every level-up fully restores health.
   }
 }
 
@@ -34,14 +48,29 @@ export function isPlayerDefeated(character) {
   return character.hp <= 0 && !character.invincible;
 }
 
-/** Apply damage and its flash even while invincible, preserving HP bounds. */
+/** Add or remove shield points, capped by max HP without changing health. */
+export function changePlayerShield(character, amount) {
+  ensurePlayerStats(character);
+  if (Number.isFinite(amount)) {
+    character.shield = Math.max(0, Math.min(character.maxHp, character.shield + Math.trunc(amount)));
+  }
+}
+
+/** Absorb damage with shield first; spill excess into HP and show one hit number. */
 export function damagePlayer(character, amount) {
   ensurePlayerStats(character);
   if (!Number.isFinite(amount) || amount <= 0) return false;
+  const damage = Math.round(amount * damageReductionFormula(character.damageReductionPercent ?? []));
+  const absorbed = Math.min(character.shield, damage);
+  character.shield -= absorbed;
   const previous = character.hp;
-  character.hp = Math.max(0, character.hp - Math.floor(amount));
-  if (character.hp < previous) character.damageFlashElapsed = 0;
-  return character.hp < previous;
+  character.hp = Math.max(0, character.hp - (damage - absorbed));
+  const taken = absorbed + previous - character.hp;
+  if (taken > 0) {
+    character.damageFlashElapsed = 0;
+    showDamageNumber(character, taken, true);
+  }
+  return taken > 0;
 }
 
 /** Heal without exceeding maximum HP; works while invincible. */
@@ -57,15 +86,34 @@ export function createPlayerStatsTools(getPlayer, onChange) {
   const panel = document.querySelector('#player-stats-tools');
   const expAmount = panel.querySelector('[name="exp-amount"]');
   const hpAmount = panel.querySelector('[name="hp-amount"]');
+  const shieldAmount = panel.querySelector('[name="shield-amount"]');
   const invincibility = document.querySelector('#player-invincibility');
   const status = document.querySelector('#player-stats-status');
   const feedback = document.querySelector('#player-stats-feedback');
+  const statInputs = [...panel.querySelectorAll('[data-combat-stat]')];
+  let inspectedCharacter;
+
+  // Apply on change so typing is not interrupted by per-frame HUD refreshes.
+  for (const input of statInputs) {
+    input.addEventListener('change', () => {
+      const value = Number(input.value);
+      const maximum = input.dataset.combatStat === 'critPercent' ? 100 : 1000;
+      const stats = ensureCombatStats(getPlayer());
+      if (Number.isFinite(value)) stats[input.dataset.combatStat] = Math.max(0, Math.min(maximum, value));
+      input.value = stats[input.dataset.combatStat];
+      onChange(getPlayer());
+    });
+  }
 
   /** Keep toggles and inspection values synchronized across character swaps. */
   function update() {
     const character = ensurePlayerStats(getPlayer());
     invincibility.checked = character.invincible;
-    status.textContent = `${character.label} | LV ${character.level} | EXP ${character.exp}/${character.maxExp} | HP ${character.hp}/${character.maxHp}`;
+    for (const input of statInputs) {
+      if (inspectedCharacter !== character || document.activeElement !== input) input.value = character.combatStats[input.dataset.combatStat];
+    }
+    inspectedCharacter = character;
+    status.textContent = `${character.label} | LV ${character.level} | EXP ${character.exp}/${character.maxExp} | HP ${character.hp}/${character.maxHp} | Shield ${character.shield}/${character.maxHp}`;
   }
   invincibility.addEventListener('change', () => {
     getPlayer().invincible = invincibility.checked;
@@ -76,8 +124,8 @@ export function createPlayerStatsTools(getPlayer, onChange) {
     button.addEventListener('click', () => {
       const character = ensurePlayerStats(getPlayer());
       const action = button.dataset.playerStat;
-      const amount = Number(action === 'exp' ? expAmount.value : hpAmount.value);
-      if (['exp', 'damage', 'heal'].includes(action) &&
+      const amount = Number(action === 'exp' ? expAmount.value : action.startsWith('shield-') ? shieldAmount.value : hpAmount.value);
+      if (['exp', 'damage', 'heal', 'shield-add', 'shield-remove'].includes(action) &&
           (!Number.isFinite(amount) || amount < 1 || amount > 1000000)) {
         feedback.textContent = 'Enter an amount from 1 to 1,000,000.';
         return;
@@ -88,10 +136,16 @@ export function createPlayerStatsTools(getPlayer, onChange) {
       if (action === 'damage' && !damagePlayer(character, amount)) {
         feedback.textContent = 'HP is already zero.';
       }
+      if (action === 'shield-add') changePlayerShield(character, amount);
+      if (action === 'shield-remove') changePlayerShield(character, -amount);
+      if (action === 'shield-clear') character.shield = 0;
       if (action === 'heal') healPlayer(character, amount);
       if (action === 'full-heal') healPlayer(character, character.maxHp);
+      if (action === 'preview-crit') showDamageNumber(character, 23, false, 'critical');
+      if (action === 'preview-supercrit') showDamageNumber(character, 23, false, 'supercritical');
       if (action === 'reset') {
-        Object.assign(character, { level: 1, exp: 0, hp: character.maxHp, invincible: true });
+        Object.assign(character, { level: 1, exp: 0, pendingUpgrades: 0, hp: character.maxHp, shield: 0, invincible: developmentSettings.invincible });
+        character.combatStats = { ...defaultCombatStats };
         delete character.damageFlashElapsed;
         ensurePlayerStats(character);
       }

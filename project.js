@@ -1,15 +1,21 @@
 import { getFirebaseAuth } from './firebase-client.js';
 import { isAdmin } from './admin-access.js';
+import { isGuestSession } from './guest-session.js';
 
 const developmentLink = document.querySelector('#development-link');
 
 /** Wait for Firebase to restore the session before allowing workspace access. */
 async function requireSignIn() {
+  // Guests can enter the empty workspace without Firebase, and never see admin controls.
+  if (isGuestSession()) {
+    developmentLink.hidden = true;
+    return;
+  }
   try {
     const { auth, sdk } = await getFirebaseAuth();
 
     sdk.onAuthStateChanged(auth, user => {
-      developmentLink.hidden = !isAdmin(user);
+      developmentLink.hidden = isGuestSession() || !isAdmin(user);
       if (!user) {
         window.location.replace('index.html');
       }

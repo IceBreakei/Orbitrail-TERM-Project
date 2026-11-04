@@ -1,0 +1,7 @@
+<!doctype html><html><head><meta charset="utf-8"><base href="../"><link rel="stylesheet" href="movement.css"></head><body style="margin:0;background:#142b48;color:white"><button id="test-normal">Open normal File</button><button id="test-triple">Open triple File</button><canvas id="preview" width="1280" height="720" style="width:100%;height:auto"></canvas><script type="module">
+import {createGachaFiles} from './gacha-files.js';
+const canvas=document.querySelector('#preview'),context=canvas.getContext('2d');context.fillStyle='#224066';context.fillRect(0,0,1280,720);
+const player={label:'Plana',x:200,y:200,spriteSize:89.6,hp:110,maxHp:110,attackSlots:[{id:'plana-umbrella',name:"Plana's Umbrella",level:2,icon:'../sprites/attacks/Weapon_Icon_Kei.png'}],equipmentSlots:[],combatStats:{}};
+const files=createGachaFiles({canvas,getPlayer:()=>player});await files.ready;
+for(const type of ['normal','triple'])document.querySelector('#test-'+type).addEventListener('click',()=>{files.spawn(200,200,type);files.update(player,player);});
+</script></body></html>

@@ -1,0 +1,31 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const damage=[];
+const c=vm.createContext({damagePlayer:(player,amount)=>{damage.push(amount);return true;},getCombatHitbox:p=>({x:p.x,y:p.y,rx:8,ry:8})});
+for(const n of ['game-config','boss-behaviors'])vm.runInContext(fs.readFileSync('Development/'+n+'.js','utf8').replace(/^import .*;\r?\n/gm,'').replace('bossBehaviorSettings as settings','bossBehaviorSettings').replaceAll('export ',''),c);
+vm.runInContext('var settings=bossBehaviorSettings',c);
+const run=s=>vm.runInContext(s,c);
+run('var ai=createBossBehaviors();var player={x:500,y:300,contactIFrames:0};var view={x:0,y:0,width:1280,height:720};var arisu={id:"arisu",type:"arisu",x:200,y:300,spriteSize:200,ai:true,contactDamage:15,bossCooldown:0}');
+assert.equal(run('ai.updateNpc(arisu,player,.1,view)'),true);
+assert.equal(run('arisu.bossAction.clip'),'charge');
+run('ai.updateNpc(arisu,player,1.8,view)');assert.equal(run('arisu.x'),200);
+run('ai.updateNpc(arisu,player,.1,view)');assert.equal(run('arisu.bossAction.name'),'charge');
+run('player.y=600;ai.updateNpc(arisu,player,.1,view)');assert.equal(run('arisu.y'),300);assert(run('arisu.x')>200);
+run('var iroha={id:"iroha",type:"iroha",x:200,y:300,ai:true,bossCooldown:0,contactDamage:20};ai.updateNpc(iroha,player,.5,view)');
+assert.equal(run('iroha.attack.name'),'cannon');assert.equal(run('ai.projectileCount'),1);
+run('ai.updateNpc(iroha,player,1,view);iroha.bossCooldown=0;ai.updateNpc(iroha,player,.5,view)');
+assert.equal(run('iroha.attack.name'),'artillery');assert.equal(run('ai.zoneCount'),3);
+run('var neru={id:"neru",type:"neru",x:100,y:100,ai:true,bossCooldown:0,contactDamage:20};ai.updateNpc(neru,player,.1,view)');
+assert.equal(run('neru.bossAction.clip'),'shoot');assert(run('ai.projectileCount')>=13);
+run('ai.updateNpc(neru,player,2,view);neru.bossCooldown=0;ai.updateNpc(neru,player,.1,view)');
+assert.equal(run('neru.bossAction.name'),'compress');assert(run('neru.bossSquash')<1);
+run('ai.updateNpc(neru,player,.5,view)');assert.equal(run('neru.bossAction.name'),'leap');
+run('var targetX=neru.bossAction.targetX;player.x+=100;ai.updateNpc(neru,player,.5,view)');assert(run('neru.bossVisualOffsetY')<0);
+run('ai.updateNpc(neru,player,.5,view)');assert.equal(run('neru.x'),run('targetX'));assert.equal(run('neru.bossVisualOffsetY'),0);
+assert.equal(run('ai.updateNpc({type:"shiroko",ai:true},player,1,view)'),false);
+assert.equal(run('ai.updateNpc({...arisu,ai:false},player,1,view)'),false);
+run('ai.updateEffects(0,player,[])');assert.equal(run('ai.projectileCount'),0);assert.equal(run('ai.zoneCount'),0);
+console.log('PASS: Arisu 2s charge and locked direction; Iroha alternating cannon/artillery; Neru bullets/compress/leap; Shiroko chase fallback; dead-owner cleanup.');
+
+// Projectile impacts share normal damage I-frames, and dead owners leave no attacks behind.
+run('var effects=createBossBehaviors();var shooter={id:"tank",type:"iroha",x:200,y:300,ai:true,bossCooldown:0,contactDamage:20};player.x=500;player.y=300;player.contactIFrames=0;effects.updateNpc(shooter,player,.5,view);effects.updateEffects(.7,player,[shooter])');
+assert.equal(damage.at(-1),20);assert(run('player.contactIFrames')>0);assert.equal(run('effects.projectileCount'),0);

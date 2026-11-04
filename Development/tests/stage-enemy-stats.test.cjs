@@ -1,0 +1,10 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');const c=vm.createContext({});
+for(const n of ['game-config','stage-enemy-stats'])vm.runInContext(fs.readFileSync('Development/'+n+'.js','utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ',''),c);
+const run=s=>vm.runInContext(s,c);
+assert.equal(run("enemyStageLevelFormula('fourth')"),4);assert.equal(run("enemyStageLevelFormula('first',true)"),5);
+assert.equal(run('stageEnemyStats(1).maxHp'),40);assert.equal(run('stageEnemyStats(2).contactDamage'),7);
+assert.equal(run('stageEnemyStats(3).knockbackImmune'),true);assert.equal(run('stageEnemyStats(4).stageSpeedFactor'),1);
+assert.equal(run('stageEnemyStats(5,0).maxHp'),1500);assert.equal(run('stageEnemyStats(1,null,true).maxHp'),400);
+assert.equal(run('stageEnemyStats(5,60).maxHp'),1575);assert.equal(run('stageEnemyStats(5,60).contactDamage'),22);
+assert.equal(run('stageEnemyStats(1).expReward'),7);
+console.log('PASS: campaign/endless mapping, exact bases, immunity,eliteHP and minute-based endless scaling.');

@@ -1,0 +1,35 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Drawing skill verification</title>
+<link rel="stylesheet" href="../movement.css"><style>body{margin:0;padding:20px}.simulated-screen{width:960px;max-width:100%;margin:20px 0}#arena{background:linear-gradient(135deg,#c1f7ff,#73ade0)}.test-slot{width:70px;height:70px;position:relative;background:#c1faff}.test-slot img{position:absolute;width:100%;height:100%;z-index:2}.test-output{white-space:pre-wrap;max-height:90px;overflow:auto}</style></head><body>
+<h1>Drawing skill verification</h1><p>Isolated test surface. Right-click the blue arena, then draw with left-click.</p>
+<button id="pause-test">Pause / resume</button><button id="reset-test">Reset cooldowns</button><button id="model-test">Run model smoke test</button><button id="pattern-test">Run Plana pattern test</button><button id="launch-test">Launch umbrella demo</button>
+<p id="test-result" class="test-output">Ready.</p><p id="skill-cast-status" role="status"></p>
+<div class="hud-slot test-slot"><div id="test-cooldown" class="hud-slot-cooldown" hidden></div><img src="../../sprites/hud/attack-slot.png" alt="Weapon slot"><span id="test-cooldown-text"></span></div>
+<div class="simulated-screen"><canvas id="arena" width="960" height="540"></canvas>
+<div id="skill-feedback" class="skill-feedback" role="status" hidden></div>
+      <div id="skill-cast-overlay" class="skill-cast-overlay" hidden>
+<canvas id="skill-drawing-canvas"></canvas><div class="skill-cast-hint">DRAW YOUR SKILL<span id="skill-pattern-hint">Circle enclosing an arrow above an X</span><span>Left-click to draw | Right-click to cancel</span></div>
+<div class="skill-cast-countdown"><output id="skill-cast-timer">5.0s</output><div id="skill-cast-bar" class="skill-cast-bar" role="progressbar" aria-label="Drawing time remaining" aria-valuemin="0" aria-valuemax="5" aria-valuenow="5">
+<div class="skill-bar-track skill-bar-empty"><span></span><span></span><span></span></div><div id="skill-cast-fill" class="skill-bar-track skill-bar-filled"><span></span><span></span><span></span></div></div></div></div></div>
+<script type="module">
+import {createSkillCasting} from '../skill-casting.js';
+import {createDrawingRecognizer} from '../drawing-recognizer.js';
+import {drawingModelImage} from '../skill-drawing.js';
+import {recognizeWeaponPattern} from '../skill-pattern-recognition.js';
+import {createPlanaUmbrellaSkill} from '../plana-umbrella-skill.js';
+import {setOneHpEnemies,clearEnemies,rememberEnemy,getAllEnemies} from '../world-state.js';
+import {updateEnemyControl} from '../enemy-control.js';
+const demo=createPlanaUmbrellaSkill();
+setOneHpEnemies(false);
+async function demoCast(multiplier){await demo.ready;clearEnemies();demo.reset();for(let i=0;i<4;i++)rememberEnemy('test-'+i,{type:'mob',x:360+i*130,y:270+(i%2?30:-30),hp:1000,maxHp:1000,spriteSize:89.6});demo.cast(player,0,multiplier);}
+
+const canvas=document.querySelector('#arena'),ctx=canvas.getContext('2d');
+const weapon={id:'plana-umbrella',name:'Test Umbrella',icon:'test.png'},player={attackSlots:[weapon],x:180,y:270,combatStats:{atkPercent:0,critPercent:0}};let paused=false,override=false;
+const caster=createSkillCasting({canvas,aiming:{setDirectionalOverride(v){override=v}},getPlayer:()=>player,getCharacters:()=>[player],isPaused:()=>paused,
+ onRecognized:result=>{document.querySelector('#test-result').textContent=JSON.stringify(result,null,2);demoCast(result.damageMultiplier)}});
+document.querySelector('#pause-test').onclick=()=>{paused=!paused;if(paused)caster.cancel('pause')};
+document.querySelector('#reset-test').onclick=()=>{weapon.skillCooldownRemaining=0;paused=false;document.querySelector('#test-result').textContent='Cooldown reset.'};
+document.querySelector('#model-test').onclick=async()=>{const out=document.querySelector('#test-result');out.textContent='Loading QuickDraw and classifying a generated circle...';const recognizer=createDrawingRecognizer();try{const stroke=Array.from({length:80},(_,i)=>({x:150+90*Math.cos(i/79*Math.PI*2),y:150+90*Math.sin(i/79*Math.PI*2)}));const results=await recognizer.recognize(drawingModelImage([stroke]));out.textContent='MODEL PASS: '+JSON.stringify(results);}catch(error){out.textContent='MODEL ERROR: '+error.message;}finally{recognizer.dispose()}};
+document.querySelector('#launch-test').onclick=()=>demoCast();
+document.querySelector('#pattern-test').onclick=async()=>{const out=document.querySelector('#test-result');out.textContent='Checking whole symbol with CLIP and components with QuickDraw...';const recognizer=createDrawingRecognizer();try{const circle=Array.from({length:81},(_,i)=>({x:150+100*Math.cos(i/80*Math.PI*2),y:150+100*Math.sin(i/80*Math.PI*2)}));const sketch=[circle,[{x:120,y:160},{x:180,y:220}],[{x:180,y:160},{x:120,y:220}],[{x:150,y:90},{x:150,y:145}],[{x:125,y:115},{x:150,y:90},{x:175,y:115}]];const result=await recognizeWeaponPattern(sketch,weapon,recognizer);out.textContent='PATTERN '+(result.valid?'PASS: ':'FAIL: ')+JSON.stringify(result);if(result.valid)demoCast(result.damageMultiplier);}catch(error){out.textContent='PATTERN ERROR: '+error.message}finally{recognizer.dispose()}};
+let last;function frame(now){const dt=last?Math.min((now-last)/1000,.05):0;last=now;if(!paused){caster.update(dt);for(const enemy of getAllEnemies())updateEnemyControl(enemy,dt,(e,x,y)=>{e.x+=x;e.y+=y});demo.update(dt)}ctx.clearRect(0,0,960,540);ctx.fillStyle='#145ba0';ctx.beginPath();ctx.arc(player.x,player.y,30,0,Math.PI*2);ctx.fill();ctx.fillStyle='white';ctx.font='18px sans-serif';ctx.textAlign='center';ctx.fillText(override?'Directional aim':'Original aiming mode',player.x,320);for(const e of getAllEnemies()){ctx.fillStyle=e.stunRemaining>0?'#e4fbff':'#b04893';ctx.beginPath();ctx.arc(e.x,e.y,22,0,Math.PI*2);ctx.fill();ctx.fillStyle='#102944';ctx.fillText(e.hp+' HP / '+(e.stunRemaining||0).toFixed(1)+'s',e.x,e.y+42)}demo.draw(ctx,{x:0,y:0});const cd=document.querySelector('#test-cooldown');cd.hidden=!(weapon.skillCooldownRemaining>0);cd.style.setProperty('--cooldown-sweep',((1-(weapon.skillCooldownRemaining||0)/(weapon.skillCooldownDuration||1))*360)+'deg');document.querySelector('#test-cooldown-text').textContent=Math.ceil(weapon.skillCooldownRemaining||0)+'s';requestAnimationFrame(frame)}requestAnimationFrame(frame);
+</script></body></html>

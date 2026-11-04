@@ -12,3 +12,9 @@ The app uses Firebase's modular browser SDK, email/password accounts, and tab-sc
 The workspace redirect is a navigation guard. When project data is added, protect it with Firebase Security Rules or server-side ID-token validation; browser redirects do not authorize data access.
 
 Reference: [Firebase email/password authentication](https://firebase.google.com/docs/auth/web/password-auth), [browser SDK setup](https://firebase.google.com/docs/web/alt-setup).
+
+## Guest access
+
+The login page offers **Continue as guest**, followed by an explicit warning that upgrades, progress and other game data will not be saved. Cancel/Escape leaves the login page unchanged; confirmation opens the empty project workspace without Firebase sign-in or an anonymous account. Only a tab-scoped guest marker is stored; no game data is stored by guest access. Guest sessions never expose the admin Development link and are rejected by the Development guard, even if an account session exists in the browser. Successful account login/registration clears guest mode. When persistent gameplay storage is implemented, all save/load paths must respect `isGuestSession()` and keep guest runs transient.
+
+Verification: `node tests/guest-session.test.cjs`. Guest access does not require enabling Firebase Anonymous Authentication.

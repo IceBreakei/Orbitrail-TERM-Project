@@ -1,0 +1,88 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
+const root = path.resolve(__dirname, '..');
+const source = name => fs.readFileSync(path.join(root, name + '.js'), 'utf8')
+  .replace(/^import .*;\r?\n/gm, '').replace(/^export \{.*\} from .*;\r?\n/gm, '').replaceAll('export ', '');
+const context = vm.createContext({});
+vm.runInContext(source('game-config') + source('skill-cast-state') + source('skill-drawing'), context);
+const run = code => vm.runInContext(code, context);
+run("var weapon={icon:'test.png'};var owner={attackSlots:[weapon]};var submitted=[];var cast=createSkillCastState(job=>submitted.push(job))");
+assert.equal(run('cast.begin(owner,weapon)'), true);
+run('cast.update(4.9)'); assert.equal(run('cast.phase'), 'drawing');
+run('cast.update(.1)'); assert.equal(run('cast.phase'), 'idle'); assert.equal(run('submitted.length'), 0);
+assert.equal(run('weapon.skillCooldownRemaining || 0'), 0);
+run('advanceSkillCooldowns([owner],180)');
+run('cast.begin(owner,weapon);cast.strokeStart();cast.addInk(30);cast.update(1);cast.strokeEnd();cast.update(1.4)');
+assert.equal(run('cast.phase'), 'drawing');
+run('cast.strokeStart();cast.addInk(20);cast.strokeEnd();cast.update(1.4)');
+assert.equal(run('submitted.length'), 0);
+run('cast.update(.1)'); assert.equal(run('submitted.length'), 1);
+run('var oldToken=cast.token;cast.cancel("right")'); assert.equal(run('weapon.skillCooldownRemaining'), 30);
+assert.equal(run("cast.resolve(oldToken,{label:'umbrella',score:.95})"), false);
+assert.equal(run('weapon.skillCooldownRemaining'), 30);
+run('advanceSkillCooldowns([owner],30);cast.begin(owner,weapon);cast.addInk(20);cast.cancel("pause")');
+assert.equal(run('weapon.skillCooldownRemaining'), 60);
+run('advanceSkillCooldowns([owner],60);cast.begin(owner,weapon);cast.strokeStart();cast.addInk(100);cast.update(5)');
+assert.equal(run('cast.phase'), 'recognizing');
+assert.equal(run("cast.resolve(cast.token,{label:'umbrella',score:.95})"), true);
+assert.equal(run('weapon.skillCooldownRemaining'), 180);
+run('var second={icon:"second.png"};owner.attackSlots.push(second)');
+assert.equal(run('cast.begin(owner,second)'), true); run('cast.addInk(20);cast.cancel("pause")');
+assert.equal(run('second.skillCooldownRemaining'), 60);
+assert.equal(run('weapon.skillCooldownRemaining'), 180);
+run('advanceSkillCooldowns([owner,owner],1)'); assert.equal(run('weapon.skillCooldownRemaining'), 179);
+run('advanceSkillCooldowns([owner],180);cast.begin(owner,weapon);cast.strokeStart();cast.addInk(100);cast.update(5);cast.resolve(cast.token,null)');
+assert.equal(run('weapon.skillCooldownRemaining || 0'),0);
+assert.equal(run('cast.phase'),'idle');
+assert.equal(run('cast.begin(owner,weapon)'),true);
+run("cast.cancel('switch')");
+assert.equal(run('drawingBounds([])'), null);
+const bounds = run('drawingBounds([[{x:2,y:3},{x:8,y:9}],[{x:-2,y:6}]])');
+assert.equal(bounds.left, -2); assert.equal(bounds.bottom, 9);
+assert.equal(run('cast.begin(owner,null)'), false);
+console.log('PASS: blank timeout, five-second cap, multi-stroke idle reset, early submission, cancellation penalties, stale AI results, three-minute per-weapon cooldown, recognition errors, sketch bounds.');
+
+run('cast.begin(owner,weapon);cast.strokeStart();cast.addInk(.01);cast.update(5)');
+assert.equal(run('cast.phase'),'recognizing');
+console.log('PASS: positive ink has no raw-pixel size threshold; recognition checks the normalized shapes.');
+
+// One cooling weapon never prevents access to another ready skill or ultimate.
+run("var loadout={attackSlots:[{icon:'a',skillCooldownRemaining:180},{icon:'b',skillCooldownRemaining:0}],selectedSkillSlot:0,ultimateSkill:{icon:'ultimate',skillCooldownRemaining:0}};");
+assert.equal(run('readySkill(loadout)===loadout.attackSlots[1]'),true);
+run('loadout.attackSlots[1].skillCooldownRemaining=100');
+assert.equal(run('readySkill(loadout)===loadout.ultimateSkill'),true);
+run('loadout.ultimateSkill.skillCooldownRemaining=200');
+assert.equal(run('readySkill(loadout)'),undefined);
+run('advanceSkillCooldowns([loadout,loadout],100)');
+assert.equal(run('loadout.attackSlots[0].skillCooldownRemaining'),80);
+assert.equal(run('loadout.ultimateSkill.skillCooldownRemaining'),100);
+assert.equal(run('readySkill(loadout)===loadout.attackSlots[1]'),true);
+console.log('PASS: ready-weapon fallback, optional ultimate fallback, all-cooling block and independent deduplicated cooldowns.');
+
+run("var autoOwner={attackSlots:[{icon:'a'},{icon:'b'}],selectedSkillSlot:1};var autoState=createSkillCastState();autoState.begin(autoOwner,readySkill(autoOwner));autoState.strokeStart();autoState.addInk(100);autoState.update(5);");
+assert.equal(run('readySkill(autoOwner)===autoOwner.attackSlots[0]'),true); // No selected-slot dependency.
+assert.equal(run("autoState.resolve(autoState.token,{label:'matched second weapon',score:1,weapon:autoOwner.attackSlots[1]})"),true);
+assert.equal(run('autoOwner.attackSlots[0].skillCooldownRemaining'),undefined);
+assert.equal(run('autoOwner.attackSlots[1].skillCooldownRemaining'),180);
+assert.equal(run('autoOwner.selectedSkillSlot'),1);
+console.log('PASS: drawing resolves the matching weapon independently of HUD selection; only that skill cools down.');
+run("var firstSkill={id:'plana-umbrella',icon:'u'};var drawnSkill={id:'aris-laser',icon:'s'};var bothOwner={attackSlots:[firstSkill,drawnSkill]};var failureCast=createSkillCastState(()=>{});failureCast.begin(bothOwner,firstSkill);failureCast.strokeStart();failureCast.addInk(100);failureCast.update(5)");
+assert.equal(run("failureCast.resolve(failureCast.token,{valid:false,weapon:drawnSkill,reason:'Incomplete Supernova'})"),false);
+assert.equal(run('drawnSkill.skillCooldownRemaining || 0'),0);
+assert.equal(run('firstSkill.skillCooldownRemaining || 0'),0);
+console.log('PASS: failed Supernova recognition leaves every skill ready.');
+
+run("var blank={icon:'blank'};var emptyOwner={attackSlots:[blank]};var emptyCast=createSkillCastState();emptyCast.begin(emptyOwner,blank);emptyCast.cancel('right')");
+assert.equal(run('blank.skillCooldownRemaining || 0'),0);
+run("emptyCast.begin(emptyOwner,blank);emptyCast.cancel('pause')");assert.equal(run('blank.skillCooldownRemaining || 0'),0);
+run("var cancelSkills={attackSlots:[{id:'plana-umbrella',icon:'u'},{id:'aris-laser',icon:'s'}]};var targeted=createSkillCastState();targeted.begin(cancelSkills,cancelSkills.attackSlots[0]);targeted.addInk(100);targeted.cancel('right',cancelSkills.attackSlots[1])");
+assert.equal(run('cancelSkills.attackSlots[0].skillCooldownRemaining || 0'),0);
+assert.equal(run('cancelSkills.attackSlots[1].skillCooldownRemaining'),30);
+console.log('PASS: empty right-click/pause cancel has no cooldown; ink penalty uses supplied matching skill.');
+run("var undecidedSkills={attackSlots:[{icon:'a'},{icon:'b'}]};var undecided=createSkillCastState();undecided.begin(undecidedSkills,undecidedSkills.attackSlots[0]);undecided.addInk(100);undecided.update(5)");
+assert.equal(run("undecided.resolve(undecided.token,{valid:false,label:'uncertain',score:.9,weapon:undecidedSkills.attackSlots[1]})"),false);
+assert.equal(run('undecidedSkills.attackSlots.some(w=>w.skillCooldownRemaining>0)'),false);
+assert.equal(run('undecided.phase'),'idle');
+console.log('PASS: ambiguous/explicitly invalid results cannot apply a cooldown even with a high score.');

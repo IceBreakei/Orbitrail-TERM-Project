@@ -1,0 +1,11 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const c=vm.createContext({});
+for(const name of ['game-config','run-score'])vm.runInContext(fs.readFileSync('Development/'+name+'.js','utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ',''),c);
+const run=s=>vm.runInContext(s,c);
+run("var tracker=createRunScore();tracker.recordDefeat({type:'mob'});tracker.recordDefeat({type:'shiroko'});tracker.recordDefeat({miniBoss:true});var character={label:'Plana',level:5}");
+assert.equal(run('tracker.counts.enemyDefeated'),3);assert.equal(run('tracker.counts.bossDefeated'),1);assert.equal(run('tracker.counts.miniBossDefeated'),1);
+run("tracker.complete({character,elapsedSeconds:300,stage:'first'})");assert.equal(run('tracker.results.length'),1);
+run("tracker.complete({character,elapsedSeconds:600,stage:'second',endless:true})");assert.equal(run('tracker.results.length'),2);
+assert.equal(run("tracker.complete({character,elapsedSeconds:601,stage:'second',endless:true})"),null);
+run('tracker.counts.enemyDefeated=999');assert.equal(run('tracker.counts.enemyDefeated'),3);
+console.log('PASS: real defeat categories, stage snapshots, one endless result and protected counter snapshots.');

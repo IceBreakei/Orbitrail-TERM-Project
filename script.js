@@ -1,10 +1,13 @@
 import { getFirebaseAuth } from './firebase-client.js';
+import { startGuestSession, endGuestSession } from './guest-session.js';
 
 // Cache the form elements used by the authentication controls.
 const form = document.querySelector('#auth-form');
 const password = document.querySelector('#password');
 const message = document.querySelector('#message');
 const submit = form.querySelector('[type="submit"]');
+const guestButton = document.querySelector('#continue-as-guest');
+const guestDialog = document.querySelector('#guest-confirmation');
 let registering = false;
 
 
@@ -17,11 +20,11 @@ function toggleAuthMode() {
   password.minLength = registering ? 8 : 1;
   password.autocomplete = registering ? 'new-password' : 'current-password';
   document.querySelector('#form-title').textContent = registering
-    ? 'Welcome to Schale, Sensei'
+    ? 'Create an account'
     : 'Welcome back, Sensei';
   document.querySelector('#form-description').textContent = registering
-    ? 'Register your Sensei profile and join Schale.'
-    : 'Log in to Schale and prepare for your next sortie.';
+    ? 'Create your Sensei profile.'
+    : 'Log in to continue.';
   document.querySelector('#submit-label').textContent = registering
     ? 'Create account'
     : 'Log in';
@@ -84,6 +87,7 @@ async function handleAuthSubmit(event) {
 
   // Prevent mode changes or repeated submissions while authentication is pending.
   submit.disabled = true;
+  guestButton.disabled = true;
   switchButton.disabled = true;
   form.setAttribute('aria-busy', 'true');
 
@@ -109,11 +113,13 @@ async function handleAuthSubmit(event) {
     }
 
     password.value = '';
+    endGuestSession();
     window.location.assign('project.html');
   } catch (error) {
     message.textContent = getAuthErrorMessage(error);
   } finally {
     submit.disabled = false;
+    guestButton.disabled = false;
     switchButton.disabled = false;
     form.removeAttribute('aria-busy');
   }
@@ -123,3 +129,27 @@ async function handleAuthSubmit(event) {
 document.querySelector('#switch-mode').addEventListener('click', toggleAuthMode);
 document.querySelector('.reveal').addEventListener('click', togglePasswordVisibility);
 form.addEventListener('submit', handleAuthSubmit);
+
+/** Ask before entering an unsaved guest session; Cancel and Escape keep the login page. */
+guestButton.addEventListener('click', () => {
+  guestDialog.returnValue = '';
+  guestDialog.showModal();
+});
+guestDialog.addEventListener('close', () => {
+  if (guestDialog.returnValue !== 'continue') return;
+  try {
+    startGuestSession();
+    window.location.assign('project.html');
+  } catch {
+    message.textContent = 'Guest access needs session storage. Allow it in your browser and try again.';
+  }
+});
+
+/** Right-click dismisses the guest confirmation just like Cancel. */
+guestDialog.addEventListener('pointerdown', event => {
+  if (event.button !== 2) return;
+  event.preventDefault();
+  event.stopPropagation();
+  guestDialog.close('cancel');
+});
+guestDialog.addEventListener('contextmenu', event => event.preventDefault());

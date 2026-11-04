@@ -1,0 +1,36 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="../movement.css"><title>EX Skills layout preview</title></head><body>
+<div class="simulated-screen" style="width:1280px;height:720px;background:repeating-linear-gradient(45deg,#32789c 0 70px,#84c5b6 70px 140px)"><section class="pause-overlay"><section id="pause-skills-panel" class="pause-skills-panel" aria-labelledby="pause-skill-name">
+          <header class="pause-skills-header">
+            <button id="pause-skills-back" type="button" data-thin-text>Back</button>
+            <span data-thin-text>EX Skills</span>
+          </header>
+          <details class="pause-weapon-divider" name="pause-ex-weapons" data-weapon="plana-umbrella" open>
+            <summary><h2 id="pause-skill-name" data-thin-text>Plana's Umbrella</h2><span class="pause-divider-marker" aria-hidden="true">+</span></summary>
+          <article class="pause-skill-entry">
+            <div class="pause-pattern-column">
+            <svg class="pause-cast-pattern" viewBox="0 0 200 200" role="img" aria-label="Casting pattern: a circle enclosing an arrow above an X">
+              <defs><linearGradient id="pause-ink" x2="1" y2="1"><stop stop-color="#69edff"/><stop offset="1" stop-color="#bcaaff"/></linearGradient></defs>
+              <g fill="none" stroke="url(#pause-ink)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="100" cy="100" r="86"/>
+                <path d="M100 94V43M76 67L100 43L124 67M75 119L125 160M125 119L75 160"/>
+              </g>
+            </svg>
+            <p data-thin-text>Pattern: Draw a circle, an arrow inside its upper half, and an X below the arrow. Stroke order is flexible.</p>
+            </div>
+            <div class="pause-description-column">
+              <canvas id="pause-skill-icon" width="160" height="160" role="img" aria-label="Weapon icon"></canvas>
+              <h3 data-thin-text>Umbrella Launch</h3>
+              <p id="pause-skill-equipped" data-thin-text></p>
+              <p id="pause-skill-effect" data-thin-text></p>
+            </div>
+          </article>
+          </details>
+          <p class="pause-skill-note" data-thin-text>More weapon EX Skills will appear here as they are added.</p>
+        </section></section></div>
+<script type="module">
+import {createBitmapText} from '../bitmap-font.js';
+document.querySelector('#pause-skill-equipped').textContent='Equipped';
+document.querySelector('#pause-skill-effect').textContent='Launches an open umbrella forward, clearing a path by knocking enemies aside and stunning them for 3 seconds.';
+for(const element of document.querySelectorAll('[data-thin-text]')){const text=element.textContent;const canvas=document.createElement('canvas');element.replaceChildren(canvas);const renderer=createBitmapText(canvas,{variant:'font2',scale:1.5,outlineOverlap:1,maxWidth:element.clientWidth,wrap:element.tagName==='P'});renderer.setText(text);}
+const image=new Image();image.onload=()=>{const c=document.querySelector('#pause-skill-icon').getContext('2d');c.translate(80,80);c.rotate(Math.PI/4);c.drawImage(image,100,228,68,304,-13.6,-60.8,27.2,121.6)};image.src='../../sprites/attacks/plana umbrella.png';
+</script></body></html>
