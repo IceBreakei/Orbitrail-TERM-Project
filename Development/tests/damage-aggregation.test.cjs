@@ -12,3 +12,8 @@ run('showDamageNumber(target,10,false,"supercritical","princess-key")');assert.e
 run('updateDamageNumbers(.31);showDamageNumber(target,5,false,"supercritical","princess-key")');assert.equal(run('numbers.length'),5);
 run('showDamageNumber({x:0,y:0},2,false,"normal","princess-key");showDamageNumber(target,9)');assert.equal(run('numbers.length'),7);
 console.log('PASS: consecutive same-type hits stack; switches start fresh popups without reviving earlier runs; old numbers continue fading;0.3s timeout and target/source isolation.');
+
+assert.equal(run('damageNumberStyle(8,true,"shield").color'),'#62cfff');assert.equal(run('damageNumberStyle(8,true).color'),'#ff5265');assert.equal(run('damageNumberStyle(0,true,"miss").text'),'MISS');
+console.log('PASS shield blue, HP red, and MISS style precedence.');
+
+assert.equal(run('damageNumberStyle(0,true,"miss").color'),"#ffffff");assert.equal(run('damageNumberStyle(0,true,"miss").italic'),true);

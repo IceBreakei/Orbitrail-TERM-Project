@@ -1,0 +1,24 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Plasma rendering comparison</title><style>body{margin:0;background:#0c2140;color:#dff8ff;font:16px system-ui}h1{font-size:20px;margin:20px}canvas{display:block;margin:20px;width:850px;max-width:94vw;background:#314b81}p{margin:20px}</style></head><body><h1>Shared plasma renderer comparison</h1><p>Kei pink / Princess and Key blue / Decagrammaton blue (original size)</p><canvas width="850" height="430"></canvas><script type="module">
+import {drawLuminousPlasma} from '../luminous-nova.js';import {luminousNovaSettings as settings} from '../game-config.js';
+const c=document.querySelector('canvas'),ctx=c.getContext('2d');
+ctx.fillStyle='#314b81';ctx.fillRect(0,0,c.width,c.height);
+ctx.strokeStyle='#ffffff16';for(let x=0;x<c.width;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,c.height);ctx.stroke();}for(let y=0;y<c.height;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(c.width,y);ctx.stroke();}
+for(const [row,age] of [.12,.2,.29].entries()){
+ const y=90+row*130;ctx.fillStyle='#e4faff';ctx.fillText(`age ${age.toFixed(2)}s`,10,y-25);
+ for(const [col,color] of ['pink','blue','blue'].entries()){
+ const b={x:200+col*280,y,age,angle:0,color,accelerating:true,speed:settings.projectileSpeed};
+ if(col===2){b.fadeOutSeconds=.12;b.trailSpeed=settings.projectileSpeed*1.6;b.accelerating=false;}
+ drawLuminousPlasma(ctx,{x:0,y:0},b,settings.bulletDiameter*(col===2?1.6:1),col===2?40/60:settings.duration);
+ }
+}document.body.dataset.ready='true';
+
+const created=document.createElement('canvas');created.width=850;created.height=280;document.body.append(created);const cc=created.getContext('2d');cc.fillStyle='#314b81';cc.fillRect(0,0,850,280);
+try{
+ const [{createDecagrammatonAttack},{rememberEnemy,setOneHpEnemies},{getEnemyHurtbox}]=await Promise.all([import('../decagrammaton.js'),import('../world-state.js'),import('../combat-hitboxes.js')]);
+ setOneHpEnemies(false);const target=rememberEnemy('render-target',{type:'mob',x:350,y:150,hp:1e9,maxHp:1e9,spriteSize:40});
+ const player={label:'Plana',x:140,y:150,level:1,attackSlots:[{id:'decagrammaton'}],combatStats:{}};
+ let seed=23;const random=()=>((seed=Math.imul(seed,1664525)+1013904223>>>0)/4294967296);
+ const attack=createDecagrammatonAttack({random});attack.update(.3,player,0,{x:0,y:0,width:850,height:280});attack.draw(cc,{x:0,y:0});
+ cc.fillStyle='#e4faff';cc.fillText('Actual Decagrammaton creation + motion at 0.30s (near target)',20,25);cc.strokeStyle='#ffb86b';const box=getEnemyHurtbox(target);cc.beginPath();cc.ellipse(box.x,box.y,box.rx,box.ry,0,0,Math.PI*2);cc.stroke();
+}catch(e){cc.fillStyle='white';cc.fillText(e.stack,10,50);}
+</script></body></html>

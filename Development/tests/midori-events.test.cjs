@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const context = vm.createContext({});
 const source = name => fs.readFileSync(path.join(__dirname, '..', name+'.js'), 'utf8')
  .replace(/^import .*;\r?\n/gm,'').replace(/^export \{.*\} from .*;\r?\n/gm,'').replaceAll('export ','');
-for (const name of ['game-config','combat-stats','combat-hitboxes','midori','enemy-variants','endless-buildup','endless-events']) vm.runInContext(source(name),context);
+for (const name of ['game-config','item-catalog','combat-stats','combat-hitboxes','midori','enemy-variants','endless-buildup','endless-events']) vm.runInContext(source(name),context);
 const run = code => vm.runInContext(code,context);
 assert(Math.abs(run('midoriSpeed({movementSpeedMultiplier:240/180,combatStats:{spdPercent:0}})')-194.94)<1e-8);
 assert(Math.abs(run('midoriSpeed({movementSpeedMultiplier:240/180,combatStats:{spdPercent:50}})')-292.41)<1e-8);

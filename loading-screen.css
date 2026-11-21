@@ -1,0 +1,14 @@
+html:has(.archive-loading){overflow:hidden}
+.archive-loading{position:fixed;inset:0;z-index:2147483647;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(ellipse at 65% 30%,#fff 0%,#edfaff 50%,#d1edff 100%);color:#17496c;font-family:Arial,sans-serif;opacity:1;transition:opacity .3s ease;isolation:isolate}
+.archive-loading.is-ready{opacity:0;pointer-events:none}
+.loading-grid{position:absolute;inset:-50%;z-index:-1;opacity:.28;background-image:linear-gradient(#89d2ed55 1px,transparent 1px),linear-gradient(90deg,#89d2ed55 1px,transparent 1px);background-size:64px 64px;transform:rotate(-12deg)}
+.archive-loading:before{content:"";position:absolute;right:-15%;top:-30%;width:55%;height:150%;background:linear-gradient(140deg,#39c9f322,#1da1dc14);transform:skewX(-24deg);z-index:-1}
+.loading-emblem{width:100px;height:100px;border:2px solid #39bcec;transform:rotate(45deg);box-shadow:0 0 35px #63cfff44;display:grid;place-items:center;margin-bottom:45px}
+.loading-emblem span{width:48px;height:48px;border:8px solid #1ba6dc;border-top-color:transparent;border-radius:50%;animation:archive-spin 1.8s linear infinite}
+.loading-brand{font-size:clamp(16px,3vw,28px);letter-spacing:.2em;text-align:center}.loading-brand strong{display:block;color:#087fb8;font-size:clamp(27px,5vw,48px);font-style:italic;letter-spacing:.08em;margin-top:8px}
+.loading-bottom{position:absolute;bottom:10%;width:min(650px,80vw)}
+.loading-heading{display:flex;justify-content:space-between;font-size:14px;font-weight:700;font-style:italic;letter-spacing:.14em;margin-bottom:12px}
+.loading-track{height:12px;border:1px solid #168bb9;background:#c3e2ef;transform:skewX(-18deg);padding:2px}.loading-fill{height:100%;width:0;background:linear-gradient(90deg,#1184cf,#39d7f8);box-shadow:0 0 12px #2fcfff66;transition:width .18s ease}.loading-caption{font-size:12px;letter-spacing:.08em;color:#53829b;margin-top:12px}
+.archive-loading button{position:absolute;bottom:3%;padding:10px 30px;border:1px solid #168bb9;background:white;color:#17496c;cursor:pointer}
+@keyframes archive-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.loading-emblem span{animation:none}.archive-loading,.loading-fill{transition:none}}

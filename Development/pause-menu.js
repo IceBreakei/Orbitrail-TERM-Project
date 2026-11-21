@@ -33,10 +33,10 @@ export function createPauseMenu({ canvas, getPlayer, releaseControls, onPause = 
   const weaponList=document.createElement('nav');weaponList.className='pause-ex-list';weaponList.setAttribute('aria-label','Weapon EX skills');
   const skillDetail=document.createElement('div');skillDetail.className='pause-ex-detail';
   const weaponButtons=[],skillArticles=[];let selectedSkill=0;
-  const iconSources=['../sprites/attacks/plana umbrella.png','../sprites/attacks/Weapon_Icon_Arisu.png','../sprites/attacks/Weapon_Icon_Kei.png'];
+  const iconSources=['../sprites/attacks/plana umbrella.png','../sprites/attacks/Weapon_Icon_Arisu.png','../sprites/attacks/Weapon_Icon_Kei.png',null,'../sprites/attacks/protocolsupernova.png'];
   function selectSkill(index){selectedSkill=index;weaponButtons.forEach((button,i)=>{button.classList.toggle('selected',i===index);button.setAttribute('aria-pressed',String(i===index));skillArticles[i].hidden=i!==index;});}
   weaponDividers.forEach((divider,index)=>{
-    const heading=divider.querySelector('h2'),name=heading.textContent.trim(),article=divider.querySelector('article');
+    const heading=divider.querySelector('h2'),name=heading.getAttribute?.('aria-label')||heading.textContent.trim(),article=divider.querySelector('article');
     article.querySelector('div > p')?.remove(); // The diagram communicates the pattern without prose instructions.
     for(const title of article.querySelectorAll('h3'))if(title.textContent.trim()===name)title.remove();
     article.prepend(heading);skillArticles.push(article);skillDetail.append(article);
@@ -47,7 +47,7 @@ export function createPauseMenu({ canvas, getPlayer, releaseControls, onPause = 
     else {
       const image=new Image();image.onload=()=>{
         const crop=index===0?{x:100,y:228,width:68,height:304}:{x:0,y:0,width:image.naturalWidth,height:image.naturalHeight};
-        const angle=(index===0?45:-45)*Math.PI/180,extent=(crop.width+crop.height)/Math.SQRT2,scale=86/extent;
+        const angle=(index===0?45:index===4?0:-45)*Math.PI/180,extent=(crop.width+crop.height)/Math.SQRT2,scale=86/extent;
         const context=icon.getContext('2d');context.save();context.translate(48,48);context.rotate(angle);
         context.drawImage(image,crop.x,crop.y,crop.width,crop.height,-crop.width*scale/2,-crop.height*scale/2,crop.width*scale,crop.height*scale);context.restore();
       };image.src=iconSources[index];
@@ -124,7 +124,7 @@ export function createPauseMenu({ canvas, getPlayer, releaseControls, onPause = 
     refreshSkill();
   }
 
-  /** Preserve the session and prevent hidden developer controls changing it while paused. */
+  /** Freeze game simulation without making the surrounding page inert. */
   function setPaused(enabled) {
     if (paused === enabled || (enabled && isBlocked())) return;
     paused = enabled;
@@ -137,12 +137,9 @@ export function createPauseMenu({ canvas, getPlayer, releaseControls, onPause = 
       showSkills(false);
       settings.hidden = true;
       document.querySelector('#pause-settings-toggle').setAttribute('aria-expanded', 'false');
-      const main = document.querySelector('#development-content');
-      const layout = document.querySelector('.playtest-layout');
-      const blocked = [...main.children].filter(element => element !== layout)
-        .concat(document.querySelector('.playtest-sidebar'), document.querySelector('.skill-test-sidebar'), canvas, document.querySelector('#exit-fullscreen-preview'));
-      previousInert = blocked.map(element => [element, element.inert]);
-      for (const [element] of previousInert) element.inert = true;
+      // Pause only the game surface; surrounding page/admin controls stay interactive.
+      previousInert = [[canvas,canvas.inert]];
+      canvas.inert = true;
       resume.focus({ preventScroll: true });
     } else {
       for (const [element, inert] of previousInert) element.inert = inert;
@@ -181,7 +178,8 @@ export function createPauseMenu({ canvas, getPlayer, releaseControls, onPause = 
     document.querySelector('#exit-fullscreen-preview').click();
   });
   window.addEventListener('keydown', event => {
-    if (event.key !== 'Escape' || event.repeat || isBlocked()) return;
+    if (event.key !== 'Escape' || event.repeat || isBlocked() || event.ctrlKey || event.metaKey || event.altKey) return;
+    if(event.target!==canvas&&event.target!==pauseButton&&!overlay.contains?.(event.target))return;
     event.preventDefault();
     event.stopImmediatePropagation();
     setPaused(!paused);

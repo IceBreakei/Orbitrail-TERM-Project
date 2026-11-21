@@ -1,0 +1,12 @@
+﻿const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const c=vm.createContext({URL,Image:class{naturalWidth=64;naturalHeight=64;decode(){return Promise.resolve()}},getAllEnemies:()=>[],getEnemy:()=>null,drawFiringRings(){},applySkillControl(){}});
+for(const name of ['game-config','tuning-parts','rgb-tuning','item-catalog','combat-stats','combat-hitboxes','luminous-nova','enemy-spatial-index','princess-key','aris-weapon'])vm.runInContext(fs.readFileSync(`Development/${name}.js`,'utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export \{.*\}.*;\r?\n/gm,'').replaceAll('export ','').replaceAll('import.meta.url',"'file:///Development/aris-weapon.js'"),c);
+const run=s=>vm.runInContext(s,c);run('var settings=princessKeySettings');const bullets=[];c.drawLuminousPlasma=(ctx,cam,bullet)=>bullets.push(bullet);
+run('var p={label:"Plana",x:0,y:0,tuningParts:createTuningRun(),attackSlots:[createLuminousNovaWeapon()]};p.tuningParts.equipped=[{id:"reverse-tuning",level:1},{id:"rgb-tuning",level:1},null];var nova=createLuminousNovaAttack();nova.update(.01,p,0);nova.draw({}, {x:0,y:0})');
+assert.equal(bullets.at(-1).angle,0);assert.equal(bullets.at(-1).rainbow,true);
+run('p.attackSlots=[{id:"princess-key",level:1}];var princess=createPrincessKeyAttack({random:()=>.5});princess.update(.01,p,0);princess.draw({}, {x:0,y:0})');assert.equal(bullets.at(-1).angle,0);assert.equal(bullets.at(-1).rainbow,true);
+const rotations=[],colors=[];c.context=new Proxy({rotate:a=>rotations.push(a),createLinearGradient:()=>({addColorStop:(i,color)=>colors.push(color)})},{get:(t,k)=>k in t?t[k]:()=>{}});
+run('p.attackSlots=[createArisWeapon()];var beam=createArisAttack();beam.update(.05,p,0);beam.draw(context,{x:0,y:0})');assert(rotations.includes(0));assert(colors.includes('#ff6090'));assert(colors.includes('#ec80ff'));
+rotations.length=0;run('beam.cast(p,0,1.5,()=>.4);beam.update(.1,p,0);beam.draw(context,{x:0,y:0})');assert(rotations.includes(.4));
+run('p.tuningParts.equipped[0].level=2;nova.reset();p.attackSlots=[createLuminousNovaWeapon()];nova.update(.01,p,0);nova.draw({}, {x:0,y:0})');assert.equal(bullets.at(-1).angle,0);
+console.log('PASS: Reverse leaves weaponaim normal whileRGB stillcoversallweaponsandEXs.');

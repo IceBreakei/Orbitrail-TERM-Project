@@ -1,7 +1,10 @@
 /** MAX weapons use their own energy color; awakening remains a separate upgrade. */
 export function enhancedWeaponGlow(weapon) {
+  if(weapon?.isSuper)return '#ffd45a';
   if(!weapon||!(weapon.level>=7))return '';
-  return weapon.id==='luminous-nova'?'#ff71d5':weapon.id==='aris-laser'?'#65cfff':'';
+  // Plana's awakened outline/sparkles are handled by the existing CSS treatment.
+  if(weapon.id==='plana-umbrella'&&weapon.awakened)return '';
+  return weapon.id==='luminous-nova'?'#ff71d5':weapon.id==='aris-laser'?'#65cfff':'#ffd45a';
 }
 
 /** Apply the glow to the icon silhouette, never the surrounding inventory box. */

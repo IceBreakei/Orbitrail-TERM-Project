@@ -1,3 +1,16 @@
+import {stationaryWeaponIntervalScale} from './tuning-parts.js';
+import {tryWeakTuningHit} from './weak-tuning.js';
+import {playTrumpetTuning} from './trumpet-tuning.js';
+import {trySlowdownTuningHit} from './slowdown-tuning.js';
+import {rgbTuningActive,tintRainbowTrail} from './rgb-tuning.js';
+import {startingWeaponAim} from './tuning-parts.js';
+import {tryNeutralizationHit} from './neutralization-tuning.js';
+import {onTargetTuningHit} from './target-tuning.js';
+import {tryRepairTuningHit} from './repair-tuning.js';
+import {applyTuningKnockback} from './knockback-tuning.js';
+import {tryLuxeryTuningHit} from './luxery-tuning.js';
+import {tryColdTuningHit} from './cold-tuning.js';
+import {tryTuningExplosion} from './tuning-explosions.js';
 import { umbrellaSettings, attackTimeFormula } from './game-config.js';
 export { umbrellaSettings } from './game-config.js';
 import { getAllEnemies, damageEnemy } from './world-state.js';
@@ -50,26 +63,30 @@ export function createUmbrellaAttack() {
   const trailContext = trailCanvas.getContext('2d');
   let autoattackEnabled = true;
   let owner;
-  let cycle = 0;
+  let cycle = 0,stationaryScale=1;
   let swing;
   let clock = 0;
   const hitTimes = new Map();
 
   /** Cancel attacks on avatar/loadout changes and start one sweep per configured attack interval. */
-  function update(delta, player, aim) {
+  function update(delta, player, aim, eraseProjectiles) {
     if (!autoattackEnabled) return;
     const equipped = player.attackSlots?.some(item => item?.id === 'plana-umbrella');
     if (!equipped) { owner = null; swing = null; cycle = 0; clock = 0; hitTimes.clear(); return; }
     if (owner !== player) { owner = player; swing = null; cycle = 0; clock = 0; hitTimes.clear(); }
+    const intervalScale=player.tuningParts?stationaryWeaponIntervalScale(player):1;
+    cycle*=intervalScale/stationaryScale;stationaryScale=intervalScale;
     clock += delta;
     for (const [id, time] of hitTimes) if (clock-time > umbrellaSettings.interval+umbrellaSettings.hitCooldown) hitTimes.delete(id);
     cycle = Math.max(0, cycle - delta);
     if (!swing && cycle <= 0) {
+      if(player.tuningParts)playTrumpetTuning(player);
       const haste = 1; // Haste changes attack intervals, never swing duration or trails.
       const upgrades = umbrellaLevelStats(player);
-      swing = { aim, areaScale: upgrades.areaScale, awakened: upgrades.awakened, elapsed: 0, previous: umbrellaSwingAngle(aim, 0), hits: new Set(), haste,
+      const swingAim=player.tuningParts?startingWeaponAim(player,'plana-umbrella',aim):aim;
+      swing = { aim:swingAim, areaScale: upgrades.areaScale, awakened: upgrades.awakened, elapsed: 0, previous: umbrellaSwingAngle(swingAim, 0), hits: new Set(), haste,
         duration: umbrellaSettings.duration / haste, linger: umbrellaSettings.trailLinger / haste };
-      cycle = attackTimeFormula(umbrellaSettings.interval * upgrades.intervalMultiplier, ensureCombatStats(player).hastePercent);
+      cycle = attackTimeFormula(umbrellaSettings.interval * upgrades.intervalMultiplier * stationaryScale, ensureCombatStats(player).hastePercent);
     }
     if (swing) {
       const wasAttacking = swing.elapsed < swing.duration;
@@ -80,9 +97,22 @@ export function createUmbrellaAttack() {
           swing.hits.add(enemy.id);
           hitTimes.set(enemy.id, clock);
           const hit = rollUmbrellaDamage(player, undefined, Math.random, 1, enemy);
-          damageEnemy(enemy.id, hit.damage, player, hit.type, { canMiss: true });
+          const hpBefore=enemy.hp;
+          const landed=damageEnemy(enemy.id, hit.damage, player, hit.type, { canMiss: true,weaponId:'plana-umbrella' });
+          if(landed&&player.tuningParts)onTargetTuningHit({player,projectile:swing,enemy,damage:Math.min(hpBefore,hit.damage),hitType:hit.type});
+          if(landed&&player.tuningParts)tryWeakTuningHit({player,enemy});
+          if(landed&&player.tuningParts)tryNeutralizationHit({player,enemy});
+          if(landed&&player.tuningParts)applyTuningKnockback(player,enemy);
+          if(landed&&player.tuningParts)tryRepairTuningHit({player});
+          if(landed&&player.tuningParts)tryLuxeryTuningHit({player,enemy,damage:hit.damage});
+          if(landed&&player.tuningParts)trySlowdownTuningHit({player,enemy,rollDamage:(target,multiplier)=>rollUmbrellaDamage(player,undefined,Math.random,multiplier,target)});
+          if(landed&&player.tuningParts)tryColdTuningHit({player,enemy,rollDamage:(target,multiplier)=>rollUmbrellaDamage(player,undefined,Math.random,multiplier,target)});
+          if(landed&&player.tuningParts)tryTuningExplosion({player,projectile:swing,enemy,
+            rollDamage:(target,multiplier,options)=>rollUmbrellaDamage(player,undefined,Math.random,multiplier,target,options)});
         }
       }
+      if(wasAttacking&&player.tuningParts&&eraseProjectiles)eraseProjectiles({player,attack:swing,
+        intersects:b=>umbrellaHits(player,{x:b.x,y:b.y,spriteHurtbox:{offsetX:0,offsetY:0,width:b.radius*2,height:b.radius*2}},swing.previous,angle,swing.areaScale)});
       swing.previous = angle;
       if (swing.elapsed >= swing.duration + swing.linger) swing = null;
     }
@@ -125,6 +155,7 @@ export function createUmbrellaAttack() {
         (0.018 + 0.032 * weight * weight) * fade);
     }
     context.restore();
+    if(owner.tuningParts&&rgbTuningActive(owner))tintRainbowTrail(context,trailCanvas.width,trailCanvas.height);
     outputContext.save();
     outputContext.translate(owner.x - camera.x, owner.y - camera.y);
     const size = swing.areaScale * umbrellaSettings.sizeScale;

@@ -7,7 +7,7 @@ export const developmentSettings = { adminSeedByDefault: true, randomSpawning: f
 
 export const playerSettings = {
   movementBase: 180, speed: 240, npcSpeed: 84,
-  planaHp: 110, aronaHp: 140, planaPickup: 99, aronaPickup: 0
+  planaHp: 70, planaBaseATK: 130, planaBaseSPD: 130, planaCritPercent: 10, planaSize: 1/5, aronaHp: 140, planaPickup: 99, aronaPickup: 0
 };
 export const combatBalance = { enemyHitboxScale: 0.81, criticalMultiplier: 1.5, eliteHpMultiplier: 10,
   eliteContactMultiplier: 2, otherEnemyHp: 100 };
@@ -34,6 +34,8 @@ export const arisWeaponSettings = { maxLevel: 7,
 // scene-metrics settings (see FORMULAS.md for meanings).
 export const normalSpriteSize = 89.6;
 export const bossSpriteSize = normalSpriteSize * 3;
+// Arisu's body occupies less of her GIF canvas; exclude the halo when matching Shiroko.
+export const arisuBossSizeMultiplier = 1.66;
 export const bossMinimumSpriteSize = bossSpriteSize * 1.1; // Shiroko +10%; floor for boss entities.
 export const spriteDisplayPadding = 5.6;
 // enemy-variants settings (see FORMULAS.md for meanings).
@@ -45,6 +47,7 @@ export const standardEnemyWeights = { mob: 70, whiteSweeper: 15, heavySweeper: 1
 // Elite chance ramps only after Stage 4, using active endless time (not total survival).
 // Stage progression advances only when the entire boss wave is defeated.
 export const stageProgressionSettings = {
+  bossClearDelay: 1.5,
   order: ['first', 'second', 'third', 'fourth'],
   secretChance: 0.1, secretStageId: 'secret'
 };
@@ -66,7 +69,7 @@ export function eliteChanceFormula(endlessSeconds = null) {
 }
 
 export const mobBaseHp = 60;
-export const shirokoBossStats = { hpMultiplier: 100, contactDamage: 15 };
+export const shirokoBossStats = { hp: 25000, hpMultiplier: 100, contactDamage: 20 };
 // New Mob spawns scale with survival time; linear by default, continuing after 15 minutes.
 export const mobHealthScaling = { targetSeconds: 15 * 60, targetHp: 350, exponent: 1 };
 // Timer text size and gap in pixels below the top EXP bar.
@@ -522,13 +525,16 @@ export function enemyStageLevelFormula(mapId, endless = false) {
 
 /** Per-type bases and automatic spawn windows; end times are exclusive. */
 export const enemyTypeStats = {
+  neru: { baseHP: 57000, baseATK: 20, baseSPD: 0.9, expValue: 2000 },
+  iroha: { baseHP: 55000, baseATK: 25, baseSPD: 0.75, expValue: 6000 },
+  arisu: { baseHP: 45000, baseATK: 20, baseSPD: 1, expValue: 6000 },
   mob: { baseHP: 8, baseATK: 2, baseSPD: 0.35, expValue: 6,
     spawnStartSeconds: 0, spawnEndSeconds: 180 },
   whiteSweeper: { baseHP: 40, baseATK: 4, baseSPD: 0.4, expValue: 7,
     spawnStartSeconds: 30, spawnEndSeconds: 300 },
   heavySweeper: { baseHP: 80, baseATK: 4, baseSPD: 0.4, expValue: 8,
     spawnStartSeconds: 180, spawnEndSeconds: 300 },
-  shiroko: { baseHP: 8000, baseATK: 15, baseSPD: 0.8, expValue: 2000, spawnAtSeconds: 300 },
+  shiroko: { baseHP: 25000, baseATK: 20, baseSPD: 1.2, expValue: 5000, spawnAtSeconds: 360 },
   megaSweeper: { baseHP: 1800, baseATK: 10, baseSPD: 0.75, expValue: 600, spawnAtSeconds: 240 },
   megaMob: { baseHP: 600, baseATK: 6, baseSPD: 0.5, expValue: 150,
     spawnAtSeconds: 120 }
@@ -576,10 +582,10 @@ export const enemyStagePools = {
 
 /** Boss behavior timings are independent of animation GIF durations. */
 export const bossBehaviorSettings = {
-  arisu:{interval:8,chargeUpSeconds:2,chargeSpeed:1100,recoverySeconds:.6},
-  iroha:{interval:6,cannonSeconds:.88,artillerySeconds:1.12,artilleryDelay:1.3,artilleryRadius:64},
-  neru:{interval:7,shootSeconds:2,bulletInterval:.25,bulletCount:12,bulletSpeed:240,
-    compressSeconds:.55,leapSeconds:1,leapHeight:210,landingRadius:75,recoverySeconds:.5},
+  arisu:{interval:8,chargeUpSeconds:3,trackingSeconds:2,warningOffsetY:20,chargeSpeed:1375,chargeDamage:20,chargeRadius:30,warningWidth:194,brakingDistance:220,decelerationSeconds:1.5,recoverySeconds:.6},
+  iroha:{interval:6,attackAngleExponent:Math.log(9)/Math.log(8),cannonWindupSeconds:1,cannonFireDelay:.75,cannonFireFrame:2,cannonPredictionSeconds:.6,cannonMaxInterceptWait:4,cannonSeconds:2.41,cannonSpeed:2400,cannonDiameter:20,cannonRadius:36,cannonWarningWidth:72,cannonOffsetY:40,artillerySeconds:1.12,artilleryBeforeCannonChance:.3,artilleryAfterCannonChance:.3,artilleryLeadAfter:5,artilleryLeadChance:.5,artilleryLeadSeconds:1,artilleryMaxLead:300,artilleryDelay:1.5,artilleryStaggerSeconds:.25,artilleryFallSeconds:.35,artilleryShellScale:.55,artilleryCoverage:1.4,artilleryCircleSpacing:1.8,artillerySpacing:145,artilleryRadius:96},
+  neru:{interval:7,chaseCenterOffsetY:10,shootSeconds:2,bulletInterval:.25,streamBulletInterval:.08,streamBulletSpeed:345.6,streamLaneOffset:9,bulletCount:12,bulletSpeed:288,bulletRadius:7.2,
+    compressSeconds:1,leapRiseSeconds:1,leapTrackingSeconds:3,leapLockSeconds:1,leapFallSeconds:1,landingRadius:75,shadowScale:1.4,shadowFadeSeconds:.12,shadowChaseSpeed:480,impactSquash:.55,impactShakeSeconds:.3,impactShakeStrength:7,bulletDiameter:4.32,recoverySeconds:1},
   projectileLifetime:8,projectileLimit:256
 };
 
@@ -632,3 +638,69 @@ export const princessKeySettings = {
 
 /** Synergy EX: bank10%of amplifier damage, capped by Kei's existing5000%ATK rule. */
 export const princessKeySkillSettings={buffSeconds:25,hitCooldown:.6,residueSeconds:4,residueRadius:240,sprayTailSeconds:.5};
+
+/** Visible Arisu body center in her foot-aligned 200px reference frame, excluding halo. */
+export function arisuBodyCenterOffsetY(character) {
+  const size=character.spriteSize||bossSpriteSize*arisuBossSizeMultiplier;
+  return size/2-spriteDisplayPadding-(155-87.5)*(size-2*spriteDisplayPadding)/200;
+}
+
+/** Center of Neru's visible normal body relative to the foot-aligned world anchor. */
+export function neruBodyCenterOffsetY(character) {
+  const size=character.spriteSize||bossMinimumSpriteSize;
+  return size/2-spriteDisplayPadding-85*(size-2*spriteDisplayPadding)/200+bossBehaviorSettings.neru.chaseCenterOffsetY;
+}
+
+// Bad Cooking: one continuously renewed player-centered area, independent of Haste.
+export const badCookingSettings={damage:.9,interval:10,minimumInterval:10,duration:601/60,
+  hitCooldown:45/60,area:1.1,baseRadius:140/1.1,maxLevel:7,knockbackSeconds:5/60,knockbackSpeed:60};
+export function createBadCookingWeapon(){return {id:'bad-cooking',name:'Bad Cooking',level:1,maxLevel:7,weight:4,
+  icon:'../sprites/attacks/Bad Cooking.png',attackType:'Melee',ranged:false,attackCount:1,defaultUnlocked:true};}
+export function badCookingLevelStats(level=1){
+  level=Math.max(1,Math.min(7,level));
+  return {level,radius:badCookingSettings.baseRadius*badCookingSettings.area*(level>=2?1.15:1)*(level>=4?1.25:1),
+    damageBonuses:[...(level>=3?[30]:[]),...(level>=6?[60]:[])],
+    hitCooldown:badCookingSettings.hitCooldown/(level>=5?1.2:1),knockback:level>=7};
+}
+export const badCookingDescriptions={1:'Create an area of miasma around, dealing slow damage to enemies inside.',
+  2:'Increase area by 15%.',3:'Increase damage by 30%.',4:'Increase area by 25%.',
+  5:'Increase frequency of hits by 20%.',6:'Increase damage by 60%.',7:'Add small knockback on hit.'};
+
+export const molotovSettings={damage:.8,interval:5,hitCooldown:.75,area:.9,baseRadius:100,duration:3,speed:6*60,maxLevel:7};
+export function createMolotovWeapon(){return {id:'molotov-cocktail',name:'Molotov Cocktail',level:1,maxLevel:7,weight:3,
+  attackType:'Multishot',ranged:true,defaultUnlocked:true,icon:'../sprites/attacks/Event 41 - Dakimakura.png'};}
+export function molotovLevelStats(level=1){
+  level=Math.max(1,Math.min(7,level));
+  return {count:1+Number(level>=3)+Number(level>=6)+Number(level>=7),
+    radius:molotovSettings.baseRadius*molotovSettings.area*(level>=2?1.2:1)*(level>=7?1.2:1),
+    damageBonuses:[...(level>=4?[30]:[]),...(level>=5?[30]:[])],duration:molotovSettings.duration+Number(level>=4)};
+}
+export const molotovDescriptions={1:'Ignites flames on the ground, burning targets slowly.',2:'Increase fire area by 20%.',
+  3:'Throw 2 Molotov Cocktails.',4:'Increase damage by 30% and fire duration by 1 second.',5:'Increase damage by 30%.',
+  6:'Throw 3 Molotov Cocktails.',7:'Throw 4 Molotov Cocktails and increase napalm size by 20%.'};
+
+export function racerPassBonuses(player){
+ const item=player.equipmentSlots?.find(i=>i?.id==='racer-pass');
+ if(!item)return {size:0,pickup:0,hp:0};
+ const superItem=item.isSuper||item.awakened,index=Math.min(2,Math.max(0,(item.level||1)-1));
+ return {size:superItem?30:[10,15,20][index],pickup:superItem?100:[30,40,50][index],hp:superItem?20:0};
+}
+/** Racer Pass and future skill size bonuses share an additive family. */
+export function weaponSizeMultiplier(player){return Math.max(0,1+(racerPassBonuses(player).size+(Number(player.weaponSizeBonusPercent)||0))/100)*Math.max(0,player.weaponAreaMultiplier??1);}
+export function weaponKnockbackMultiplier(player){return 1+racerPassBonuses(player).size/100;}
+
+export const saintPredatorSettings={damage:1,interval:.5,hitCooldown:.5,duration:1.5,speed:4*60,area:.9,length:22,radius:5,maxLevel:7};
+export function createSaintPredatorWeapon(){return {id:'saint-predator',name:'Saint Predator',level:1,maxLevel:7,weight:2,exSkill:false,
+  attackType:'Multishot',ranged:true,defaultUnlocked:false,unlockObjective:'Defeat the boss in Stage 1',icon:'../sprites/attacks/Misaki_UE.png',iconFlipX:true,iconRotation:45,iconCrop:{x:220,y:10,width:520,height:225}};}
+export function saintPredatorLevelStats(level=1){
+ level=Math.max(1,Math.min(7,level));return {count:level>=7?4:level>=3?2:1,
+  interval:saintPredatorSettings.interval*(level>=4?.67:1)*(level>=6?.5:1),
+  speed:saintPredatorSettings.speed*(level>=5?1.25:1),damageBonuses:[...(level>=2?[20]:[]),...(level>=5?[20]:[])]};
+}
+export const saintPredatorDescriptions={1:'Fires rapid missiles at random targets.',2:'Increase damage by 20%.',3:'Shoot 2 missiles.',
+  4:'Reduce time between attacks by 33%.',5:'Missiles are 25% faster and increase damage by 20%.',
+  6:'Reduce time between attacks by 50%.',7:'Shoot 4 missiles.'};
+
+// Chise Plushie drains one point of pending damage every 1.5 gameplay seconds.
+export const chisePlushieSettings={tickSeconds:1.5,damagePerTick:1};
+export function chiseDelayConfigured(){return typeof chisePlushieSettings.damagePerTick==='function'||Number(chisePlushieSettings.damagePerTick)>0;}

@@ -1,3 +1,4 @@
+import { createPickupReentryGuard } from './pickup-reentry.js';
 import { goldenCrafterChoices, applyGoldenCrafterChoice } from './golden-crafter-rules.js';
 import { getCombatHitbox, segmentHitsBody } from './combat-hitboxes.js';
 import { createCrafterMenu } from './crafter-menu.js';
@@ -37,8 +38,8 @@ export function crafterTouchesPlayer(drop,player,previous=player,padding=0) {
 }
 
 /** Steady white ground glow and soft cyan-white pillar; purely visual, with no flashing. */
-export function drawCrafterGlow(context,x,y,golden=false) {
-  const glow=crafterSettings.glow;
+export function drawCrafterGlow(context,x,y,golden=false,pillarHeight=crafterSettings.glow.pillarHeight) {
+  const glow={...crafterSettings.glow,pillarHeight};
   context.save();context.globalCompositeOperation='lighter';context.globalAlpha=glow.opacity;
   if(golden)context.filter='sepia(1) saturate(4)';
   // Stretch a radial falloff into a narrow pillar, extending below and above the icon.
@@ -59,21 +60,35 @@ export function drawCrafterGlow(context,x,y,golden=false) {
   context.restore();
 }
 
+/** Always-visible pickup marker, pointing toward the drop at viewport edges. */
+export function drawCrafterMarker(context,x,y,width,height,golden=false,pillarHeight=crafterSettings.glow.pillarHeight) {
+      const offscreen=x<20||x>width-20||y<20||y>height-20;
+      let ax=x,ay=Math.max(28,y-pillarHeight-18),angle=Math.PI/2;
+      if(offscreen) {
+        const dx=x-width/2,dy=y-height/2;
+        const scale=Math.min((width/2-30)/Math.max(.001,Math.abs(dx)),(height/2-30)/Math.max(.001,Math.abs(dy)));
+        ax=width/2+dx*scale;ay=height/2+dy*scale;angle=Math.atan2(dy,dx);
+      }
+      context.save();context.translate(ax,ay);context.rotate(angle);context.fillStyle=golden?'#ffeaa0':'#fff';context.strokeStyle=golden?'#b88b20':'#1d719c';context.lineWidth=2;
+      // Local +X is the tip; rotation points down at visible Crafters or toward offscreen ones.
+      context.beginPath();context.moveTo(22,0);context.lineTo(-14,-17);context.lineTo(-14,17);context.closePath();context.fill();context.stroke();context.restore();
+}
+
 /** Run-scoped, non-magnetic Crafter drops and the paused, cancellable upgrade menu. */
 export function createCrafterSystem({getPlayer,canvas,onOpen=()=>{},onChange=()=>{},onResult=()=>{},golden=false,getMinuteTimer=()=>0}) {
-  const drops=new Map();let nextId=0,active=null,ignoreUntilLeave=null;
+  const drops=new Map();let nextId=0,active=null;const reentry=createPickupReentryGuard();
   const toast=document.createElement('div');toast.className='crafter-toast';toast.setAttribute('role','status');toast.hidden=true;canvas.parentElement.append(toast);let toastTimer;
   const icon=new Image();icon.src=crafterSettings.icon.source;
   const ready=icon.decode();
-  /** Close without consuming; require leaving its pickup radius before reopening. */
-  function close() {ignoreUntilLeave=active;active=null;menu.close();canvas.focus({preventScroll:true});}
+  /** Closing an unused Crafter requires full separation plus 1.5 seconds before reopening. */
+  function close() {if(active!==null&&drops.has(active))reentry.block(active);active=null;menu.close();canvas.focus({preventScroll:true});}
   const menu=createCrafterMenu({canvas,getPlayer,golden,onCancel:close,onAction:id=>{
     if(active===null||!drops.has(active))return;
     const result=golden?applyGoldenCrafterChoice(getPlayer(),id):applyCrafterChoice(getPlayer(),id);
     if(!result.consumed){menu.refresh();return;}
     drops.delete(active);close();onChange();
-    // Successful fusion is shown directly by the new inventory weapon, without an alert.
-    if(golden&&result.success)return;
+    // Successful upgrades, enhancements and fusions are reflected directly in inventory.
+    if(result.success)return;
     onResult(result.message);
     toast.textContent=result.message;toast.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{toast.hidden=true},4000);
   }});
@@ -92,13 +107,10 @@ export function createCrafterSystem({getPlayer,canvas,onOpen=()=>{},onChange=()=
     return random()<chance?spawn(enemy.x,enemy.y):false;
   }
   /** Walk onto a Crafter to open it; cancellation does not destroy the ground object. */
-  function update(player,previous) {
+  function update(player,previous=player,delta=0) {
     if(active!==null)return;
     for(const drop of drops.values()) {
-      if(ignoreUntilLeave===drop.id) {
-        if(!crafterTouchesPlayer(drop,player,player,crafterSettings.reentryPadding))ignoreUntilLeave=null;
-        continue; // Leaving after Cancel must not immediately reactivate via the swept path.
-      }
+      if(reentry.blocked(drop.id,crafterTouchesPlayer(drop,player,player,crafterSettings.reentryPadding),delta))continue;
       if(crafterTouchesPlayer(drop,player,previous||player)){open(drop);break;}
     }
   }
@@ -116,18 +128,9 @@ export function createCrafterSystem({getPlayer,canvas,onOpen=()=>{},onChange=()=
         context.drawImage(icon,crop.x,crop.y,crop.width,crop.height,
           bounds.left-camera.x,bounds.top-camera.y,bounds.right-bounds.left,bounds.bottom-bounds.top);context.restore();
       }
-      const offscreen=x<20||x>width-20||y<20||y>height-20;
-      let ax=x,ay=Math.max(28,y-crafterSettings.glow.pillarHeight-18),angle=Math.PI/2;
-      if(offscreen) {
-        const dx=x-width/2,dy=y-height/2;
-        const scale=Math.min((width/2-30)/Math.max(.001,Math.abs(dx)),(height/2-30)/Math.max(.001,Math.abs(dy)));
-        ax=width/2+dx*scale;ay=height/2+dy*scale;angle=Math.atan2(dy,dx);
-      }
-      context.save();context.translate(ax,ay);context.rotate(angle);context.fillStyle=golden?'#ffeaa0':'#fff';context.strokeStyle=golden?'#b88b20':'#1d719c';context.lineWidth=2;
-      // Local +X is the tip; rotation points down at visible Crafters or toward offscreen ones.
-      context.beginPath();context.moveTo(22,0);context.lineTo(-14,-17);context.lineTo(-14,17);context.closePath();context.fill();context.stroke();context.restore();
+      drawCrafterMarker(context,x,y,width,height,golden);
     }
   }
   return {ready,spawn,roll,update,draw,get active(){return active!==null;},get count(){return drops.size;},
-    clear(){drops.clear();ignoreUntilLeave=null;if(active!==null)close();}};
+    clear(){if(active!==null)close();drops.clear();reentry.clear();}};
 }

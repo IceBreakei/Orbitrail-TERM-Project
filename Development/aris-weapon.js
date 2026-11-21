@@ -1,3 +1,7 @@
+import { weaponSizeMultiplier, weaponKnockbackMultiplier } from './game-config.js';
+import {stationaryWeaponIntervalScale} from './tuning-parts.js';
+import {startingWeaponAim} from './tuning-parts.js';
+import {rgbTuningActive,rainbowTrailGradient} from './rgb-tuning.js';
 import { arisWeaponSettings, attackTimeFormula, supernovaSkillSettings, arisBeamVisualSettings } from './game-config.js';
 import { statMultiplier, ensureCombatStats, rollAttackDamage, totalWeaponDamage } from './combat-stats.js';
 import { getAllEnemies, getEnemy, damageEnemy } from './world-state.js';
@@ -8,7 +12,7 @@ import { drawFiringRings } from './firing-rings.js';
 /** Create Supernova with independent automatic and EX attacks. */
 export function createArisWeapon() {
   return { id: 'aris-laser', name: 'Supernova', icon: '../sprites/attacks/Weapon_Icon_Arisu.png',
-    level: 1, iconRotation: -45, exSkill: true };
+    level: 1, iconRotation: -45, exSkill: true, defaultUnlocked: false, unlockObjective: 'Defeat the boss in Stage 2' };
 }
 
 /** Find the equipped laser, independently of every other automatic weapon. */
@@ -26,11 +30,11 @@ export function arisLevelStats(player) {
 }
 
 /** Roll the supplied27-33base damage range, then weapon levels and player ATK/crit. */
-export function rollArisDamage(player, random = Math.random, target, damageMod = 1) {
+export function rollArisDamage(player, random = Math.random, target, damageMod = 1, skillAttack = false) {
   const s = arisWeaponSettings;
   return rollAttackDamage(player, totalWeaponDamage(player, 'aris-laser', s.damageMultiplier,
     [(arisLevelStats(player).damage - 1) * 100],
-    { projectileCount: arisLevelStats(player).beams, hitCooldownFrames: s.hitCooldown * 60 }), random, { target, damageMod });
+    { projectileCount: arisLevelStats(player).beams, hitCooldownFrames: s.hitCooldown * 60 }), random, { target, damageMod, skillAttack });
 }
 
 /** Invisible piercing capsule starts at the player, bridging the decorative muzzle gap. */
@@ -42,10 +46,11 @@ export function arisBeamHits(enemy, origin, angle, width, length = arisWeaponSet
 
 /** Own an independent automatic laser cycle alongside all other equipped autoattacks. */
 export function createArisAttack({getWeapon=getArisWeapon,specialHitCooldown=supernovaSkillSettings.hitCooldown,
-  rollSpecialDamage=(player,enemy,multiplier)=>rollArisDamage(player,Math.random,enemy,multiplier),onSpecialHit=()=>{}}={}) {
+  rollSpecialDamage=(player,enemy,multiplier)=>rollArisDamage(player,Math.random,enemy,multiplier,true),onSpecialHit=()=>{}}={}) {
   let autoattackEnabled = true;
   let special = null;
   let owner = null, cooldown = 0, clock = 0, volleys = [];
+  let stationaryScale=1;
   const hitTimes = new Map();
   function clear() { special = null; owner = null; cooldown = 0; clock = 0; volleys = []; hitTimes.clear(); }
   const s = arisWeaponSettings;
@@ -61,11 +66,15 @@ export function createArisAttack({getWeapon=getArisWeapon,specialHitCooldown=sup
     cast(player, angle, damageMultiplier = 1.5, getAngle = () => angle) {
       if (owner !== player) { clear(); owner = player; }
       volleys = []; // Cancel the current automatic beam before the EX opening.
-      special = { player, angle, getAngle, damageMultiplier, elapsed: 0, hits: new Map() };
+      const turn=value=>player.tuningParts?startingWeaponAim(player,getWeapon(player)?.id,value):value;
+      special = { player, angle:turn(angle), getAngle:()=>turn(getAngle()), damageMultiplier, elapsed: 0, hits: new Map() };
     },
     update(delta, player, aim) {
       if (!getWeapon(player)) { clear(); return; }
       if (owner !== player) { clear(); owner = player; }
+      if(player.tuningParts)aim=startingWeaponAim(player,getWeapon(player)?.id,aim);
+      const intervalScale=player.tuningParts?stationaryWeaponIntervalScale(player):1;
+      cooldown*=intervalScale/stationaryScale;stationaryScale=intervalScale;
       clock += delta;
       if (special) {
         special.elapsed += delta;
@@ -77,8 +86,8 @@ export function createArisAttack({getWeapon=getArisWeapon,specialHitCooldown=sup
       if (autoattackEnabled && !special && cooldown <= 0) {
         const stats = arisLevelStats(player);
         volleys.push({ elapsed: 0, angles: stats.beams === 2 ? [aim, aim + Math.PI] : [aim],
-          width: s.beamWidth * stats.size, origin: arisBeamAnchor(player) });
-        cooldown = attackTimeFormula(stats.interval, ensureCombatStats(player).hastePercent);
+          width: s.beamWidth * stats.size * weaponSizeMultiplier(player), origin: arisBeamAnchor(player) });
+        cooldown = attackTimeFormula(stats.interval*stationaryScale, ensureCombatStats(player).hastePercent);
       }
       const active = [...volleys];
       if (special && supernovaBeamPhase(special.elapsed).damaging) active.push({ elapsed: special.elapsed, angles: [special.angle], width: supernovaSkillSettings.beamWidth,
@@ -105,7 +114,7 @@ export function createArisAttack({getWeapon=getArisWeapon,specialHitCooldown=sup
                 supernovaSkillSettings.knockbackSeconds,
                 { ignoreKnockbackResistance: supernovaSkillSettings.ignoreKnockbackResistance });
             } else {
-              const distance = s.knockbackSpeed * s.knockbackSeconds;
+              const distance = s.knockbackSpeed * s.knockbackSeconds * weaponKnockbackMultiplier(player);
               applySkillControl(living, Math.cos(angle) * distance, Math.sin(angle) * distance,
                 s.knockbackSeconds, s.knockbackSeconds, { ignoreKnockbackResistance: s.ignoreKnockbackResistance });
             }
@@ -181,7 +190,9 @@ export function createArisAttack({getWeapon=getArisWeapon,specialHitCooldown=sup
             context.globalCompositeOperation = blend;
             const half = volley.width * scale * thickness / 2;
             context.filter = `blur(${blur}px)`;
-            context.fillStyle = color;
+            const rainbow=owner?.tuningParts&&rgbTuningActive(owner)&&scale>.6;
+            context.fillStyle = rainbow?rainbowTrailGradient(context,offset,-volley.width,offset+600,volley.width):color;
+            context.globalAlpha=rainbow?(scale>2?.35:.75):1;
             // Curved shoulders and a rounded nose soften the former triangular opening.
             context.beginPath(); context.moveTo(offset, 0);
             context.bezierCurveTo(offset, -half*.35, offset+cone*.45, -half, offset+cone, -half);

@@ -15,7 +15,7 @@ import { normalSpriteSize } from './scene-metrics.js';
 export function enemyVariant(type, template, mode = 'random', random = Math.random, survivalSeconds = 0, endlessSeconds = null, eliteProbability = eliteChanceFormula(endlessSeconds)) {
   const elite = template.miniBoss === true || type === 'midori' || (type === 'mob' || template.standard) && (mode === 'elite' || (mode === 'random' && random() < eliteProbability));
   const baseHp = (['mob', 'midori'].includes(type) || template.standard) ? basicMobHpFormula(survivalSeconds)
-    : type === 'shiroko' ? mobBaseHp * shirokoBossStats.hpMultiplier : combatBalance.otherEnemyHp;
+    : type === 'shiroko' ? shirokoBossStats.hp : combatBalance.otherEnemyHp;
   const megaType = type === 'megaMob' || (type === 'mob' && elite) ? 'megaMob' :
     type === 'megaSweeper' || (['whiteSweeper','heavySweeper'].includes(type) && elite) ? 'megaSweeper' : null;
   const dedicatedMega = Boolean(megaType);

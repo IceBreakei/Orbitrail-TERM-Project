@@ -1,13 +1,18 @@
+import { racerPassBonuses } from './game-config.js';
+import { itemCritPenalty, overclockingStats } from './item-catalog.js';
+import {tuningPerk} from './tuning-parts.js';
 import { createBitmapText } from './bitmap-font.js';
 import { ensurePlayerStats } from './player-stats.js';
 
+/** Signed bonuses are relative to a neutral 100% base, including character defaults. */
+function signedStatPercent(value){const rounded=Number(value.toFixed(2));return `${rounded>=0?'+':''}${rounded}%`;}
 /** Shared stat labels, icons and formatting for Pause and Crafter screens. */
 export const characterStatRows = [
   ['HP','Bond.png',p=>`${Math.ceil(p.hp)}/${p.maxHp}`],
-  ['ATK','Tournament Water Gun.png',p=>`+${p.combatStats?.atkPercent||0}%`],
-  ['SPD','Crew Whistle.png',p=>`+${p.combatStats?.spdPercent||0}%`],
-  ['CRT','Event 27 - 10 Sided Dice.png',p=>`${Object.values(p.combatBuffs||{}).reduce((sum,buff)=>sum+(Number(buff?.critPercent)||0),p.combatStats?.critPercent||0)}%`],
-  ['Pickup','Event 06 - Buff 14.png',p=>`+${p.combatStats?.pickupPercent||0}%`],
+  ['ATK','Tournament Water Gun.png',p=>signedStatPercent((p.baseATK??100)-100+(Number(p.combatStats?.atkPercent)||0)+overclockingStats(p).atk)],
+  ['SPD','Crew Whistle.png',p=>signedStatPercent((p.baseSPD??100)-100+(Number(p.combatStats?.spdPercent)||0)+(p.tuningParts?tuningPerk(p.tuningParts,'characterSpeedPercent'):0))],
+  ['CRT','Event 27 - 10 Sided Dice.png',p=>`${Number(Math.max(0,Math.min(100,Object.values(p.combatBuffs||{}).reduce((sum,buff)=>sum+(Number(buff?.critPercent)||0),(Number(p.combatStats?.critPercent)||0)-itemCritPenalty(p)))).toFixed(2))}%`],
+  ['Pickup','Event 06 - Buff 14.png',p=>signedStatPercent((Number(p.combatStats?.pickupPercent)||0)+racerPassBonuses(p).pickup)],
   ['Haste','Skill Book Node.png',p=>`+${p.combatStats?.hastePercent||0}%`]
 ];
 

@@ -1,3 +1,4 @@
+import { totalPlayerShield, syncLifeJacketShield, syncRacerPassHealth } from './item-catalog.js';
 import { createBitmapText, glyphRectangle } from './bitmap-font.js';
 import { getLootTotals } from './exp-drops.js';
 import { getKillCount } from './world-state.js';
@@ -91,6 +92,9 @@ export function createHud(getFrameRectangle) {
     for (const entry of slots) {
       const item = items[entry.index];
       entry.slot.classList.toggle('weapon-awakened', Boolean(item?.awakened));
+      const ultimateReady=entry.type==='attack'&&item?.id==='decagrammaton'&&!(activeCharacter?.ultimateSkill?.skillCooldownRemaining>0);
+      entry.slot.classList.toggle('ultimate-ready',ultimateReady);
+      entry.slot.setAttribute('data-ultimate-ready',String(ultimateReady));
       entry.slot.classList.toggle('weapon-synergy',entry.type==='attack'&&Boolean(item?.isSynergy));
       applyEnhancedWeaponGlow(entry.icon,item);
       const source = item?.icon || '';
@@ -102,8 +106,8 @@ export function createHud(getFrameRectangle) {
       const label = source ? item.name || `${entry.type} ${entry.index + 1}`
         : `Empty ${entry.type} slot ${entry.index + 1}`;
       const starterId=activeCharacter?.mainWeaponId??(activeCharacter?.label==='Plana'?'plana-umbrella':null);
-      const levelLabel=entry.type==='attack'&&!item?.isSynergy&&item?.level>=7&&item.id!==starterId?'MAX':`LV ${item?.level}`;
-      const key = JSON.stringify([source, label, item?.iconCrop, item?.iconRotation, item?.level, item?.awakened, item?.enhancementRank,levelLabel,item?.synergyTopWeaponId]);
+      const levelLabel=entry.type!=='attack'&&Number.isFinite(item?.maxLevel)&&item.level>=item.maxLevel?'MAX':entry.type==='attack'&&!item?.isSynergy&&item?.level>=7&&item.id!==starterId?'MAX':`LV ${item?.level}`;
+      const key = JSON.stringify([source, label, item?.iconCrop, item?.iconFit, item?.iconRotation, item?.iconFlipX, item?.level, item?.awakened, item?.enhancementRank,levelLabel,item?.synergyTopWeaponId]);
       if (entry.previous === key) continue;
       changed = true;
       entry.previous = key;
@@ -125,9 +129,11 @@ export function createHud(getFrameRectangle) {
           const angle = (item.iconRotation || 0) * Math.PI / 180;
           const boundWidth = Math.abs(crop.width * Math.cos(angle)) + Math.abs(crop.height * Math.sin(angle));
           const boundHeight = Math.abs(crop.width * Math.sin(angle)) + Math.abs(crop.height * Math.cos(angle));
-          const scale = 120 / Math.max(boundWidth, boundHeight);
+          // Equipment frame's cyan corners enclose a slightly shorter area than its width.
+          const scale = item.iconFit?Math.min(124/boundWidth,108/boundHeight):120/Math.max(boundWidth,boundHeight);
           iconContext.save();
           iconContext.translate(64, 64);
+          if(item.iconFlipX)iconContext.scale(-1,1);
           iconContext.rotate(angle);
           iconContext.drawImage(image, crop.x, crop.y, crop.width, crop.height,
             -crop.width * scale / 2, -crop.height * scale / 2, crop.width * scale, crop.height * scale);
@@ -164,6 +170,7 @@ export function createHud(getFrameRectangle) {
 
   /** Reflect existing character state; defaults stay full HP and zero EXP for tests. */
   function update(character) {
+    syncRacerPassHealth(character);syncLifeJacketShield(character);
     creditsText.setText(String(getLootTotals().credits));
     killsText.setText(String(getKillCount()));
     const playerLevel = Math.max(1, Math.floor(Number(character.level) || 1));
@@ -184,9 +191,9 @@ export function createHud(getFrameRectangle) {
     const hpRightInset = health === 0 ? 100 : health === maximumHp ? 0
       : (643 - (72 + 557 * health / maximumHp)) / 643 * 100;
     hpFill.style.clipPath = `inset(0 ${hpRightInset}% 0 0)`;
-    const shield = Math.max(0, Math.min(maximumHp, character.shield || 0));
+    const shield = totalPlayerShield(character);
     shieldFill.hidden = shield === 0;
-    const shieldRightInset = (643 - (72 + 557 * shield / maximumHp)) / 643 * 100;
+    const shieldRightInset = (643 - (72 + 557 * Math.min(shield,maximumHp) / maximumHp)) / 643 * 100;
     shieldFill.style.clipPath = `inset(0 ${shieldRightInset}% 0 0)`;
     // Match the animated fill boundary, using the shield artwork's interior columns.
     shieldEdge.style.left = `${100 - shieldRightInset}%`;

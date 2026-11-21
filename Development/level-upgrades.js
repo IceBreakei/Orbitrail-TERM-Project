@@ -1,3 +1,7 @@
+import { createSaintPredatorWeapon, saintPredatorDescriptions } from './game-config.js';
+import { createMolotovWeapon, molotovDescriptions } from './game-config.js';
+import { createBadCookingWeapon, badCookingDescriptions } from './game-config.js';
+import { itemUpgradeChoices, applyItemUpgrade, isContentUnlocked } from './item-catalog.js';
 import { createLuminousNovaWeapon, getLuminousNova } from './luminous-nova.js';
 import { recordWeaponMax } from './weapon-max-order.js';
 import { upgradeLevelLabel } from './upgrade-label.js';
@@ -42,14 +46,14 @@ const luminousDescriptions={
 };
 
 /** Offer acquisition or the next Aris upgrade, plus existing umbrella choices. */
-export function rollLevelUpgrades(player) {
+export function rollLevelUpgrades(player, {all=false}={}) {
   ensurePlayerStats(player);
   const choices = umbrellaChoices(player);
   // Fusion ingredients stay out of the upgrade pool while their synergy is equipped.
   const blocked=new Set((player.attackSlots||[]).filter(Boolean).flatMap(item=>
     item.consumedWeaponIds||(item.id==='princess-key'?['aris-laser','luminous-nova']:[])));
   const weapon = getArisWeapon(player);
-  if (!blocked.has('aris-laser') && !weapon && (player.attackSlots || []).filter(Boolean).length < 6) choices.push({
+  if (!blocked.has('aris-laser') && !weapon && isContentUnlocked('aris-laser') && (player.attackSlots || []).filter(Boolean).length < 6) choices.push({
     id: 'aris-new', name: "Supernova LV 1", weapon: createArisWeapon(), category: 'NEW Weapon',
     description: 'Shoot a powerful piercing laser beam every 3 seconds.'
   });
@@ -64,14 +68,49 @@ export function rollLevelUpgrades(player) {
   else if(!blocked.has('luminous-nova')&&luminous&&(luminous.level||1)<luminousNovaSettings.maxLevel)choices.push({
     id:'luminous-level',name:`Luminous Nova ${upgradeLevelLabel(luminous,luminousNovaSettings.maxLevel)}`,weapon:luminous,category:'Weapon',
     description:luminousDescriptions[(luminous.level||1)+1]});
+  const cooking=player.attackSlots?.find(w=>w?.id==='bad-cooking');
+  if(!blocked.has('bad-cooking')&&!player.disabledWeaponIds?.includes('bad-cooking')){
+    if(!cooking&&(player.attackSlots||[]).filter(Boolean).length<6)choices.push({id:'cooking-new',name:'Bad Cooking LV 1',weapon:createBadCookingWeapon(),category:'NEW Weapon',description:badCookingDescriptions[1]});
+    else if(cooking&&(cooking.level||1)<7)choices.push({id:'cooking-level',name:`Bad Cooking ${upgradeLevelLabel(cooking,7)}`,weapon:cooking,category:'Weapon',description:badCookingDescriptions[(cooking.level||1)+1]});
+  }
+  const molotov=player.attackSlots?.find(w=>w?.id==='molotov-cocktail');
+  if(!blocked.has('molotov-cocktail')&&!player.disabledWeaponIds?.includes('molotov-cocktail')){
+    if(!molotov&&(player.attackSlots||[]).filter(Boolean).length<6)choices.push({id:'molotov-new',name:'Molotov Cocktail LV 1',weapon:createMolotovWeapon(),category:'NEW Weapon',description:molotovDescriptions[1]});
+    else if(molotov&&(molotov.level||1)<7)choices.push({id:'molotov-level',name:`Molotov Cocktail ${upgradeLevelLabel(molotov,7)}`,weapon:molotov,category:'Weapon',description:molotovDescriptions[(molotov.level||1)+1]});
+  }
+  const saint=player.attackSlots?.find(w=>w?.id==='saint-predator');
+  if(!blocked.has('saint-predator')&&!player.disabledWeaponIds?.includes('saint-predator')){
+    if(!saint&&isContentUnlocked('saint-predator')&&(player.attackSlots||[]).filter(Boolean).length<6)choices.push({id:'saint-new',name:'Saint Predator LV 1',weapon:createSaintPredatorWeapon(),category:'NEW Weapon',description:saintPredatorDescriptions[1]});
+    else if(saint&&(saint.level||1)<7)choices.push({id:'saint-level',name:`Saint Predator ${upgradeLevelLabel(saint,7)}`,weapon:saint,category:'Weapon',description:saintPredatorDescriptions[(saint.level||1)+1]});
+  }
   // Synergies improve only through Crafter enhancements, never level-up choices.
-  return choices.filter(choice=>!choice.weapon?.isSynergy).slice(0, levelUpgradeSettings.choices);
+  choices.push(...itemUpgradeChoices(player));
+  return choices.filter(choice=>!choice.weapon?.isSynergy&&!player.eliminatedUpgradeIds?.includes(choice.weapon?.id||choice.id)).slice(0, all?Infinity:levelUpgradeSettings.choices);
 }
 
 /** Advance one weapon level; awakening is available only through a Crafter. */
 export function applyLevelUpgrade(player, id) {
   ensurePlayerStats(player);
-  if (player.pendingUpgrades <= 0 || !rollLevelUpgrades(player).some(choice => choice.id === id)) return false;
+  if (player.pendingUpgrades <= 0 || !rollLevelUpgrades(player,{all:true}).some(choice => choice.id === id)) return false;
+  if(id==='saint-new'||id==='saint-level'){
+    player.attackSlots??=[];
+    if(id==='saint-new'){const empty=player.attackSlots.findIndex(w=>!w);if(empty>=0)player.attackSlots[empty]=createSaintPredatorWeapon();else player.attackSlots.push(createSaintPredatorWeapon());}
+    else {const w=player.attackSlots.find(w=>w?.id==='saint-predator');w.level++;recordWeaponMax(player,w);}
+    player.pendingUpgrades--;return true;
+  }
+  if(id==='molotov-new'||id==='molotov-level'){
+    player.attackSlots??=[];
+    if(id==='molotov-new'){const empty=player.attackSlots.findIndex(w=>!w);if(empty>=0)player.attackSlots[empty]=createMolotovWeapon();else player.attackSlots.push(createMolotovWeapon());}
+    else {const w=player.attackSlots.find(w=>w?.id==='molotov-cocktail');w.level++;recordWeaponMax(player,w);}
+    player.pendingUpgrades--;return true;
+  }
+  if(id==='cooking-new'||id==='cooking-level'){
+    player.attackSlots??=[];
+    if(id==='cooking-new'){const empty=player.attackSlots.findIndex(w=>!w);if(empty>=0)player.attackSlots[empty]=createBadCookingWeapon();else player.attackSlots.push(createBadCookingWeapon());}
+    else {const w=player.attackSlots.find(w=>w?.id==='bad-cooking');w.level++;recordWeaponMax(player,w);}
+    player.pendingUpgrades--;return true;
+  }
+  if(id.startsWith('malkuth-')||id.startsWith('racer-')||id.startsWith('helmet-')||id.startsWith('jacket-')||id.startsWith('chise-')||id.startsWith('overclock-')||id.startsWith('pharmaceuticals-')) {if(!applyItemUpgrade(player,id))return false;player.pendingUpgrades--;return true;}
   const weapon = id.startsWith('luminous-')?getLuminousNova(player):id.startsWith('aris-') ? getArisWeapon(player) : getUmbrella(player);
   if (id === 'aris-new'||id==='luminous-new') {
     player.attackSlots ??= [];

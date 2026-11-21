@@ -1,4 +1,11 @@
-import { createBossBehaviors } from './boss-behaviors.js';
+import {updateRateUpWindow} from './rate-up-tuning.js';
+import {updateWeakTuning} from './weak-tuning.js';
+import {updateSlowdown} from './slowdown-tuning.js';
+import {drawStunnedStatus} from './stunned-status.js';
+import {drawTargetTuningMark} from './target-tuning.js';
+import {drawFrozenStatus,animateFrozenEnemy} from './frozen-status.js';
+import { neruBodyCenterOffsetY, arisuBodyCenterOffsetY } from './game-config.js';
+import { createBossBehaviors } from './boss-behaviors.js?cannon-orange=2';
 import { openAnimationLineup } from './animation-lineup.js';
 import { createCampaignEvents, eventEnemyProfile } from './seeded-events.js';
 import { runSeed } from './run-seed.js';
@@ -21,7 +28,7 @@ import { pointerToCanvas } from './aiming.js';
 
 /** Install session-only NPC spawning, inspection, deletion, and basic test AI. */
 export function createNpcTools({ canvas, characters, camera, getPlayer, getPlayerDamage = () => 23, getSurvivalSeconds = () => 0, getEndlessSeconds = () => null, getEliteChance, campaignActive = () => false, getCampaignSpawn = () => null, getCampaignProfile = () => null, getStageId = () => null, getInternalSeconds = getSurvivalSeconds, getEventStage = getStageId, getStageSeconds = getSurvivalSeconds, timedSpawnsEnabled = () => true, isVertical = () => false,
-  isFreeScroll = () => false, isPlacementClear = () => true, canKnockbackStand = () => true,
+  isFreeScroll = () => false, isPlacementClear: placementAllowed = () => true, canKnockbackStand = () => true,
   updateCharacter, drawCharacter, baseMovementSpeed = 180, allowMultipleBosses = () => false, getBossLimit }) {
   const panel = document.querySelector('#npc-tools');
   panel.querySelector('#spawn-animation-lineup').addEventListener('click',()=>openAnimationLineup(characters));
@@ -30,6 +37,7 @@ export function createNpcTools({ canvas, characters, camera, getPlayer, getPlaye
   const miniBossSchedule = createMiniBossSchedule();
   const formationWarnings = [];
   const bossBehaviors=createBossBehaviors();
+  const isPlacementClear = (character,x,y) => isBossEnemy(character) || placementAllowed(character,x,y);
   const formationPoints = event => {
     const template=characters[Array.isArray(event.enemy)?event.enemy[0]:event.enemy];
     if(!template)return null;
@@ -192,18 +200,19 @@ export function createNpcTools({ canvas, characters, camera, getPlayer, getPlaye
     Object.assign(variant,timedEventStatOverrides(options.timedEvent,variant));
     if(campaignEntry) Object.assign(variant,campaignEnemyOverrides(campaignEntry,template,baseMovementSpeed));
     const size = variant.spriteSize;
+    const unboundedBoss = isBossEnemy({ ...template, ...variant, type });
     // Recheck at insertion time: the camera may have moved during warnings or capacity retries.
     if (options.timedEvent) {
       const point=offscreenEventPoint({x,y},{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height},size);
       x=point.x; y=point.y;
     }
-    x = !options.automatic && isVertical() ? Math.max(camera.x + size / 2, Math.min(camera.x + canvas.width - size / 2, x)) : x;
-    y = options.automatic || isVertical() || isFreeScroll() ? y : Math.max(camera.y + size / 2, Math.min(camera.y + canvas.height - size / 2, y));
+    x = !unboundedBoss && !options.automatic && isVertical() ? Math.max(camera.x + size / 2, Math.min(camera.x + canvas.width - size / 2, x)) : x;
+    y = unboundedBoss || options.automatic || isVertical() || isFreeScroll() ? y : Math.max(camera.y + size / 2, Math.min(camera.y + canvas.height - size / 2, y));
     if (!isPlacementClear({ ...template, ...variant }, x, y)) return false;
     const npc = rememberEnemy(`npc-${++counter}`, {
       ...template, type, eventKey: options.eventKey,
-      x: !options.automatic && isVertical() ? Math.max(camera.x + size / 2, Math.min(camera.x + canvas.width - size / 2, x)) : x,
-      y: options.automatic || isVertical() || isFreeScroll() ? y : Math.max(camera.y + size / 2, Math.min(camera.y + canvas.height - size / 2, y)),
+      x: !unboundedBoss && !options.automatic && isVertical() ? Math.max(camera.x + size / 2, Math.min(camera.x + canvas.width - size / 2, x)) : x,
+      y: unboundedBoss || options.automatic || isVertical() || isFreeScroll() ? y : Math.max(camera.y + size / 2, Math.min(camera.y + canvas.height - size / 2, y)),
       direction: template.defaultDirection || 'down', facing: template.defaultDirection || 'left',
       moving: false, elapsed: 0, attack: null, transition: null, lastPose: null,
       movementSpeedMultiplier: type === 'midori' ? midoriSpeed(getPlayer(), baseMovementSpeed) / baseMovementSpeed
@@ -311,7 +320,8 @@ export function createNpcTools({ canvas, characters, camera, getPlayer, getPlaye
     const time = step ? 1 / 60 : paused ? 0 : delta;
     step = false;
     const player = getPlayer();
-    bossBehaviors.updateEffects(time,player,records());
+    for(const enemy of records())enemy.secondsSincePlayerHit=(enemy.secondsSincePlayerHit||0)+time;
+    bossBehaviors.updateEffects(time,player,records(),playerMotion);
     campaignEvents.update(getInternalSeconds(),delta,{stage:getEventStage(),enabled:time>0&&timedSpawnsEnabled()});
     const eventStatus=document.querySelector('#campaign-event-status');
     if(eventStatus) eventStatus.textContent=`Events: ${campaignEvents.activeGroups} active groups. Seeded events: ${campaignEvents.generatedSlots}.`;
@@ -344,17 +354,32 @@ export function createNpcTools({ canvas, characters, camera, getPlayer, getPlaye
       }
       npc.eventMotionAge=(npc.eventMotionAge||0)+time;
       updateKnockbackResistance(npc, time);
+      updateSlowdown(npc,time);
+      updateWeakTuning(npc,time);
+      updateRateUpWindow(npc,time);
       if (npc.spawnArrivalPending) npc.spawnArrivalGrace = Math.max(0,(npc.spawnArrivalGrace ?? 10)-time);
       if (npc.type === 'midori' && !npc.campaignOverride) npc.movementSpeedMultiplier = midoriSpeed(player, baseMovementSpeed) / baseMovementSpeed;
       updateBossCatchup(npc, player, camera, canvas.width, canvas.height, baseMovementSpeed);
       advanceDamageFlash(npc, delta);
       if (npc.animationFrames) npc.gifElapsed = (npc.gifElapsed || 0) + delta * 1000 * (npc.animationSpeed || 1);
+      const wasFrozen=npc.frozenRemaining>0;
+      if(!wasFrozen)delete npc.frozenPoseElapsed;
       if (time && updateEnemyControl(npc, time, moveKnockback)) {
+        if(wasFrozen)animateFrozenEnemy(npc,player,time);
         if (updateYuukaPresence(npc, camera, canvas.width, canvas.height, time)) { removeEnemy(npc.id); refresh(); }
         continue; // Stun suppresses movement AI, attacks and both contact checks.
       }
-      if(time && bossBehaviors.updateNpc(npc,player,time,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height})) {
-        if(npc.bossAction?.name!=='leap') {
+      if(time && bossBehaviors.updateNpc(npc,player,time,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height},playerMotion,attacker=>{
+        const target={x:player.x+(attacker.chaseOffsetX||0),y:player.y+(attacker.chaseOffsetY||0)};
+        const dx=target.x-attacker.x,dy=target.y-attacker.y;
+        const direction=dx||dy?names[(Math.round(Math.atan2(dx,-dy)/(Math.PI/4))+8)%8]:undefined;
+        // Move through the normal chase path without advancing/resetting the attack animation.
+        const pose=attacker.attack;attacker.attack=null;
+        updateCharacter(attacker,time,direction,target);
+        attacker.attack=pose;
+        if(pose)attacker.facing=pose.facing; // Keep the barrel and warning on the chosen side.
+      })) {
+        if(npc.bossAction?.name!=='leap'&&!(npc.type==='arisu'&&npc.bossAction?.name==='charge')) {
           const attack=npc.attack;
           updateNpcContact(npc,player,playerMotion,time,moveKnockback,getSurvivalSeconds());
           if(npc.type==='iroha')npc.attack=attack; // Contact must not erase an active tank action pose.
@@ -379,7 +404,7 @@ export function createNpcTools({ canvas, characters, camera, getPlayer, getPlaye
           chaseTarget = motion.target;
         } else if (npc.behavior === 'chase') {
           const target = npc.type === 'midori' ? midoriChaseTarget(npc, player)
-            : { x: player.x + (npc.chaseOffsetX || 0), y: player.y + (npc.chaseOffsetY || 0) };
+            : { x: player.x + (npc.chaseOffsetX || 0), y: player.y + (npc.chaseOffsetY || 0) - (npc.type==='arisu'?arisuBodyCenterOffsetY(npc):npc.type==='neru'?neruBodyCenterOffsetY(npc):0) };
           const targetX = target.x, targetY = target.y;
           const dx = targetX - npc.x, dy = targetY - npc.y;
           // Chase the center exactly; quantize only the animation facing.
@@ -448,6 +473,9 @@ export function createNpcTools({ canvas, characters, camera, getPlayer, getPlaye
         // Visual descent only; the event still enters outside the viewport.
         drawCharacter({...npc,y:npc.y-100*(1-npc.eventMotionAge/.35)});
       } else drawCharacter(npc);
+      drawFrozenStatus(context,camera,npc);
+      drawStunnedStatus(context,camera,npc);
+      drawTargetTuningMark(context,camera,npc,getPlayer());
     }
     if (layer === 'normal') drawGachaDeaths(context, camera, canvas.width, canvas.height, false);
   }
@@ -461,7 +489,7 @@ export function createNpcTools({ canvas, characters, camera, getPlayer, getPlaye
     return removed;
   }
 
-  return { update, draw: () => draw('normal'), drawSpecials: () => draw('special'), drawBosses: () => draw('boss'), refresh, cleanup, getEnemies: records,
+  return { eraseProjectiles:bossBehaviors.eraseProjectiles, get screenShake(){return bossBehaviors.screenShake;}, seekInternalClock(seconds){campaignEvents.seek(seconds);formationWarnings.length=0;}, update, draw: () => draw('normal'), drawSpecials: () => draw('special'), drawBosses: () => draw('boss'), refresh, cleanup, getEnemies: records,
     slotsRemaining: () => Math.max(0, cap - records().length),
     spawnCampaignEncounter: row => {
       const type=row.enemies[0],size=characters[type]?.spriteSize||normalSpriteSize;

@@ -1,0 +1,6 @@
+<!doctype html><meta charset="utf-8"><title>Molotov napalm preview</title><canvas width="720" height="480"></canvas><script type="module">
+import {createMolotovAttack} from '../molotov-cocktail.js';import {createMolotovWeapon} from '../game-config.js';
+const c=document.querySelector('canvas').getContext('2d'),p={x:300,y:240,label:'Plana',attackSlots:[createMolotovWeapon()],combatStats:{hastePercent:0}};
+const a=createMolotovAttack({random:()=>0});await a.ready;a.update(1,p);
+c.fillStyle='#8eabd8';c.fillRect(0,0,720,480);a.drawGround(c,{x:0,y:0});a.drawThrows(c,{x:0,y:0});c.fillStyle='white';c.fillRect(294,225,12,30);document.body.dataset.ready='true';
+</script>

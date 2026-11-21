@@ -2,6 +2,9 @@ import { skillCastSettings } from './game-config.js';
 
 /** List equipped weapon skills and an optional future ultimate, each with its own timer. */
 export function equippedSkills(character) {
+  const superWeapon=character.attackSlots?.find(w=>w?.id==='decagrammaton');
+  if(superWeapon&&!character.ultimateSkill)character.ultimateSkill={id:'decagrammaton-ultimate',name:'Activate Protocol SUPERNOVA',icon:superWeapon.icon,exSkill:true,successCooldown:300};
+  if(!superWeapon&&character.ultimateSkill?.id==='decagrammaton-ultimate')delete character.ultimateSkill;
   return [...(character.attackSlots || []), character.ultimateSkill].filter(skill => skill?.icon && skill.exSkill !== false);
 }
 
@@ -73,7 +76,7 @@ export function createSkillCastState(onSubmit = () => {}) {
         else weapon = result.weapon;
       }
       // Unknown/ambiguous/failed recognition is free; never penalize a guessed weapon.
-      if (valid) setSkillCooldown(weapon, skillCastSettings.successCooldown);
+      if (valid) setSkillCooldown(weapon, weapon.successCooldown??skillCastSettings.successCooldown);
       if (valid) {
         weapon.lastSkillDrawing = { label: result.label, score: result.score, skillId: result.skillId, components: result.components,
           accuracy: result.accuracy, damageMultiplier: result.damageMultiplier, clipPredictions: result.clipPredictions };

@@ -30,6 +30,7 @@ export function glyphRectangle(character) {
 
 /** Render crisp HUD text from the supplied font sheet, refreshing only on changes. */
 export function createBitmapText(canvas, { scale = 2, outlineOverlap = 1, spaceWidth = 3, fitWidth = null, variant = 'regular', maxWidth = null, wrap = true, highlightStats = false } = {}) {
+  canvas.setAttribute('data-bitmap-text','');
   const image = new Image();
   let loaded = false;
   let text = '';

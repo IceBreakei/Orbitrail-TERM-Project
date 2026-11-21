@@ -1,7 +1,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
 let hits=0;const c=vm.createContext({URL,Image:class{decode(){return Promise.resolve()}},document:{createElement:()=>({getContext:()=>({})})},
  getAllEnemies:()=>[{id:'target',type:'mob',x:100,y:0,spriteSize:89.6}],damageEnemy(){hits++}});
-for(const name of ['game-config','combat-stats','combat-hitboxes','weapon-progression','umbrella-attack'])vm.runInContext(fs.readFileSync(`Development/${name}.js`,'utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export \{.*\} from .*;\r?\n/gm,'').replaceAll('export ',''),c);
+for(const name of ['game-config','item-catalog','combat-stats','combat-hitboxes','weapon-progression','umbrella-attack'])vm.runInContext(fs.readFileSync(`Development/${name}.js`,'utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export \{.*\} from .*;\r?\n/gm,'').replaceAll('export ',''),c);
 const run=s=>vm.runInContext(s,c);
 run("var player={x:0,y:0,attackSlots:[{id:'plana-umbrella',level:1}],combatStats:{atkPercent:0,critPercent:0}};var attack=createUmbrellaAttack();");
 assert.equal(run('rollUmbrellaDamage(player,undefined,()=>0).damage'),10);

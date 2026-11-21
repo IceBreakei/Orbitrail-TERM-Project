@@ -132,7 +132,8 @@ canvas {
   background: white;
   height: 620px;
   max-height: calc(100dvh - 60px);
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   overflow-anchor: none;
 }
 .playtest-sidebar button { width: 100%; min-height: 48px; padding: 10px; flex: none; }
@@ -144,7 +145,8 @@ canvas {
   font-variant-numeric: tabular-nums;
   overflow: auto;
 }
-.playtest-more { flex: 1; min-height: 0; overflow: auto; }
+.playtest-sidebar > * { flex-shrink: 0; }
+.playtest-more { flex: none; min-height: min-content; overflow: visible; }
 .playtest-more summary { position: sticky; top: 0; background: white; cursor: pointer; padding: 4px 0; }
 .playtest-more p { margin: 10px 0; overflow-wrap: anywhere; }
 
@@ -678,6 +680,15 @@ body.fullscreen-preview::before {
   #pause-skill-icon { width: 80px; height: 80px; }
 }
 
+/* Independent equip/skill panels share the left column without narrowing the game. */
+.admin-test-sidebar {display:grid;gap:12px;min-width:0;max-height:calc(100dvh - 40px);overflow-y:auto;overflow-x:hidden;padding-right:3px;scrollbar-color:#54cfff #e4f8ff;scrollbar-width:thin;}
+.loadout-test-sidebar {display:grid;gap:10px;min-width:0;padding:12px;border:1px solid #b5dcec;border-radius:8px;background:white;}
+.loadout-test-sidebar details {min-width:0;}
+.loadout-test-sidebar summary {cursor:pointer;padding:5px 0;border-bottom:1px solid #c6e8f5;}
+.admin-equip-group {display:grid;gap:6px;min-width:0;padding-top:8px;}
+.loadout-test-sidebar button {width:100%;min-width:0;min-height:40px;padding:10px 8px;overflow-wrap:anywhere;}
+.loadout-test-sidebar p {margin:0;font-size:12px;line-height:1.5;}
+.admin-equip-status:empty {display:none;}
 /* Skill testing stays outside the simulated screen, on its left. */
 .simulation-page main { max-width: 1644px; }
 .playtest-layout { grid-template-columns: 220px minmax(0, 1fr) 240px; max-width: 1604px; }
@@ -696,7 +707,7 @@ body.fullscreen-preview::before {
   .skill-test-sidebar strong, .skill-test-sidebar p { grid-column: 1 / -1; }
 }
 @media (min-width: 1700px) {
-  .fullscreen-preview .skill-test-sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 220px; z-index: 1001; }
+  .fullscreen-preview .admin-test-sidebar { position: fixed; left: 12px; top: 50%; transform: translateY(-50%); width: 220px; z-index: 1001; }
 }
 
 /* Translucent EX reference with one-click accordion dividers. */
@@ -768,11 +779,14 @@ body.fullscreen-preview::before {
 .level-up-choice {
   position: relative; width: 100%; min-width: 0; padding: 8px 14px;
   text-align: left; color: white; background: #031211bf;
-  border: 1px solid transparent; border-left: 6px solid #2797b8; border-radius: 0;
+  border: 1px solid transparent; border-left: 6px solid var(--upgrade-bar, #2797b8); border-radius: 0;
   cursor: pointer;
 }
+.level-up-choice[data-upgrade-kind="weapon"] { --upgrade-bar: #2797b8; --upgrade-bar-active: #56deff; }
+.level-up-choice[data-upgrade-kind="skill"] { --upgrade-bar: #e5b933; --upgrade-bar-active: #ffe36b; }
+.level-up-choice[data-upgrade-kind="item"] { --upgrade-bar: #42b96e; --upgrade-bar-active: #77ed9b; }
 .level-up-choice.selected, .level-up-choice:hover, .level-up-choice:focus-visible {
-  border-color: #6ce7ff; border-left-color: #56deff; background: #0b354bd9;
+  border-color: #6ce7ff; border-left-color: var(--upgrade-bar-active, #56deff); background: #0b354bd9;
   box-shadow: inset 0 0 0 1px #41c9ef, 0 0 12px #2db6dc33;
   outline: none;
 }
@@ -1122,3 +1136,87 @@ input.game-volume-slider:active { filter: brightness(1.2); }
 .super-file .gacha-file-sheet { box-shadow:0 0 16px #ffe8a788; }
 @media(prefers-reduced-motion:reduce) { .gacha-file-cone { animation:none; } .gacha-file-lid,.gacha-file-sheet { transition:none!important; } }
 @media(prefers-reduced-motion:reduce) { .gacha-file-rays { animation:none;transform:translate(-50%,-50%); } .gacha-file-sparkle { animation:none;opacity:.3; } }
+
+/* Keep admin clock controls usable; scroll the sidebar instead of crushing its sections. */
+#admin-clock-form { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; margin:12px 0; }
+#admin-clock-form label { display:flex; flex-direction:column; gap:6px; min-width:0; font-size:13px; }
+#admin-clock-form input { display:block; width:100%; min-width:0; min-height:44px; padding:8px; border:1px solid #8ac6e2; border-radius:5px; background:#f4fbff; color:#183654; font:inherit; font-size:16px; }
+#admin-clock-form input:focus-visible { outline:2px solid #00a9e8; outline-offset:2px; }
+#admin-clock-form button { grid-column:1 / -1; min-height:44px; }
+
+/* Tuning Parts: shared character panel, attachment diagram and bottom action row. */
+.tuning-menu {position:absolute;inset:0;z-index:55;background:rgba(2,10,18,.72);color:white;container-type:inline-size;overflow:hidden;}
+.tuning-menu[hidden]{display:none;}
+.tuning-menu .tuning-character {left:4%;top:13%;width:27%;height:77%;}
+.tuning-menu .pause-stat-row {grid-template-columns:2.5cqw auto minmax(0,1fr);gap:.4cqw;min-height:3.05cqw;}
+.tuning-menu .pause-stat-row img {width:2.35cqw;height:2.35cqw;}
+.tuning-workspace {position:absolute;left:35%;right:2%;top:12%;bottom:7%;display:grid;grid-template-rows:auto minmax(0,1fr) 25% auto;gap:1.2cqw;}
+.tuning-heading {margin:0;text-align:center;}
+.tuning-heading canvas {width:22cqw;max-width:80%;height:auto;}
+.tuning-menu button {background:rgba(4,20,32,.75);border:2px solid #ecffff;color:white;padding:.7cqw 1.4cqw;cursor:pointer;}
+.tuning-menu button:disabled {opacity:.35;cursor:default;}
+.tuning-menu button:focus-visible {outline:3px solid white;outline-offset:3px;}
+.tuning-menu button canvas {max-width:100%;height:auto;}
+.tuning-diagram {position:relative;min-height:0;}
+.tuning-weapon,.tuning-slot {width:6cqw;height:6cqw;display:flex;align-items:center;justify-content:center;border:3px solid #f5e99e;background:#07121b88;}
+.tuning-weapon {position:absolute;left:50%;top:0;transform:translateX(-50%);border-color:white;}
+.tuning-weapon canvas {width:90%;height:90%;}
+.tuning-found {position:absolute;left:0;top:24%;display:grid;gap:.8cqw;justify-items:center;}
+.tuning-found>canvas {width:6.5cqw;height:auto;}
+.tuning-menu .tuning-slot {position:relative;padding:.3cqw;border-color:#f3e696;}
+.tuning-menu .tuning-slot>canvas {display:none;}
+.tuning-menu .tuning-slot[aria-pressed=true] {border-color:#5be8ff;box-shadow:0 0 0 2px #5be8ff;}
+.tuning-slot img {width:90%;height:90%;object-fit:contain;}
+.tuning-slot-level {position:absolute;top:100%;left:0;right:0;display:flex;justify-content:center;}
+.tuning-slot-level canvas {max-width:95%;height:auto;}
+.tuning-slots {position:absolute;left:12%;right:12%;bottom:5%;display:flex;justify-content:space-between;}
+.tuning-links {position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;}
+.tuning-links line {stroke:#d6f7ee;stroke-width:1;vector-effect:non-scaling-stroke;}
+.tuning-menu .tuning-finish {position:absolute;right:0;top:25%;}
+.tuning-detail {border:2px solid #5ae5ff;border-left-width:.7cqw;background:#03131cbb;padding:.6cqw 1cqw;min-height:0;overflow:auto;clip-path:polygon(0 0,100% 0,100% 94%,99% 100%,1.5% 100%,0 90%);}
+.tuning-detail-title {display:flex;justify-content:space-between;gap:1cqw;border-bottom:1px solid white;padding-bottom:.4cqw;}
+.tuning-detail-title canvas {max-width:73%;height:auto;object-fit:contain;}
+.tuning-detail-title canvas:last-child {max-width:23%;}
+.tuning-detail-body {display:flex;align-items:center;gap:1cqw;padding-top:.7cqw;}
+.tuning-detail-icon {width:5cqw;height:5cqw;border:2px solid #f3e696;flex-shrink:0;}
+.tuning-detail-icon img {width:100%;height:100%;object-fit:contain;}
+.tuning-detail-body>canvas {max-width:calc(100% - 6cqw);height:auto;}
+.tuning-actions {display:flex;justify-content:center;gap:1.5cqw;}
+.tuning-actions button {min-width:12cqw;}
+.tuning-hud {position:relative;grid-column:2;grid-row:2;align-self:start;display:flex;flex-direction:column;align-items:flex-start;gap:2px;pointer-events:none;z-index:8;}
+.tuning-hud img {width:32px;height:32px;object-fit:contain;}
+
+/* Undo generic game-canvas styling for every bitmap label and preview in this menu. */
+.tuning-menu canvas {background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;width:auto!important;height:auto!important;max-width:100%;}
+.tuning-menu .tuning-heading canvas {margin-inline:auto;}
+.tuning-menu .tuning-weapon canvas {width:90%!important;height:90%!important;object-fit:contain;}
+.tuning-menu .tuning-detail-body>canvas {max-width:calc(100% - 6cqw);}
+.tuning-menu .tuning-slot,.tuning-menu .tuning-weapon {box-sizing:border-box;border-radius:0;flex-shrink:0;}
+
+/* Soft white silhouette glow follows each transparent Tuning Part icon. */
+.tuning-slot img,.tuning-detail-icon img,.tuning-hud img {filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 4px #ffffffcc);}
+
+.tuning-slots {z-index:2;pointer-events:auto;}
+.tuning-slots .tuning-slot {pointer-events:auto;touch-action:manipulation;}
+.tuning-slot img,.tuning-slot-level {pointer-events:none;}
+
+.super-hammer-progress {position:absolute;right:8px;top:70px;width:33px;height:48px;object-fit:contain;image-rendering:pixelated;pointer-events:none;z-index:8;}
+.super-hammer-progress[hidden]{display:none;}
+
+/* All bitmap labels keep their alpha background, regardless of generic canvas styles. */
+canvas[data-bitmap-text] { background:transparent!important; border:0!important; box-shadow:none!important; }
+/* Ultimate readiness belongs to its weapon frame, above neighbouring HUD boxes. */
+.hud-slot.ultimate-ready { z-index:4; box-shadow:0 0 0 2px #fff0a0,0 0 7px 3px #ffbd45; }
+
+.level-up-selection { display:flex; flex-direction:column; }
+.level-up-actions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:auto; padding-top:18px; }
+.level-up-actions button { min-width:0; min-height:46px; border:2px solid #e9fcff; border-radius:0; background:#051a22b8; color:white; display:flex; align-items:center; justify-content:center; padding:8px; }
+.level-up-actions button:hover:not(:disabled),.level-up-actions button[aria-pressed="true"] { border-color:#63e1ff; background:#174459dc; }
+.level-up-actions button:disabled { opacity:.4; cursor:default; }
+
+.protocol-supernova-title { margin:0 0 12px; }
+.protocol-supernova-title img { display:block; width:100%; max-width:420px; height:auto; object-fit:contain; }
+
+/* Equipment art fits the frame; alpha-margin crops preserve each item's aspect ratio. */
+#hud-equipment-slots .hud-slot > .hud-slot-icon { inset:15%; width:70%; height:70%; z-index:4; }
+.level-up-choice-body .level-up-weapon-icon[data-icon-fit="true"] { padding:0; }

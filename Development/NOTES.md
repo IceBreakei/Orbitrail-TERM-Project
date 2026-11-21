@@ -9,11 +9,11 @@ This section supersedes older pending-status paragraphs below.
 - Score counters/snapshots now connect to real defeats, campaign boss-wave clears and endless defeat. The Score testing dropdown shows the latest result. Counts/time are cumulative for the run. Leaderboard placement/persistence remains deferred; cleanup removals do not count.
 - Yuuka and Sensei use HP9,999,999,999,ATK0,2.5x base-player speed,zeroEXP and25second lifetime. Sensei is available in the NPC selector. At expiry they run toward the nearest edge and despawn only once offscreen. The timeout escape remains; player hit-count defeat is also supported as described below. Adminseed0 intentionally retains1HP for all enemies.
 - Yuuka now rolls30% at3:00,9:00,17:00, replacing kill/arrival-based odds. Automatic timed spawning respects the development spawning toggle. Manual spawning bypasses automatic restrictions.
-- Sensei timestamps are still unspecified: automatic list is empty, manual testing works. Both retain the existing1credit perhit until credit caps/rewards are defined. Escaping gives no loot/kill credit. Mods/item boxes remain future work.
+- Sensei timestamps are still unspecified: automatic list is empty, manual testing works. Both retain the existing1credit perhit until credit caps/rewards are defined. Escaping gives no loot/kill credit. Tuning Parts/item boxes remain future work.
 - Instant-KO requests reject bosses/mini-bosses/explicit immune enemies. No instant-KO attack was invented.
 - Enemy scaling equations and optional endless clock exist as helpers; live activation awaits stage base-stat tables. Existing live scaling remains; do not stack both models.
 - Spawn patterns/telegraphs are specifications awaiting event timings, counts and assignments; no automatic pattern schedule was invented.
-- Growth, enhancements/mods/enchantments, secret stage, undefined bosses, item boxes and leaderboard placement/submission remain deferred.
+- Growth, enhancements/Tuning Parts/enchantments, secret stage, undefined bosses, item boxes and leaderboard placement/submission remain deferred.
 
 
 
@@ -93,7 +93,7 @@ Independent damage bonuses multiply with each other and the base weapon damage. 
 
 
 
-Future applicable mods, enchantments, and weapon-specific character abilities belong in this same product. They must only affect eligible weapons. Growth is added separately and must not be multiplied by these base-weapon bonuses.
+Future applicable Tuning Parts, enchantments, and weapon-specific character abilities belong in this same product. They must only affect eligible weapons. Growth is added separately and must not be multiplied by these base-weapon bonuses.
 
 
 
@@ -155,7 +155,7 @@ growthDamage = 0.1 * growthRank * playerLevel
 
 
 
-Enhancements beyond maximum weapon level, Blacksmith's Gear, mods/stamps, enchantments, projectile enchantments, and the Growth purchase shop are **not implemented yet**. Reserved costs do not spend currency automatically.
+Enhancements beyond maximum weapon level, Blacksmith's Gear, Tuning Parts, enchantments, projectile enchantments, and the Growth purchase shop are **not implemented yet**. Reserved costs do not spend currency automatically.
 
 
 
@@ -470,9 +470,9 @@ Umbrella visual: a continuous cyan arc now covers the entire travelled sweep rat
 
 Yuuka and Sensei are harmless, fast hopping credit enemies. Supplied shared stats:HP9,999,999,999;ATK0;SPD2.5;EXP0;lifetime25seconds. They vanish after enough hits rather than relying on the enormousHP being depleted.
 
-Yuuka:30%spawn chance at designated timestamps3:00,9:00,17:00 on any map, credits perhit, and a future Mod on hit-count defeat. The supplied maximum-credit table has no numeric amounts. Sensei:20%chance at designated timestamps (not supplied), credits perhit; hit-count defeat yields a massive credit burst plus a future item box. Timeout despawns after25seconds. Exact hit thresholds/credit amounts, movement-unit interpretation and Sensei assets/timestamps remain pending.
+Yuuka:30%spawn chance at designated timestamps3:00,9:00,17:00 on any map, credits perhit, and a guaranteed Tuning Part on hit-count defeat. The supplied maximum-credit table has no numeric amounts. Sensei:20%chance at designated timestamps (not supplied), credits perhit; hit-count defeat yields a massive credit burst plus a future item box. Timeout despawns after25seconds. Exact hit thresholds/credit amounts, movement-unit interpretation and Sensei assets/timestamps remain pending.
 
-These notes supersede Yuuka's earlier design intent but do not silently replace the currently implemented kill-based Yuuka spawning/HP/EXP/movement rules. ATK0 is already live. Mod/item box systems remain deferred; reference Silver YAGOO wording does not add a separate YAGOO enemy.
+These notes supersede Yuuka's earlier design intent but do not silently replace the currently implemented kill-based Yuuka spawning/HP/EXP/movement rules. ATK0 is already live. Tuning Part/item box systems remain deferred; reference Silver YAGOO wording does not add a separate YAGOO enemy.
 
 
 
@@ -485,7 +485,7 @@ Settings are in supernovaSkillSettings. Existing knockback resistance, absolute 
 
 ### Harmless enemy hit-count defeat
 
-Latest clarification: Yuuka/Sensei can be killed by the player after enough successful hits. They still run away on the25second timeout if not defeated first. Every accepted positive hit increments receivedHits once regardless of damage; rejected hits/misses do not count. At the threshold they use the normal death animation, credits-on-defeat and real kill/score notification path, while still giving zeroEXP. Future Mods/item boxes remain deferred.
+Latest clarification: Yuuka/Sensei can be killed by the player after enough successful hits. They still run away on the25second timeout if not defeated first. Every accepted positive hit increments receivedHits once regardless of damage; rejected hits/misses do not count. At the threshold they use the normal death animation, credits-on-defeat and real kill/score notification path, while still giving zeroEXP. Future Tuning Parts/item boxes remain deferred.
 
 Configure harmlessEnemySettings.yuukaHitsToDefeat and senseiHitsToDefeat; an enemy.hitsToDefeat override is supported for testing. Null settings use the computed spawn-time formula below; numeric values are optional test overrides. Existing HP depletion/admin1HP behavior remains available. Earlier statements that running offscreen is the only normal defeat route are superseded.
 
@@ -729,7 +729,7 @@ Authoritative data: [campaign-config.js](campaign-config.js). Runtime clock/sele
 | second | megaHeavySweeper | 2500 | 10 | 0.9 | 1000 | 10:00 | mini |
 | second | mob | 100 | 5 | 1.1 | 8 | 11:00 - 14:00 | regular |
 | second | mob2 | 450 | 11 | 0.8 | 10 | 12:00 - 14:00 | regular |
-| second | arisu | 15000 | 15 | 0.8 | 2000 | 12:00 | boss |
+| second | arisu | 45000 | 20 | 1 | 6000 | 12:00 | boss |
 | second | megaOpsSweeper | 5500 | 18 | 1 | 2000 | 13:00 | mini / stage checkpoint / freeze |
 | third | arius1 | 650 | 14 | 0.7 | 12 | 14:00 - 16:00 | regular |
 | third | arius2 | 650 | 12 | 0.9 | 12 | 14:00 - 16:00 | regular |
@@ -890,7 +890,7 @@ Upgrading: select any equipped implemented weapon belowMAX for one free level. E
 
 Awakening: currently only Plana's starting umbrella may awaken, fromLV7, through a separate Crafter choice costing1SecretTechNote. It consumes the Crafter and note, and retains existing golden outline/sparkles. Supernova/other weapon awakening is unavailable. The LV7umbrella guaranteed3xsupercritical upgrade remains distinct from its separate awakening step.
 
-Enhancing: MAX weapons may enhance without a rank cap. Next rank r costs50*rCredits. SuccessChance=min(1,max(0.1,1-0.1*(r-1))+storeBonusPercent/100). Future Enhancement Rate Up uses `player.enhancementRateBonusPercent` (default0). Paid failure loses the Credits and Crafter without increasing rank. Each successful rank adds2base damage divided by primary projectile count. Enhancement damage is added after weapon-level/enchantment/Mod bonuses, does not receive those base bonuses or Growth, and still receives ATK/crit/other final damage multipliers. Automatic Supernova LV7splits over2primary beams; secondary EX/on-hit attacks do not add split count. HUD captions show enhancement ranks.
+Enhancing: MAX weapons may enhance without a rank cap. Next rank r costs50*rCredits. SuccessChance=min(1,max(0.1,1-0.1*(r-1))+storeBonusPercent/100). Future Enhancement Rate Up uses `player.enhancementRateBonusPercent` (default0). Paid failure loses the Credits and Crafter without increasing rank. Each successful rank adds2base damage divided by primary projectile count. Enhancement damage is added after weapon-level/enchantment/Tuning Part bonuses, does not receive those base bonuses or Growth, and still receives ATK/crit/other final damage multipliers. Automatic Supernova LV7splits over2primary beams; secondary EX/on-hit attacks do not add split count. HUD captions show enhancement ranks.
 
 Future, inactive systems: Crafters Gear extra uses; Credit Card item; Enhancement Rate Up shop purchase; enchantment shop unlock and specific enchantment lists; pre-enchanted offers; synergy weapons and Golden Crafters. No invented enchantment pool or synergy recipe is active. Enchanting, once unlocked, costs250Credits, excludes the starting weapon and replaces previous rolls. Default1enchantment; a GoldenCrafter synergy combining two enchanted MAXweapons may inherit2, including duplicate rolls; reroll replaces both. Compatible enchantment list still to be supplied.
 
@@ -958,3 +958,349 @@ LuminousNova icon now rotates45degrees inHUD/levelup/Craftericons. Automaticweap
 - Corrected synergy EX firing: never clear in-flight bullets or stop the stream at EX transitions. EX start changes only newly spawned bullets to blue/wider/slower60/s,then returns to pink/narrow80/s after beam presentation. Existing rounds keep their original appearance and travel until offscreen/hit limit.
 
 - Blue Princess/Key EX bullets have unlimited pierce,stored per projectile so this persists afterEXends;normalpinkrounds retain4hitlimit. File rewards use the same createCharacterStatsPanel renderer and row sizing as Crafter,with Pause panel positioning (left5%,top13%,width26%,height72%).
+
+## Arisu boss dash
+Arisu chases normally between attacks. Every 8 seconds she enters the charge animation and stands still for a 4-second windup. A translucent red lane tracks the player during windup; twin inner lines close toward its center. At launch the angle locks, then Arisu launches at 1375 px/s, then decelerates after passing the player's locked X/Y coordinates in the dash direction (minimum 220 px/s until offscreen). Dash contact deals a fixed 20 damage, respecting player I-frames. Ordinary dash contact processing is suppressed to avoid substituting normal contact damage. Settings: bossBehaviorSettings.arisu in game-config.js.
+
+Arisu sprite size is 120% of the previous boss size. Warning lane width is 140px, centered on the rendered sprite bounds rather than the movement anchor.
+
+Arisu warning is lowered 20px. Tracking freezes after 3 seconds; she launches at 4 seconds. For diagonal movement both relevant locked coordinates must be passed before braking; cardinal movement compares only its moving axis. The target is captured when tracking locks, so dodging during the final second does not retarget her.
+
+### Arisu dash braking update
+Arisu begins braking 80px before the locked target threshold. Braking covers 160px and reaches zero speed, ending roughly 80px beyond a stationary target instead of coasting offscreen. On stopping (or reaching the offscreen safety bound), her action clears and normal chase resumes; a fresh 8-second attack cooldown starts then. Windup remains 4 seconds, tracking locks at 3 seconds, damage remains 20. This supersedes the prior minimum-speed/offscreen-coasting rule.
+
+### Arisu timed deceleration
+Braking now lasts exactly 1.5 seconds with a continuous linear speed reduction to zero. Maximum dash speed remains1375px/s; short dashes cap their launch speed to fit the full braking interval while stopping near the locked target. Braking begins early enough to end80px beyond the locked target; no offscreen early-exit truncates the braking animation. Chase resumes with a fresh8s cooldown. This supersedes the160px fixed braking distance.
+
+Arisu (second boss) updated base stats:45000 HP,20 ATK,1.0 SPD (100% unmodified player base speed),6000 EXP. Campaign and manual/default type profiles both use these values. Admin seed0 still overrides health to1 for testing. Dash damage remains20.
+
+### Arisu visible body size
+arisuBossSizeMultiplier=1.66 in game-config.js supersedes1.2. Reference body heights excluding the floating halo are approximately112 source pixels for Arisu (200px referenceSize) and321 for Shiroko (374px referenceSize). At current display sizes, body heights match within2world pixels. A single scale is retained for all Arisu animation frames/actions.
+
+### Arisu body/chase and full-speed dash
+Arisu chase now offsets the movement anchor so her visible body center (excluding halo) aligns with the player. Warning lane shares that body center and is194px wide to reflect the enlarged sprite. Dash always launches at1375px/s, removing the nearby-target speed cap. Timed1.5s braking remains and begins80px before the locked target threshold. Full-speed braking covers more distance than the former short-range capped launch; it may carry her offscreen before normal chasing resumes. This supersedes the earlier nearby-target stopping-distance guarantee.
+
+### Arisu overshoot correction
+Windup3seconds, tracking locks2seconds (final1second fixed aim). Full1375px/s launch retained. Braking begins at the locked directional player threshold and uses a continuous front-loaded power ease over1.5seconds. Integrated braking distance is220px, replacing the prior1031.25px linear-braking overshoot. Normal chase and8second cooldown resume after braking finishes.
+
+### Arisu runaway dash fix
+Dash range now uses projection along the warned direction from the same visible body center used to aim. This replaces separate X/Y component division, which could generate extreme distances when one direction component was nearly zero. Tracking remains locked for final1s. Braking travel remains220px over1.5s. Completion resets normal GIF phase, clears stale contact reaction, and returns control to chase in the same NPC update with a fresh8s cooldown.
+
+### Arisu fleeing-player braking
+Dash direction still locks after2s of3s windup. The braking threshold now follows the player's current projected position along that fixed direction until braking begins, rather than the old locked warning position. This allows Arisu to pass a player fleeing left before slowing. Braking itself remains bounded220px over1.5s and does not retarget or extend once started.
+
+### Boss map collision exemption
+All boss entities bypass props, island boundaries and finite strip-map edges during chase movement. This permits body-centered Arisu to reach a player near the upper wall without the oversized sprite margin clamping her anchor. Player map collisions and boss-player contact damage remain active.
+
+### Iroha cannon warning
+Cannon now has1second stationary windup with left/right locked red lane and closing inner lines, followed by firing animation and900px/s radius18 glowing shell. Origin uses barrel offset30px downward and35percent sprite width to the facing side. Damage uses current Iroha contactDamage (campaign20). Total cannon action1.88seconds; artillery alternation unchanged. Settings in bossBehaviorSettings.iroha.
+
+Shiroko latest base stats:25000HP,20ATK,1.2SPD (288px/s),5000EXP. Stage1 boss spawn remains06:00 per explicit clarification; image20:00 timing was not applied.
+
+### Boss progression and Iroha stats (latest)
+Arisu defeat alone clears Stage2 and queues Stage3 after1.5s. Removed the OPS mini-boss/14:00 wait requirement; Stage2 clock freezes at Arisu12:00. Later Stage2 event rows remain configured but are not reached during normal progression. Iroha is a full Stage3 boss at17:30,55000HP25ATK.75SPD(180px/s)6000EXP; defeat queues Stage4 after1.5s. Default/manual type profile matches. Unopened Gacha Files carry through automatic stage transitions rather than blocking them. Active reward dialogs pause gameplay normally.
+
+Neru latest boss stats:57000HP20ATK.9SPD(216px/s)2000EXP. Stage4spawn remains20:00; behavior and boss-clear progression unchanged.
+
+Iroha cannon latest visual/speed:2400px/s (previous900). Blue shared player plasma renderer with gradient bloom and continuous tapered tail, diameter10 and18px collision radius. Warning1s, fixed horizontal aim and existing25campaigndamage retained.
+
+### Iroha attack selection and delayed shell
+Cannon release is now1.5s after action start (1s windup+.5s extra delay), warning remains until release. Attack selection replaces alternation: overlap/predicted entry into barrelY horizontal lane favors cannon when horizontal displacement dominates; vertical/X-aligned players favor artillery. Prediction uses current player movement over.6s. Cannon direction locks when attack starts. Iroha remains stationary for preparation/firing.
+
+### Iroha weighted casts and piercing
+Cannon projectile pierces the player and continues until lifetime/owner cleanup. A shell deals damage to the player at most once. Attack pool is recalculated once per action start. Equal playerY/IrohaY guarantees cannon; equalX with vertical separation guarantees artillery. Intermediate offsets weight cannon by horizontal dominance and barrel-lane proximity; approaching lane prediction can increase cannon weight. Roll is sampled once and does not change an ongoing attack.
+
+### Iroha timed interception
+Cannon cast now solves impact time from current player velocity, horizontal muzzle position,2400px/s speed and minimum1.75s preparation. Release can wait up to4extra seconds for a future lane crossing; warning remains visible and firing animation is synchronized to release. Cast angle/time lock at preparation start. A trajectory change can dodge; unchanged reachable horizontal/diagonal paths are intercepted. If no possible intercept exists within preparation/wait/lifetime constraints, cannon is removed from that cast's chance pool and artillery is used. Shared player I-frames still apply.
+
+### Iroha random cannon baseline (latest)
+Cannon chance is now60percent minimum, blended upward by positional preference to100percent at matchingY. Prediction does not gate attack selection. A cannon roll uses a valid intercept plan when available; otherwise it uses normal1.75s release toward the player's current side. This supersedes prior no-intercept-forces-artillery behavior. cannonBaseChance in game-config.js is editable.
+
+### Iroha angular chances (supersedes60percent baseline)
+Cannon probability=1-atan2(abs(playerY-irohaY),abs(playerX-irohaX))/(PI/2). Horizontal100percent cannon,vertical100percent artillery,45degrees50/50. Same rule mirrored across all quadrants; exact overlap50/50. Sample once at cast start; cannon prediction is applied afterward without changing pool probabilities.
+
+Iroha angular odds now use cubic easing: t=(angle-45)/45; cannon=.5-.5*sign(t)*abs(t)^attackAngleExponent, exponent3. Axis endpoints and45degree50/50 preserved; changes accelerate near axes, especially beyond70degrees. Approx cannon chances from horizontal:45deg50%,70deg41.4%,80deg26.5%,90deg0%. Symmetric across quadrants.
+
+### Iroha reference hyperbola (latest)
+User supplied steep-drop curve screenshot. Replaces cubic/45degree50percent rule. Let u=atan2(absdy,absdx)/(PI/2). Cannon=(1-u)/(1+attackAngleSteepness*u),steepness100. Artillery=1-cannon. Desmos normalized axes equation y=(100-x)/(x+1). Horizontal100percent,vertical0percent cannon;45degrees~.9804percent cannon.
+
+### Iroha corrected quadrant sigmoid (latest)
+Example hyperbola was illustrative only. Actual desired pool uses u=angle/90, Cannon=(1-u)^3/((1-u)^3+u^3), Artillery=1-Cannon. Each quadrant mirrors this:0deg100cannon,10deg99.805%,30deg88.889%,45deg50%,60deg11.111%,80deg.195%,90deg0. Config attackAngleExponent3. Supersedes hyperbola and older cubic curves.
+
+Iroha curve softened: attackAngleExponent=ln(9)/ln(8), approximately1.05664, replaces exponent3. Exact10degree cannon90percent,45degree50percent,80degree10percent; axis endpoints unchanged.
+
+Iroha now chases throughout cannon preparation/firing and artillery actions. Movement uses ordinary chase speed/target while attack poses and cannon facing are preserved; warning/projectile origins update after movement. This supersedes previous stationary-windup rule.
+
+### Iroha artillery formations
+Artillery uses5targets: center plus4arms. Cardinal/stationary movement gives+, diagonal movement (minor/major axis ratio>.4) givesX. Arm spacing145px,radius64. Circles warn1.5s and disappear, shells fall.35s diagonally from the side Iroha occupied when targets were marked. Damage occurs once on landing (currentbossATK25), sharing normalplayerIframes. Supplied arty explosion.gif plays once with13frames/1.4s original timing. Iroha continues chasing while effects run.
+
+### Artillery expanded warning formation
+Radius96px(50percent larger). Inner warning ring shrinks smoothly to center across1.5s, outer damage circle remains. Formation bounding width/height is70percent of visible viewport, including circle edges, centered on targeted player location. Arms populated with intermediate circles at up to145px spacing. This supersedes5target145px arm formation. Cropping near viewport edges is possible when player is near an edge; targets remain fixed worldpositions.
+
+Artillery now staggers target warnings and landings by0.25s in formation order. Each target independently gets1.5s closing-ring warning then.35s falling plasma shell; pending warnings remain hidden. This supersedes simultaneous warning/impact timing.
+
+Artillery latest correction: exactly5circles(center+4arms) appear simultaneously for1.5s. Allwarningcircles disappear together. Only falling-shell launches/impacts stagger at.25s intervals.70percent viewport footprint and96px radius retained; intermediatearmtargets removed.
+
+### Artillery reference cluster arrangement
+Latest pattern uses5equalroundcircles:center and4neighbors at1.8rspacing for slightoverlap. X is exact45degrotationof+. Scale+footprint to70percent of shorter viewportdimension (504x504 at1280x720,radius90). Supersedes independent70percentwidth/heightspreading. Allwarningsstilltogether; impacts.25sapart.
+
+Artillery coverage factor now1.4(twice previous.7). Radius180,armspacing324,+footprint1008squareat1280x720. Circles/damage/explosiongraphics scale together;5circles overlapratio/timing preserved. This doubles linear dimensions, yielding4times the previous area.
+
+Artillery explosion playback now uses sourceframes0–7only(.9s). Sourceframes8–12 restartanotherburstafterfade,soareexcludedfromplayback. Rendererexplicitlystopsatduration. Onevisualburstperimpact; originalGIFunchanged.
+
+Artillery warning latest:circles now appear staggered.25sapartmatchingtheirimpactorder. Eachcirclepersistsuntilitsownimpact,includingthe.35sshelldescentafter1.5swindup. Innerclosingringfinishesatimpact. Supersedes simultaneouswarningappearanceanddisappearbeforedrop.
+
+### Predictive artillery after sustained movement
+Track player direction once peractive tick. After5seconds without stopping/turning (small5.7degree tolerance),artillery may lead at50percent chance. Formationcenter shifts1secondofcurrentvelocity,maximum300px. Otherwisecenteredonplayer. Warnings/targetslockatcall;stopping/turningresetsqualification. Config artilleryLeadAfter/Chance/Seconds/MaxLead.
+
+Iroha cannon combos: independent30percentchanceforartillerybeforecannon and30percentaftercannon. Chainedactionsstartwithoutregularcooldowngap; eachretainsitswarning. Precannonartilleryqueuescannon;postcannonartillerydoesnotloopanothercannon. Normalpositionalbasepoolunchanged. Sequenceendsetsfull6scooldown. ConfigartilleryBeforeCannonChance/artilleryAfterCannonChance.
+
+### Neru stomp (latest)
+Compression.55s,rise.3s,airborneshadowtracks3s,lockedshadow1s,descent.2s. Sprite offset places her aboveviewportduringhang. Shadow follows until lock then remainsfixed; onlanding20damage/currentATK within75pxradius,sharedIframes. Shootingattackunchanged. Airbornecontactchecksremainexcludedusingleapaction. Landingmarkersremovedwhenactionendsorownerdisappears.
+
+### Neru stomp refinements
+Shadoworigin=takeoffposition; moves480px/sminimum,or1.5xplayercurrentvelocityifhigher,duringtrackingwindow.40percentlarger(radius105),nooutline. Impactshake.3s/7pxmax isrender-only,HUDstable. Landingsquash.55recoversover.5s,thenchase. Nerushotsusesharedorangeplasmavisuals,nominaldiameter3px;contactradius5/damageunchanged.
+
+Neru latesttiming:squash1s,smoothrise1s,track3s,lock1s,fall1s,landingsquashrecovery1s. Squashpivotatfootbaselinekeepsbottomfixed. Shadowopacityconstant.35(noimpendingimpactdarkening). Supersedespreviousshortphasevalues.
+
+### Game-only pause scope
+Pause and LevelUp menus only make gamecanvasinert; surroundingadmincontrols remaininteractive. Keyboardnavigationcapturesonlygame/menufocusandignoresbrowsermodifier shortcuts. Menusaria-modalfalse. Pausedgamecanvasrenderiscacheduntilresize/resume; browserRAF/audio/menuUIcontinuesnormally. This supersedes pagewideinertblocking.
+
+Nerushadowlatest:groundcoordinatesatfeet,hiddenuntiloffscreenafterrise,120msfadein. Trackstartsafterriseandmovesfromtakeofffeet towardplayerfeet. Landingspriteanchorcompensatesfootbaseline;nooutline/constantfullopacityretainedafterfade.
+
+Neru shadow now fades/grows at a fixed takeoff foot point for120ms, then tracks forfull3seconds before1slock. Shadowdoesnottranslateuntilfadeends. Normal/shootGIFsusefixedvisiblebodyanchors(centerX101.5/105.5,footY182/170)forrenderandstablehurtbox. Neruchasecompensatesvisiblebodycenter. This supersedesGIFcanvas-centeredalignmentandmovementduringfade.
+
+Neru shooting variations alternate radial and aimed stream, with stomp attacks between shootings. Stream lasts 2 seconds, fires one pink plasma bullet every 0.08 seconds toward the player's current combat center; launched shots remain straight. Uses the same speed, size and damage as radial bullets. Editable cadence: bossBehaviorSettings.neru.streamBulletInterval.
+
+Neru bullet update: both shooting variations now use orange/yellow plasma and pierce the player (one successful hit per projectile). All Neru bullet visuals and collision radii increased another 20%: diameter 4.32, collision radius 7.2. Radial speed stays 288px/s; stream speed is 345.6px/s (+20%). Stream alternates single shots between two parallel muzzle lanes, +/-12px from the aim axis, every 80ms. Each new shot aims toward player combat center; launched bullets stay straight. This supersedes the prior pink/single-line stream note.
+
+Tuning Parts foundation: catalog intentionally empty until parts are supplied.
+Definitions live in Development/tuning-parts.js: id, name, icon path, three level descriptions/perks and three sellCredits values. Perk consumers will be connected once effects are specified; global character stats and other weapons are not modified.
+Enemies roll 1/780; Yuuka always requests an eligible part. No placeholder parts drop with an empty catalog. Equipped/ground types are excluded from duplicate rolls.
+Three slots, max level3. Swapping preserves levels and moves the replaced part to Found. Any consumed part grants exactly one level, regardless of consumed level. Consumed/sold types are excluded for the rest of the run.
+Finish drops Found on safe ground at its current level; leave its pickup area to reopen. Pause > Tuning Parts manages equipped parts, including consuming another equipped part.
+Sale = floor(level sell value * stageCoinMultiplier * (1 + moneyUpBonus/100)). Prices await definitions.
+Menus pause only the game. Equipped inventory persists across maps; ground parts clear on map change. Reload resets the run.
+
+Power Tuning is the first defined Tuning Part (temporary descriptive name, user supplied no name). Icon: sprites/icons/Event 06 - Buff 1.png. Relative pool weight4. Levels1/2/3: base weapon damage +15/+20/+25%, critical damage +5/+10/+15 percentage points. Sell prices50/100/150 Credits before stage/shop multipliers. Damage is an independent multiplicative base-weapon factor applied before flat enhancements/Growth; critical damage adds to the weapon critical modifier. Only the starting weapon receives these effects (currently Plana umbrella, including its shared damage calculation). No global ATK/CRT changes. The catalogue is no longer empty; drops and Yuuka guaranteed part rolls are enabled when this type is eligible.
+
+Terminology clarification: every earlier gameplay reference to "Mod" or "Mods" (the temporary system name) refers to Tuning Parts. This is one system, not a separate future mechanic. Any historical statement that Mods are deferred is superseded by the implemented Tuning Parts system. Earlier weapon-damage and projectile-count references to Mod bonuses mean eligible Tuning Part bonuses; these apply only to the character's starting weapon. Yuuka's previously promised Mod reward means her guaranteed Tuning Part drop, using the current eligible pool and run exclusions. Undefined part effects still await individual definitions. Sensei's separately mentioned future item-box reward is not renamed to Tuning Parts.
+
+Explosive Tuning: weight3, icon Event 06 - Buff 12.png; proc chance10/20/30% at levels1/2/3. On an accepted starting-weapon hit, roll for an explosion; each swing/projectile can successfully proc only once. Splash deals30% of the weapon damage calculation, including enhancement/base modifiers and the same critical modifier, but Growth is explicitly disabled. It uses normal accepted-damage/on-hit notifications and cannot recursively trigger Explosive Tuning. Plana EX splash inherits its knockback; normal umbrella currently has no weapon knockback to inherit. Greed's specific credit effect awaits its definition and is not invented here. Nearby radius48px with the existing one-shot artillery explosion animation. Base sell values50/100/150 Credits. Configuration: explosiveTuningSettings and tuningPartCatalog in tuning-parts.js. Effects tick only during gameplay and clear on map changes.
+
+Cold Tuning finalized: weight3, icon Wooden Doll - Nagusa.png, base sell50/100/150 Credits. Each accepted starting-weapon hit has40% chance to freeze an eligible target for3seconds and deal one cold hit at50/60/70% of the weapon damage calculation (levels1/2/3). Requires4gameplay seconds since that specific enemy last successfully damaged the player; initially counts from its spawn. Contact and all boss damage sources reset their owner's timer on accepted damage, not on I-frame-rejected attempts. Already frozen/dead targets cannot trigger again. Uses existing Frozen overlay/animation/facing rules. Primary umbrella,EX and inherited explosion on-hit paths supported; cold damage does not recursively invoke itself. Definition in tuning-parts.js, behavior in cold-tuning.js.
+
+Critical Tuning:weight2,Unidentified Data Chip.png,levels1/2/3 add10/20/30 percentage points of starting-weapon critical chance. Adds to base,buff and target crit bonuses before0-100%clamping;does not change global CRT or other weapons. Sell50/100/150 Credits. Available in admin spawn buttons and natural weighted drops.
+
+Luxery Tuning (user spelling): weight3, Mansion Invitation.png, sell50/100/150 Credits. Starting-weapon accepted hits have base3/4/5% proc chance. bonus=floor(min(100,hitDamage)/10); procChance=(base+bonus)/100. Successful proc drops one ground Credits pickup worth1+irandom(bonus), inclusive0..bonus:1-11Credits maximum. Uses requested per-hit weapon damage, including crit and overkill. Main umbrella,EX,Explosive splash andCold on-hit paths participate; misses and rejected hits do not. Credit pickups use existing scatter,safe landing,magnet and collection rules; rewards are not added immediately. Admin spawn button generated from catalog.
+
+Hasty Tuning:weight2,Millennium Flag.png,base sell50/100/150 Credits. Starting-weapon attack time multiplies by0.85/0.80/0.75 at levels1/2/3. Combines multiplicatively with weapon-level interval reductions and character Haste,before existing frame rounding/minimum. Does not modify Haste stat,hit cooldown,swing duration or EX cooldown. Available via weighted drops/admin spawn.
+
+Knockback Tuning: weight3, Event 32 - Lost Item 17.png, base sell50/100/150 Credits. If the starting-weapon hit has no existing knockback, add speed5/8/12 pixels per frame over5/8/12 frames (duration frames/60, distance25/64/144px before resistance). If it already has knockback, multiply its displacement/speed by1.3/1.5/2 and keep its duration. Normal umbrella and its inherited explosive splash gain new knockback; umbrella EX and its splash retain their existing direction/duration with strength multiplier. No extra stun from the part. Existing knockback resistance, immunity and collision stopping rules remain in use. Available through weighted drops/admin spawn.
+
+Repair Tuning: weight1, Pipe Wrench.png, sell50/100/150 Credits. Accepted starting-weapon hits can attempt healing at most once per gameplay second, with15% success chance. Successful healing is a random integer from1 through floor(maxHP*0.05/0.10/0.15), capped by missing HP. Both success and failed rolls spend the one-second gate; full-HP hits do not roll. Shared gate prevents secondary/explosion hits from bypassing it. This is independent healing, not life-steal and not scaled by hit damage. The cooldown ticks only during gameplay and follows run Tuning Part state. Main umbrella,EX and inherited on-hit paths supported. Configuration in repair-tuning.js and tuning-parts.js; admin spawn generated automatically.
+
+Speed Tuning: weight3, Event 41 - Slippers.png, sell50/100/150 Credits. All levels apply an independent0.8 starting-weapon base-damage factor; other weapons are unaffected. SPD gains20/30/40 percentage points additively to the character's other SPD bonuses. These perks are derived from equipped parts, not stored into base stats, so removing/swapping/selling immediately removes both effects without drift. Shared Pause/LevelUp/Crafter/Tuning stat display includes the SPD bonus. Weapon damage penalty stacks multiplicatively with Power/weapon-level base modifiers; flat enhancements/Growth stay separate, following existing base-damage part rules. Available in weighted drops and admin spawn.
+
+Target Tuning clarified implementation: Marker Buoy.png, weight9 (=3+current6weaponlimit), sell50/100/150 Credits. First enemy hit by each primary starting-weapon swing/projectile joins a run-scoped set of marked enemies. Hits on marked enemies share rounded20/25/30% of actual inflicted damage to every other living marked enemy; unmarked targets do not feed the mark network. Shared damage does not recursively transfer or invoke on-hit part effects. Normal umbrella and EX create marks; inherited explosion/Cold hits on already-marked enemies share damage too. Dead marks are pruned; removing the part disables sharing/indicators. A small buoy icon indicates marked enemies. There is no separate unconditional20/25/30%damage boost. User clarified the mark-to-mark behavior; interpretation of first target is per new primary swing/projectile, stated during implementation.
+
+Neutralization Tuning: weight2, Warakuhime's Fan.png, sell50/100/150 Credits. Accepted starting-weapon hits roll10/20/30% chance for1second stun. No stun graphic until supplied. Chance to erase an overlapping eligible enemy projectile is20/30/40%, with one-second gameplay cooldown per attacking swing/projectile after either success or failure. Nonintersecting/immune projectiles do not consume an attempt. Normal umbrella swept attack and EX path provide geometry to NPC projectile pool. Owner metadata explicitly makes all Neru bullets and Iroha rounds/projectiles immune. Ground pounds,smash/ram,self-destruct and area explosion attacks are not erasable. Current boss projectile roster is entirely covered by the exclusions; the eraser API supports future eligible projectiles. Main/EX and inherited splash/Cold on-hit paths apply stun. Existing control system handles stun movement/contact suppression. Configuration and behavior:neutralization-tuning.js;catalog:tuning-parts.js.
+
+Reverse Tuning:weight3,Event 32 - Lost Item 10.png,sell50/100/150Credits. Level1/3 addPI to starting-weapon aim;level2 restores normal direction. No other stat changes. Current umbrella auto-swing and EX launch use startingWeaponAim;EX follows reversed arrow angle during its normal fade-in tracking and locks as usual. Arrow input itself is unchanged. Other weapons are unaffected. Future starting weapons should use the shared startingWeaponAim helper. Available in weighted drops/adminspawn.
+
+RGB Tuning:weight2,Peroro Mochi.png,sell50/100/150Credits. All3levels enable identical rainbow trail with no stat changes. Umbrella swing's original afterimage alpha is tinted using a seven-color source-atop gradient on its isolated trail canvas;solid weapon/world remain unchanged. Umbrella EX continuous streak uses the same rainbow palette,retaining normalblur/fade timing. Only the starting weapon qualifies. Helpermodule:rgb-tuning.js. Future starting weapons can reuse rgbTuningActive/rainbowTrailGradient. Weighted drop/adminspawn enabled.
+
+Size Up Tuning:weight4,Cherino Matryoshka.png,sell50/100/150Credits. Starting-weapon dimensional size factor1.15/1.20/1.25 multiplies existing weapon size bonuses. Normal umbrella visuals,swept hit area and swing/orbit distances share the same areaScale. Umbrella EX snapshots the part factor and applies it to rendered projectile length/trailwidth,hit capsule and launch offset. StartingWeaponSizeScale helper supports future projectile visuals/hit areas/orbit radii. Other equipped weapons are unaffected;Reverse/RGB remain the explicit all-weapon exceptions. No damage/speed/attack-time changes. Catalog/adminspawn enabled.
+
+Slowdown Tuning:weight4,Capybara Bath Salt.png,sell50/100/150Credits. Levels1/2/3:20/25/30% accepted-hit chance to apply15/20/25% movement reduction for5gameplayseconds and deal one immediate30/40/50%weapon-damage hit. User clarified damage is once on application,notdamage-over-time. Reapplication refreshes duration;no movement base stat is overwritten. Slow multiplier applies to normal character chase/movement aftercatchupspeed selection;forced knockback and scripted boss attack timing remain separate. Main umbrella,EX and inherited explosive splash apply the effect. Catalog/adminspawn enabled. Helpers/config:slowdown-tuning.js andtuning-parts.js.
+
+Solo Tuning:weight9(3+6weaponlimit),Rokuwakaku Model.png,sell50/100/150Credits. Starting-weapon base bonus equals5/10/15% times empty slots in the six-slot weapon inventory,computed on each damage calculation so obtaining/merging/removing weapons updates it automatically. Applies as its own multiplicative base factor and excludes flat enhancement/Growth damage. A single starting weapon leaves5empty slots,for25/50/75%base bonus. Future excluded sword attack passes options.soloTuningEligible=false,or weapon metadata soloTuningEligible:false;no undefined sword weapon is added now. Other weapons are unaffected. Catalog/adminspawn enabled.
+
+Trumpet Tuning:weight2,Event 06 - Buff 17.png,Audio/SFX/why.mp3,sell50/100/150Credits. Starting weapon attack sounds have cooldown8/6/4frames at60fps and volumes25/40/55% atlevels1/2/3. Every accepted sound uses a fresh nonlooping Audio voice;newattacks,unequipping andpause do not cut existing voices short. End/error cleanup releases voice references. Cooldown advances only duringgameplay. Normalumbrella swingstart andEXlaunch trigger it;no damage/stat effects. Future starting weapons can call playTrumpetTuning on firing. Browser autoplay restrictions are handled without unhandledrejections. Musicvolume remains a separate control. Catalog/adminspawn enabled.
+
+Trumpet Tuning? now follows the existing volume slider. Effectivevoicevolume=levelgain*slidervalue/100. Activeoverlappingvoicesadjustlive,includingmute,withoutpause/restart. PauseSettings delegates tosameinput so it also controlsdoots. This supersedes the earlier note that musicvolume is separate fromTrumpetSFX.
+
+Trumpet Tuning? gain now derives from trumpetBaseGain in tuning-parts.js (currently3.125). Level1=base,Level2=base*2,Level3=base*3. Changing base updates every level. WebAudio boosts,slider multiplication andindependentvoices remain.
+
+Weapon Tuning:weight1,Souvenir Doll.png,sell50/100/150Credits. Level1/2/3 adds an independent starting-weapon base factor0.70/0.60/0.50 and other-weapon base factor1.04/1.06/1.08 in the shared weapon damage formula. Dynamic mainWeaponId identifies the penalty target;Plana defaults to her umbrella. This part explicitly benefits nonstarting weapons,unlike most parts. No permanent character stats are mutated;removal immediately restores both sides. Factors multiply with other base modifiers such as Speed Tuning;flat enhancement/Growth additions remain separate under existing formula ordering. Catalog/adminspawn enabled.
+
+Weak Tuning:weight4,Souvenir Doll.png,sell50/100/150Credits. On accepted starting-weapon hits:20/25/30% chance to apply3s ATK reduction20/25/30% and DEF reduction5/7/10%. Successful reapplication refreshes duration. ATK multiplies outgoing contact and boss attack damage without permanently modifying base ATK;existing attack multipliers remain multiplicative. DEF is a separate additive entry alongside existing bonusDamageTakenPercent debuffs,benefiting all incoming attacks against that enemy. No independent hard-defense stat is added. Main/EX/inherited explosive andCold on-hit paths supported. Weapon Tuning icon changed to Expo Souvenirs.png per user;its tradeoff effect remains unchanged. Catalog/adminspawn enabled.
+
+Reserved Ability Upgrades (user explicitly requested data only; no implementation until further directives): definitions in ability-upgrades.js, enabled:false, not imported by gameplay or UI. Prices by rank / total:
+Special Attack:500 /500. Future secondary button defaultX;no binding added.
+Growth:500,10000,50000 /60500. Supplied description1% main weapon/Special damage per game level;existing Growth formula notes remain available,shop purchase/unlock not implemented here.
+Reroll:2500,5000,7500,10000,12500,15000,17500,20000,22500,25000 /137500.
+Eliminate:same costs /137500.
+Tuning:500 /500. Reserved future unlock;existing Development Tuning is not gated or disabled.
+Hold:5000,10000,15000,20000,25000 /75000.
+Customize:50000 /50000.
+Supports:1000 /1000.
+Momo Chats:50000 /50000.
+Enchantments:1000 /1000.
+Student Council:2000 /2000.
+Descriptions and individual prices retained in the editable catalog. No purchasing,currency spending,persistence,menus,stat changes,notifications,achievements or unlock enforcement added. Await user directives.
+
+Reserved Stats Upgrades (data only, following the Ability Upgrades instruction): stat-upgrades.js,enabled:false,not imported into gameplay/UI. All14supplied descriptions,per-rank bonuses,caps,rank prices andtotals saved. Regeneration records1HP perrank every5seconds,max5HP/5seconds. Other entries use percentage bonus metadata. No purchases,persistence,menus,unlockgates,timers,character stats or combat effects added. All supplied rank-cost totals andbonus caps validated. Await further implementation directives.
+
+Reserved Other Upgrades: other-upgrades.js,enabled:false,metadata only. Customer Service:+1mob spawn perrank,5ranks,cost2000/4000/6000/8000/10000,total30000;spawn-rate timing/unit awaits implementation directives. Weapon Limit:5free ranks,additional weapons5down to0(starter separate),no active inventory restriction added. Item Limit:6free ranks,items/equipment6down to0. Synnergy Ban,Supers Ban,Hardcore andRefund All all cost0. Hardcore's future1HP mode andexisting reserved score formula are not enabled. Refund All is recorded as an action,not a rank. No spawning changes,limits,bans,purchases,refunds,modes orpersistence added. All7costtotals validated. Await directives,matchingAbility/Stats metadata tables.
+
+Rate-Up Tuning:weight2,user-selected replacement icon Event 41 - Character Cushion.png (Capybara Bath Salt already belongs to Slowdown). Sell50/100/150Credits. Starter hits tag the enemy for2gameplayseconds with1/2/3%extra TuningPart drop chance. The tag is recorded inside damageEnemy after miss rejection and before defeat listeners,so an immediately lethal hit qualifies. Any later killing weapon can finish the tagged target within the window. Explosive Tuning inherits this on-hit tag. Natural and conditional bonus odds combine as1-(1-baseChance)*(1-bonusChance),one part maximum per kill;Yuuka remains guaranteed. Existing eligibility/exclusions and ground placement apply. Mushroom alternative replaced by random healing food for future implementation;rateUpFoodSettings.enabled=false,substitutionChance=null until food definitions/odds arrive. No placeholder food or invented healing values added. Catalog/adminspawn enabled.
+
+Stationary Tuning:weight2,Mini Event - Toy Box.png,sell50/100/150Credits. While actual player displacement is zero,starting-weapon base damage increases20/25/30%,andall equipped weapon automatic attack intervals multiply by0.70/0.60/0.50. Facing changes/animation alone do not count as movement. Uses independent interval factor,not Haste;even the Haste-immune synergy receives this explicit all-weapon effect. Remaining cooldowns rescale on movement-state changes;synergy stagger gaps share the factor. No extra projectile speed,hit-cooldown,EXduration orEXcooldown changes. Damage bonus remains starting-weapon-only. Both gameplay previews andsynergy implementationsupdated. Catalog/adminspawn enabled.
+
+Super Synnergy framework: recipes live in super-synergy-recipes.js,currently empty,user will supply five. Do not invent weapons/items. GoldenHammerPieces.gif contains three22x32stages,decoded unchanged to generated/golden-hammer/piece-0/1/2.png for progress-dependent display (half-shaft,fullshaft,hammer).
+A valid recipe's Synnergy weapon enables the upper-right HUD progress. One equippedSynnergy=halfshaft,two=fullshaft. Three equippedSynnergies instantly grants the unique hammer;alternatively level50 with a qualifyingSynnergy creates one ground pickup. Detailed mechanics gate hammer progress on the weapon;the matching item is required to craft. Groundhammer uses safe placement andcontactpickup,andrelocates acrossmaps ratherthanbeinglost. One shared run state spansavatars/maps;no secondhammer orSupercraft afteruse.
+GoldenCrafter choices include aSuperrecipe onlywhenhammerheld,matchingSynnergyequipped,andmatchingitemMAXorSuper. SuperitemmayprovidebaseItemId. Goldenmenu thenallows equipment selection alongsideweapons,withnamedingredientboxes andconfirm. Success replacesSynnergyinplace,consumestheitem(freeingslot)andhammer atomically. Failedrecipefactory/cancellation leavesingredientsandhammerunchanged. ExistingregularGoldenCrafters/fusionscontinueunchanged. WithnoSuperecipesyet,noprogress/hammer/newcraftoptionappears inliveplay. Testsusesyntheticrecipesonly.
+
+Malkuth's Hat (first equipment item)
+- Unlock: defeat the Arisu boss. Unlocks persist locally per signed-in account; guest/no-account unlocks do not persist. No cloud save is implemented here.
+- Icon: sprites/icons/items/malkuth.png. Normal levels 1/2/3 multiply damage by 1.2/1.3/1.4 and subtract 20 percentage points of crit chance before clamping.
+- Damage multiplier joins the additive Damage Bonus family (1.4 plus another 1.3 effect gives 1.7).
+- At MAX, a normal Crafter can spend 1 Secret Tech Note to awaken the hat. A Super File can also grant its awakened form, replacing an owned normal hat without using another slot.
+- Awakened: level 1/MAX, damage multiplier 1.5, no crit penalty. Never offered as a normal level-up awakening.
+- Future MAX penalty-negation equipment can declare negatesItemPenalties; no such item is activated yet.
+- Verification: 84 test files passed; Development module graph linked. Browser visuals/playthrough not verified.
+
+Item unlock clarification
+- Locked items are unavailable on a fresh profile. Meeting an unlock condition permanently adds them to subsequent runs' reward pools; the condition need not be repeated.
+- Unlocking grants eligibility, not an automatic equipped item or guaranteed drop.
+- Future Customize/armory exclusions are separate from unlocks. disabledItemIds filters normal and Super File rewards without erasing unlock progress; re-enabling restores eligibility.
+- Customize remains an inactive upgrade definition until its UI/mechanics are requested.
+
+Decagrammaton - Super Synnergy 1
+- Recipe: The Princess and the Key + MAX Malkuth's Hat (or awakened/Super Hat), using the existing Golden Hammer and Golden Crafter requirements. Consumes the hat, frees its equipment slot, and retains the ingredients' reward exclusions. One Super Synnergy per run.
+- Icon: sprites/attacks/Decagrammaton_Icon.png. Description: Spits plasma which contain the strength of god(?). All attack damage is also multiplied 1.3 times.
+- Three primary blue shots per 7 frames, each accompanied by a secondary pink shot. Each hit rolls its own crit. Pink shots follow the aimed cone; blue shots select visible enemies, home and wrap around their target until duration, hit limit or target death ends them.
+- Blue: 60% damage, 7-hit limit, 15-frame hit cooldown, 200% area, 20-frame lifetime. Pink: 90% damage, 3-hit limit, 60-frame hit cooldown, 125% area, 40-frame lifetime. Both speed 15 px/frame; knockback duration 5 frames, speed 3 px/frame. Times convert at 60 FPS. Interval is fixed at its 7-frame minimum.
+- Enhancements split across the three primary blue projectiles; secondary pink projectiles do not increase that split count.
+- Passive 1.3 Damage Bonus affects all attack rolls. Consumed Malkuth's Hat no longer applies its crit penalty.
+- The Princess and the Key EX pattern/effect remains usable on Decagrammaton with an independent 3-minute cooldown; enhancements resolve from the current Super weapon.
+- Ultimate: Band of Atsilut. Square overlaid with a diamond (eight-pointed star). Independent 5-minute cooldown. Brief flash then an orange wave expands from the player; visible non-boss enemies turn white and are defeated simultaneously at 1.5 seconds, as the wave clears the viewport. Effect finishes at 1.95 seconds. Bosses, including Shiroko/Arisu/Iroha/Neru, are excluded; mini-bosses are affected. Offscreen enemies are excluded. Normal defeat rewards apply.
+- Admin equip and ultimate-test buttons added. Shared EX compendium and independent ultimate HUD added to both Development previews.
+- Validation: 85 test files passed; both preview module graphs linked. Browser playthrough/visual acceptance remains unverified.
+
+Item asset location clarification: items now live under sprites/items/. The current Malkuth's Hat icon path is sprites/items/malkuth.png; this supersedes the earlier sprites/icons/items/ note. Runtime references and the asset regression check already use the new location.
+
+Decagrammaton projectile visual tuning
+- Each 7-frame cycle now staggers its six individual shots (alternating blue/pink) using slightly randomized positive gaps whose sum preserves the original cycle duration and total fire rate.
+- Blue projectile diameter and matching collision radius are reduced by 20%; pink size is unchanged.
+- Blue plasma fades smoothly over the last 0.12 seconds of its original lifetime, including bloom/tail. Other plasma weapons retain their existing fade.
+- Focused Decagrammaton, Luminous Nova and Princess/Key tests passed; browser visuals not verified.
+
+Decagrammaton plasma consistency
+- Uses Kei's shared plasma renderer, gradients and bloom. Trail onset now waits through the same 0.08-second startup; visual tail growth uses Kei's reference speed independently of Decagrammaton's gameplay speed.
+- Muzzle placement accounts for the full bullet bloom plus the shared 3px gap, preventing glow/trail overlap behind the player at launch.
+- Blue remains 20% smaller than its previous Decagrammaton size and retains its smooth lifetime-end fade. Damage, cadence, homing and travel speed are unchanged.
+
+Pickup menu re-entry protection
+- Finishing with a found Tuning Part returns it to the ground but blocks that individual drop until the player fully leaves its pickup area and remains off it for 1.5 seconds.
+- Cancelling normal or Golden Crafters applies the same protection without consuming them. Consumed Crafters need no block.
+- Touching a protected pickup again before the wait expires restarts the leave-and-wait requirement. Different pickups track independent protection.
+- Uses simulation delta; paused gameplay/menu time never advances this delay. Map/drop clearing removes stale protections.
+
+Decagrammaton retained EX clarification
+- The Princess and the Key EX keeps its original laser, buff, residue, wide blue cone, stagger, fire rate, damage and unlimited piercing when Decagrammaton is equipped.
+- The only spray behavior change is its aim: the cone points toward a visible enemy nearest the player's aimed direction (nearest distance breaks ties). Each fired round remains straight; this is emitter tracking, not a new volley or individual homing pattern.
+- During the EX blue-spray window the normal Decagrammaton stream is replaced by that EX spray. Existing projectiles remain in flight; the ordinary pink/blue stream resumes afterward. Windup behavior follows the original EX timing.
+- Outside EX, Decagrammaton's ordinary blue bullets retain their homing/wrapping behavior.
+
+Decagrammaton homing muzzle correction
+- Blue shots resolve their target-facing launch direction before computing the player's hitbox-edge muzzle position. Targets behind or diagonally behind the player now launch from that side, rather than starting at the manual-aim muzzle and turning across the player.
+- Pink rounds keep the player's manual aim; no-target blue rounds fall back to it. Bloom clearance, stagger, size, lifetime and damage are unchanged.
+
+Decagrammaton rendering correction (supersedes the smaller-graphic experiment)
+- Restored blue visual diameter to its previous value: shared bullet diameter x 2 x 0.8. Combat diameter remains unchanged.
+- Iroha's large tank shell confirms size itself is supported by the shared plasma renderer. The mismatch came from timing: the blue bullet's tail reached full length only after its end fade had begun.
+- Blue visuals now start their wake immediately, like Iroha's shell, and scale visual trail growth with diameter. Its complete tapered plasma trail forms before end fade. Pink rendering inputs remain unchanged.
+- Retains blue end fade, gameplay speed/lifetime, homing, collision area and target-facing muzzle placement. Browser visual verification was not repeated after Computer Use was stopped.
+
+Projectile rendering audit and verified orbit-tail correction
+- Kei/Luminous Nova, Princess and Key (normal/EX), Neru radial/stream bullets, Iroha cannon/artillery shells and Decagrammaton all call drawLuminousPlasma in luminous-nova.js. They reuse the same head gradients, additive bloom, tapered tail layers and color mapping; Arisu's laser is a separate beam renderer.
+- Creation differs: Kei fades/accelerates into straight motion; Princess/Key is a staggered straight cone; Neru uses straight radial or alternating-lane orange rounds; Iroha uses fast straight orange shells. Decagrammaton alone turns sharply and orbits targets.
+- Rendered diagnostics confirmed isolated Decagrammaton plasma matches the shared style. The actual moving projectiles differed because a long straight extrapolated tail rotated behind every orbit turn, producing large white tangent spikes around the target.
+- Blue bullets now record a bounded actual-motion history (maximum48 points). The shared renderer applies its existing gradient/bloom passes to a tapered path ribbon following those positions. Ordinary straight bullets keep their original rendering path.
+- Blue diameter, fade, targeting, projectile speed/lifetime, damage, hitboxes and attack timing are unchanged. This supersedes speculative size/timing explanations as the fix for the remaining visual mismatch.
+- Headless Chromium rendered outputs/plasma-created-before.png and outputs/plasma-created-after.png using actual Decagrammaton creation/update/draw. Reference rows are pixel-identical before/after; the orbital tangent spikes are removed in the actual-motion row. This is a controlled rendering check, not a full gameplay playthrough.
+- Added plasma-trail.test.cjs for traveled-path bounds, original straight trails, shared plasma colors, zero-length safety and bounded history. Full regression suite:87files passed.
+Decagrammaton lifetime update: blue bullets now last40frames/60 =0.667seconds, matching pink bullets. Existing end fade, hit limit and target-destruction cleanup remain in place.
+Admin Golden Hammer control: Add Golden Hammer Piece, beside Spawn Golden Crafter, advances half-shaft -> shaft -> complete held hammer. It bypasses normal progression thresholds for testing, updates the HUD immediately, preserves recipe requirements, and cannot grant a duplicate/second hammer after use.
+Golden Hammer HUD placement: right8px/top60px, directly below the LV display (top36px plus20px height and4px gap). Replaces the old3%/14% offsets, preserving icon size.
+
+Admin Weapons & Items panel / Malkuth visibility
+- Malkuth's Hat was implemented as an equipment item with an Arisu-defeat reward unlock, but had no direct admin equip control.
+- Equip Supernova, Luminous Nova, all Synnergies/Super Synnergies and items now live in a dedicated Admin / Weapons & Items panel, with collapsible Weapons/Synnergies/Items sections.
+- Added manual Malkuth's Hat LV1, MAX (LV3) and awakened equip buttons. These bypass reward unlocks for testing without permanently unlocking the item, replace an existing Hat instead of duplicating it, and respect six equipment slots.
+- Autoattack toggle, cooldown resets, direct EX casts and ultimate tests remain in the separate Skills panel. The two panels share a scrollable left column so the game does not lose width; fullscreen positioning follows the wrapper.
+- Added loadout-admin.js and loadout-admin.test.cjs. Controlled headless layout screenshot: outputs/admin-loadout-preview.png. Full regression suite:88files passed; Development module graph links.
+
+Plana base stats: HP70, ATK1.3x (130%), SPD1.3x (130% of shared player base speed), CRT10%, SIZE1/5 flat. SIZE is future weapon metadata only, not sprite/hitbox scaling. Future character skills can appear as level-up upgrades but must stay separate from weapon/equipment slots; bottom-left skill/buff icons deferred until directives/assets are supplied.
+
+CORRECTION: Plana's previous 240 px/s already included base SPD1.3x. Normalize her pre-stat movement base to 240/1.3, then apply (130 + SPD bonuses)/100. Unmodified travel remains240 px/s, not312. Arona and enemy speed reference remain unchanged.
+
+Level-up footer actions: Reroll, Eliminate, Hold with bitmap-font use counts. Developer reward bypass grants10/10/5 uses per character run; non-admin uses abilityUpgradeRanks.reroll/eliminate/hold (caps10/10/5), spent counts in levelActionSpent. Purchases/shop UI remain deferred. Eliminate targets a selected weapon/item ID for the remainder of the run's level-up pool, does not consume pending level. Hold skips that pending choice and reserves selected option at next level. Escape cancels selection mode. Reroll shuffles eligible options; with current small implemented pool the same rewards may remain available.
+
+BAD COOKING - default-unlocked basic weapon; icon sprites/attacks/Bad Cooking.png. Base weapon damage0.9,10s attack/minimum interval,1area,unlimited target hits,0.75s per-enemy cooldown,110%area,601/60s duration,0speed. One continuously renewed player-centered miasma; Haste does not change renewal or hit timing. Levels2area+15%,3damage+30%,4area+25%,5hit frequency+20%(cooldown0.625s),6damage+60%,7/MAX small outward knockback. Damage level multipliers1.3*1.6. Initial visual radius110px; area upgrades multiply radius1.15/1.25; future weaponAreaMultiplier hook. MAX provisional small knockback5frames at60px/s, editable settings. No EX or Synnergy recipes supplied; three Synnergies pending. Normal level-up/File eligible, Crafter levels/enhancements, admin Equip Bad Cooking; non-starter cappedLV7/MAX. Player SIZE1/5 does not affect this weapon. Shared reward menu now shuffles full eligible pool before selecting4 so additional weapons do not permanently hide later items. File generation also reads full pool.
+
+Bad Cooking level1 reference correction: initial radius approximately140worldpx (280px diameter) matching supplied screenshot's miasma footprint. Dark translucent grey-purple circular haze with subtle purple pixel flecks replaces overlapping pale cloud blobs. Same radius drives damage and visuals. Level1 has no knockback; MAX-only knockback remains per original level table.
+
+Bad Cooking weapon classification: Melee (attackType Melee, ranged false). Persistent aura behavior unchanged.
+
+Bad Cooking selection/drop weight:4. Stored on weapon definition for weighted weapon reward selection.
+
+MOLOTOV COCKTAIL: default-unlocked Basic Multishot weapon,weight3. Icon now sprites/attacks/Event 41 - Dakimakura.png per user, replacing temporary napalm frame; Knockback Tuning icon untouched. Base0.8weapon damage,5s interval with Haste affecting throws only,1shot,unlimited fire targets,0.75s per-fire/enemyhitCD,90%area,3s ground duration,360px/s throw travel. Level2area20%,3count2,4damage30%+duration1s,5damage30% multiplicative,6count3,MAXcount4+area20%. Configurable base radius80*0.9=72px. Throws land around enemies and fire remains at impact. Supplied40frame2400ms512x512 GIF decoded with original timing/transparency/canvas; rendered above playarea but below entities/loot. Generic weaponAreaMultiplier supports future area modifiers. Crafter/Files/levelups/enhancements/admin equip integrated in both previews. No EX or Synnergy invented.
+
+Molotov throw coverage correction: most throws choose enemies within viewport plus15%of larger screen dimension; remaining ground throws cover that whole padded screen region. Allows throws around player, toward screen edges and slightly offscreen, without unlimited distant-enemy targeting. Flight is not screen-culled and fire lifetime begins at impact. Both previews pass actual camera/viewport.
+
+Molotov range distribution correction: distance now always rolls a triangular distribution between5%-100%of directional padded-screen reach,peak45%. Enemies bias direction only; they cannot override range odds. Approx16.45%close(<30%reach),75.89%middle(30-80%),7.66%far(>80%). Full360degree coverage and occasional offscreen landings retained.
+
+Molotov targeting correction: first find nearest enemy within mid-range band(30%-80%of directional padded-screen reach),land directly at its current position. If no eligible enemy,weighted random direction/distance fallback. Enemy position locked at throw time; fire remains at impact. Supersedes previous angle-only enemy bias.
+
+Molotov footprint reference correction: baseRadius125(before90%area),level1radius112.5,level4radius135(270px diameter),MAXradius162(324pxdiameter). Approximately56.25%larger than previous size, preserving20%MAXincrease. Shared zone.radius drives texture and damage together. Reference level4 image informed size, not an exact pixel registration.
+
+Admin weapon equip buttons: first click equips,subsequent clicks add1weapon level up toMAX,including owned weapons in full inventory. Does not spend pending upgrades or modify enhancements/awakening. Records firstMAXorder for crossed-icon ordering. Applies Supernova,LuminousNova,BadCooking,Molotov in both previews. Synnergies remainLV1/enhancement-only per existing rules. Item explicitLV1/MAX/awakened buttons unchanged.
+
+Molotov napalm reduced20%from previous reference correction:baseRadius125=>100;level4radius108(diameter216),MAXradius129.6(diameter259.2). Visual and damage radius shrink together.
+
+RACER PASS: default-unlocked Stat item,weight1,max3,icon sprites/items/Racer Pass.png. LV1size/knockback10%,pickup30%;LV2 15%/40%;MAX20%/50%. Super LV1/MAX30%size/knockback,100%pickup,+20flatMaxHP. Normal level-up/File acquisition and Crafter levels; Super File can acquire or replace normal in same slot; adminLV1/MAX/Super controls. No separate SecretTechNote awakening invented for this item. HP reconciliation tracks applied bonus once, removes/clamps on removal; gain increases currentHP by20too. Pickup shared stat panel includes bonus. RacerPass size and future weaponSizeBonusPercent add in one family; separate weaponAreaMultiplier multiplies. Basic weapon sizes/collision and existing knockback integrated: umbrella swing/EX,Supernova normalbeam,Luminous normal bullets,PrincessKey bullets including retainedEXspray,Dec bullets/orbit,BadCooking area/MAXknockback,Molotov fire. Supernova EX/other unenumerated skill AoEs unchanged until specifically declared affected. Does not add knockback to attacks that have none. Weapon area mods never change throw range/duration or fire hit rate. Defined reward weights now influence level-up weighted ordering and normal File candidate selection; Super items remain uniformly selected.
+
+Molotov no-enemy fallback revised after user reports consistently distant throws: explicit30%close(5-30%reach),60%middle(30-70%),10%far(70-100%)instead of triangular sampler. Each bottle rolls independent direction/distance. Nearest eligible midrange enemy still overrides random landing. This changes fallback distribution; no proven live-browser root cause was identified from code alone. Real no-enemy multishot regression verifies distinct landing points and varied/closer distances.
+
+Admin item buttons now equipLV1 then level ownednormalitems +1perclick untilMAX. Removed direct EquipMAXitembuttons. SeparateSuper/Awakened form buttons retained; normalclicks do not downgrade alreadySuper/Awakened items. Feedback reads actualequippedlevel,notnewcandidate.
+
+Admin normal item progression now LV1=>LV2=>MAX=>definedSuper/Awakened on nextclick(MalkuthHat,RacerPass),same equipment slot. AlreadySuper remains stable. This is adminonly anddoesnotgrantfreeSuperinnormalgameplay. Superitemicons nowgoldenouterglow inHUD,levelupgrade/CrafterandFile reveal via sharedglowhelper.
+
+Weapon naming correction(2026-11-18): Decagrammaton is now Protocol SUPERNOVA;icon sprites/attacks/protocolsupernova.png. Activation skill formerly Band of Atsilut is now Activate Protocol SUPERNOVA. User cites Blue Archive Protocol Supernova MV betweenArisu/Kei as namingreference. Existing mechanics/patterns/cooldowns/retainedPrincessKeyEXunchanged;no revisedmechanicsspecified. InternaldecagrammatonIDs/moduleAPIretainedforrecipe/combatcompatibility. Bothpreviewskillmenus,recognitionlabel,HUD/recipeconstructorandadminactivationbuttonupdated.
+
+SAINT PREDATOR: Basic weapon,weight2,Multishot,ranged,icon sprites/attacks/Misaki_UE.png. Default-unlocked pending any later objective directive. NoEXdefined(exSkillfalse). Base1.0weapon damage,0.5sattackinterval,1missile,hitlimit1,0.5shitCDmetadata,90%area,1.5slifetime,240px/s. LV2damage20%,LV3count2,LV4intervalx0.67,LV5speedx1.25+damage20%,LV6intervalx0.5,MAXcount4. Damage levels multiply1.2*1.2;interval0.5=>0.335=>0.1675beforeHaste/60Hzrounding. Missiles choose random visibleenemy onlaunch andflystraight atitscurrentposition;nohomingorsplashspecified. Noenemy=randomdirection. Expireonfirstswepthit/lifetime;targetdeathdoesnotdeleteinflightmissile. Proceduralmissilebody/fins/exhaust untilcustomprojectileassetprovided. RacerPass scalesrender/collisionandmuzzleclearance. Enhancementsplitusesvolleycount;permissilecriticalroll. Levelup/File/Crafter/adminEquip(+1uptoMAX)integratedbothpreviews;noEXorrecipesinvented.
+
+SaintPredator icon: removed large transparentmargins via sharediconCrop220,10,520,225;45degreeclockwiserotationplacesoriginalleft-facingbarrelup-left. Sharedmetadataenlarges/fitsiconacrossHUD,levelup,Crafter,Files. Gameplayunchanged.
+
+MAXweapon glow correction:sharediconhelper nowgoldforLV7normalweaponsincludingBadCooking,Molotov,SaintPredator withoutneedingenhancements. SupernovaMAXblue,LuminousMAXpinkunchanged;PlanaawakenedCSSoutline/sparklespreserved. NormalMAXitemsdonotgainSuperglow.
+
+SaintPredatorunlockcorrection:lockedbynormaldefault. Objective Defeat the boss inStage1(Shiroko). Actualbossdefeatinfirstmap/nonendlesscallsunlockStageBossRewards;rewardacquisitionrequiresaccountcontentunlock. Onceearned,persistsacrossrunsunderexistingper-UIDbrowserstore,withouttime/looprestrictions. Developerbypassandadminmanualequipunchanged;nonadminsimulationtracksobjectiveinisolatedmemory.
+
+Supernovaunlock:normalaccountsdefeatStage2bossArisu. Stage-specificactualbossdefeatgrantsaris-lasercontentunlock;persistsperaccountacrossruns. Defaultlocked,newrewardacquisitiongated,alreadyownedadminweaponupgradesallowed. Developerbypass/simulationandCustomize/consumedweaponrestrictionsretained.
+
+SAFETY HELMET: default-unlocked Utility item,weight4,5normallevels,icon sprites/items/Safety Helmet.png. Procchances15/20/25/30/35%;Super40%plusheal10%MaxHP(floored,capped). Eachincomingpositivepost-DRhitrollsbeforeHP/shieldabsorption;successfulprocnegatesentirehit,nodamageflash/number,noitemcooldown. ExistingplayerI-frameeligibilitystillappliesbeforeincominghit. RegisteredplayerdamageguardcoversNPCcontactandbossattackswithoutcouplingstatmoduletoenemyworld. Shockwaveknocksallbackregisteredtargetsfromplayercenter:10framesduration(1/6s),speed10*60px/s=>100pxdistancebeforeexistingresistance/collision/immunity. Noadditionalstunordamage. Visualgoldexpandingring0.5s,updatestopsonpause;visualcap32doesnotlimitprocs. Supergoldiconsharedstyle. Level-up/File/Crafterintegration,SuperFilecanreplaceownednormalwithoutnewslot,adminsingleEquipbuttonLV1=>2=>3=>4=>MAX=>Super. GenericitempoolrefactoredforRacer/HelmetwhileMalkuthlocksretained. SuperFileproductdescriptionsnowshowactualitemeffects.
+
+Itemiconfit: HUD equipmentart70%=>92%ofslot; shareditemiconFitmetadatauses124/128canvasextent(Crafter/HUD/levelup),156/160File;level-upitempaddingremoved. Transparentmarginsspecifiedviaalpha-boundsiconCrop:Malkuth0,19,1254,1235;Racer43,12,214,220;Helmet31,42,231,166.Normal/Superformsbothfit.Preserveaspectratios,nospriterasterchanges. Weaponiconlayoutunchanged.
+
+Itemiconboundarycorrection:fitinsidefourcyanHUDcornerbrackets,notouterboxborder. Inspected255x237frame,cyanbounds29-226x35-206;aspect-containedframein squarehasnarrowerverticalinterior. Equipmentcanvas70%slotwithitemdrawfit124x108within128canvas=>max67.8%width59.1%height,retainingalpha-crops/aspectratioandpaddinginsidecorners. Othermenufitunchanged. Supersedesprevious92%HUDslotsetting.
+
+LIFE JACKET: defaultunlocked Utilityitem,5levels,weight3,icon sprites/items/Life Jacket.png withalpha-croppedfit. Capacities15/20/25/30/35,refresh15gameplayseconds;normalDR10%. Supercapacity40/DR15%,heal10flatHPper3continuousfullshieldseconds,cappedMaxHP. IndependentlifeJacketState storesremaining/timers,doesnotconsumeoroverwriteadminshield. Acquisition/levelchangeinitializesfullshield;periodicrefreshreplacesremaining(notadditive). Removalclearsownpool. NoMaxHPcapontheitemshield(workswithfutureHardcore1HP). Damageorder:multiplicativeDR=>SafetyHelmetnegation=>LifeJacketshield=>othershield=>HP. ShieldhitsstillreturnOnHittrue,butonlyactualHPlossstartsHPflash;lastDamageResultseparateshealthDamage/shieldDamage/negatedforfutureeffects. FuturegradualdamageusingdamagePlayeralsofirstconsumesshield. HUDshowscombinedshield,fillclampedvisuallytoHPbarbutaccessibleamountreal;passivessyncimmediatelywhilerewardsmenuspaused. Bothpreviewsadvance15s/3stimersingameplayonly. Normallevelup/File/Crafter,SuperFilereplacementandadminLV1=>5=>Superroutes;Supergoldicons.
+
+CHISE PLUSHIE - PARTIAL SETUP, DAMAGE EFFECT NOT IMPLEMENTED YET: Utility,max3,weight3,icon sprites/items/Chise-nyan Doll.png,alpha-croppedfit. Initialdamagefractions30/20/10%defined. NormalunlockSurvive10activegameplayminutesasAronainonesinglerun,countsArona-onlytime acrossstages,pauseswithgameandendsatdeath;noPlana-timecredit. Existingperaccountunlockstorage/developerbypass/simulationused. Normalitemreward/Crafter/adminroutesdefined,adminMAXdoesnotSuper(noSuperformspecified). CRITICALPENDING: userhasnotprovideddrainrate/timing/formulaformissing70/80/90%damage. Asyncclarificationrequested;noanswerasofthisturn. DoNOTclaimdelayed-damagegameplayworks:damagePlayerisunchangedandChisecurrentlydoesnotreduce/deferhits. MustimplementdelayconservingdamageanddrainingLifeJacket/othershieldbeforeHPonceformulaarrives. Noarbitraryratewasinvented.
+
+Chise followup: user suppliedtickinterval EVERY1.5SECONDS,butnotdamageamountpertick.Requiredasyncclarificationasks1damage/10%remainingroundedup/allremaining. Stillpending. Implementedgenericdeferredpooland1.5supdateenginebutPRODUCTIONEFFECTINACTIVE: chisePlushieSettings.damagePerTick=null. Userhasnotauthorizedanamount. damagePlayeronlydeferswhenruleconfigured;avoidspermanentdiscount. Engineunit-test-onlyrule1checks30/20/10initialpostDRintegerdamage,restconserved,poolednewhits,1.5sstep,zero-initialhitsreturnOnHittrue,removaldoesnotforgivedebt,LifeJacket/adminshieldfirst,HPthenredpopup,shieldblue. Debt bypassesHelmetnegation/DR/re-deferral becauseoriginalattackalreadyresolvedthosesystems. Adminstatresetclearsdebt. Gameplaypausehaltsupdater. DoNOTclaimcompleteoractivateuntiltickamountprovided.
+
+CHISE PLUSHIE COMPLETE/ACTIVE - userconfirmed1damagepertick,every1.5seconds. chisePlushieSettings.damagePerTick=1. SupersedesallpriorPENDING/INACTIVEwarnings. LV1/2/MAXtake30/20/10%initialpost-DRdamage(rounded),remainingdamagepooledanddrained1pointper1.5gameplayseconds. Shieldfirst,thenHP. NoDR/Helmetre-rollondebtticks. Existing10minAronasingle-runaccountunlock/rewards/Crafter/adminnormal3levelsactive.NoSuperprovided.
+
+2026-11-20 - Overheated Overclocking
+Implemented Stat item (weight 2), three normal levels (+40/+60/+80% additive ATK), Super (+100% ATK and +200% Skill Damage, no drain). Normal drains 5% Max HP each active second down to 1 HP, bypassing damage/hit effects. Confirmed user rule: Life Jacket absorbs this drain only when Luminous Nova is also equipped. Unlock: complete a stage with Luminous Nova (It's Safe I Swear), persisted through the existing account-local unlock system. Added normal level-up/Crafter/File/admin progression and Super File replacement. Future penalty-negation item is supported by flags but not invented. Validation: 101 test files passed; Development/movement.js module graph linked. No authenticated gameplay test performed.
+
+2026-11-20 - Special Pharmaceuticals
+User requested Utility item, weight 1, max level 3, icon Special Pharmaceuticals.png; unlock by surviving 10 minutes as Plana in one run; reductions 33%, 66%, then negate item penalties.
+Implemented catalog, reward eligibility, level-up/Crafter progression and admin equip/level button. Shared itemPenaltyMultiplier reduces Malkuth's Hat CRT penalty and Overheated Overclocking HP drain, retaining positive effects. No Super form invented. Paused time excluded from Plana survival objective; unlock uses existing account-local persistence. Chise deferred damage remains its timing mechanic, not erased as an item penalty.
+Assistant: I’ll add Special Pharmaceuticals with its three levels and Plana survival unlock, and connect it to the existing item penalties.
+Assistant: The item now reduces Malkuth’s Hat’s critical-chance penalty and Overheated Overclocking’s HP drain by 33%, 66%, then 100%, while preserving their benefits. I’m treating Chise Plushie’s deferred damage as its damage-timing mechanic, so Pharmaceuticals won’t erase damage already owed.
+Validation: 102 test files passed; movement module graph linked. No browser gameplay validation.

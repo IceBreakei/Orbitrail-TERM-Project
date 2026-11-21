@@ -1,3 +1,6 @@
+import { itemSkillDamageMultiplier } from './item-catalog.js';
+import {startingWeaponAim} from './tuning-parts.js';
+import {rgbTuningActive,rainbowTrailGradient} from './rgb-tuning.js';
 import { luminousNovaSkillSettings as skill, luminousNovaSettings, damageRules } from './game-config.js';
 import { totalCharacterATK, rollAttackDamage } from './combat-stats.js';
 import { getCombatHitbox, getEnemyHurtbox } from './combat-hitboxes.js';
@@ -10,12 +13,12 @@ const buffKey='luminous-nova-ex';
 /** Banked bonus only: no extra ATK or critical roll can exceed this component's cap. */
 export function luminousNovaFinisherDamage(damageDealt,player) {
   const baseAttack=damageRules.baseScale*totalCharacterATK(player)/100;
-  return Math.max(0,Math.min(Math.round(damageDealt*skill.damageFraction),Math.floor(baseAttack*skill.attackCapMultiplier)));
+  return Math.max(0,Math.min(Math.round(damageDealt*skill.damageFraction*itemSkillDamageMultiplier(player)),Math.floor(baseAttack*skill.attackCapMultiplier)));
 }
 
 /** Nominal281% ATK before the normal damage roll; the banked extra is calculated separately. */
 export function luminousNovaFinisherBaseDamage(player) {
-  return Math.max(0,Math.round(damageRules.baseScale*skill.finisherAttackMultiplier*totalCharacterATK(player)/100));
+  return Math.max(0,Math.round(damageRules.baseScale*skill.finisherAttackMultiplier*totalCharacterATK(player)/100*itemSkillDamageMultiplier(player)));
 }
 
 /** Own the25s aura, temporary stats, accepted-damage bank and charged finishing shot. */
@@ -30,7 +33,8 @@ export function createLuminousNovaSkill({random=Math.random}={}) {
   function cast(player,angle,getAngle=()=>angle) {
     reset();player.combatBuffs??={};
     player.combatBuffs[buffKey]={damageBonusMultiplier:skill.damageBonus,critPercent:skill.critBonus};
-    state={owner:player,phase:'aura',elapsed:0,damageDealt:0,angle,getAngle,hits:new Set()};
+    const turn=value=>player.tuningParts?startingWeaponAim(player,'luminous-nova',value):value;
+    state={owner:player,phase:'aura',elapsed:0,damageDealt:0,angle:turn(angle),getAngle:()=>turn(getAngle()),hits:new Set()};
   }
   /** Advance on simulation time only, so menus freeze both the buff and the charge. */
   function update(delta,player) {
@@ -50,7 +54,7 @@ export function createLuminousNovaSkill({random=Math.random}={}) {
         for(const target of getAllEnemies()) {
           if(state.hits.has(target.id)||!luminousNovaHits(target,from,state,skill.projectileDiameter/2*luminousNovaSettings.bloomRadiusScale))continue;
           state.hits.add(target.id);
-          const hit=rollAttackDamage(state.owner,skill.finisherAttackMultiplier,random,{target});
+          const hit=rollAttackDamage(state.owner,skill.finisherAttackMultiplier,random,{target,skillAttack:true});
           damageEnemy(target.id,hit.damage,state.owner,hit.type);
         }
       }
@@ -173,7 +177,7 @@ export function createLuminousNovaSkill({random=Math.random}={}) {
       context.restore();
     }
     if(state.phase==='firing'&&state.projectileActive) {
-      drawLuminousPlasma(context,camera,{...state,age:state.elapsed},skill.projectileDiameter,skill.projectileSeconds);
+      drawLuminousPlasma(context,camera,{...state,rainbow:state.owner.tuningParts?rgbTuningActive(state.owner):false,age:state.elapsed},skill.projectileDiameter,skill.projectileSeconds);
       // Muzzle-anchored impact rings spread into a widening cone, independent of bullet travel.
       const muzzleDistance=body.rx+skill.muzzleGap;
       drawFiringRings(context,body.x-camera.x+Math.cos(state.launchAngle)*muzzleDistance,

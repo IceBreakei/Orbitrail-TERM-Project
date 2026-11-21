@@ -1,3 +1,4 @@
+import {weakenedAttackMultiplier} from './weak-tuning.js';
 import { enemyContactDamageFormula } from './game-config.js';
 import { yuukaSettings } from './game-config.js';
 import { contactSettings } from './game-config.js';
@@ -33,6 +34,7 @@ function contactGeometry(npc, player, motion) {
 
 /** React to contact, flash once, and pause chase until bounce/push recovery ends. */
 export function updateNpcContact(npc, player, motion, delta, move, survivalSeconds = 0) {
+  if(npc.frozenRemaining>0)return false;
   npc.contactCooldown = Math.max(0, (npc.contactCooldown || 0) - delta);
   // Per-enemy attack cooldown is separate from recoil and the player's global I-frames.
   npc.playerHitCooldown = Math.max(0, (npc.playerHitCooldown || 0) - delta);
@@ -41,9 +43,9 @@ export function updateNpcContact(npc, player, motion, delta, move, survivalSecon
     const baseDamage = npc.contactDamage ?? (npc.type === 'mob' ? contactSettings.mobDamage : contactSettings.playerDamage);
     const damage = npc.perTypeStats ? Math.floor(baseDamage * (npc.contactDamageMultiplier ?? 1)) :
       enemyContactDamageFormula(baseDamage, player.level || 1, survivalSeconds, npc.contactDamageMultiplier ?? 1);
-    const damaged = damagePlayer(player, damage);
+    const damaged = damagePlayer(player, npc.weakRemaining>0?Math.floor(damage*weakenedAttackMultiplier(npc)):damage);
     if (damaged && npc.type === 'yuuka') npc.playerHitCooldown = yuukaSettings.contactHitInterval;
-    if (damaged) player.contactIFrames = contactSettings.iFrameDuration;
+    if (damaged) {player.contactIFrames = contactSettings.iFrameDuration;npc.secondsSincePlayerHit=0;}
   }
   const overrideBounce = npc.contactReaction?.kind === 'bounce' && hit.pushing;
   if (hit.touching && ((!npc.contactReaction && !npc.contactCooldown) || overrideBounce)) {

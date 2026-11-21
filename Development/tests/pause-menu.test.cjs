@@ -1,11 +1,13 @@
 const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
-const elements=new Map();
+const elements=new Map(),keyboardHandlers=[];
 function el(id){if(!elements.has(id))elements.set(id,{hidden:true,value:'0',textContent:'',classList:{toggle(){},contains(){return false}},children:[],listeners:{},style:{setProperty(k,v){this[k]=v}},
  getContext(){return {}},setAttribute(k,v){this[k]=v},addEventListener(k,v){this.listeners[k]=v},focus(){},append(){},prepend(){},remove(){},replaceChildren(){},
  querySelector(){return el('summary')},querySelectorAll(selector){return selector==='.pause-weapon-divider'?[el('divider')]:selector==='[data-thin-text]'?[el('#pause-skill-equipped'),el('#pause-skill-effect')]:[]}});return elements.get(id)}
 const context=vm.createContext({document:{querySelector:el,createElement:()=>el('generated'),body:{classList:{contains:()=>false}}},
- window:{addEventListener(){}},Image:class{},URL,ResizeObserver:class{observe(){}},
+ window:{addEventListener(type,handler){if(type==='keydown')keyboardHandlers.push(handler)}},Image:class{},URL,ResizeObserver:class{observe(){}},
  createBitmapText:()=>({setText(){},setMaxWidth(){}}),ensurePlayerStats:p=>p,planaSkillSettings:{stunSeconds:3}});
+vm.runInContext(fs.readFileSync('Development/game-config.js','utf8').replaceAll('export ',''),context);
+vm.runInContext(fs.readFileSync('Development/item-catalog.js','utf8').replaceAll('export ',''),context);
 vm.runInContext(fs.readFileSync('Development/character-stats-panel.js','utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ',''),context);
 const source=fs.readFileSync('Development/pause-menu.js','utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ','').replaceAll('import.meta.url',"'file:///Development/pause-menu.js'");
 vm.runInContext(source+";var menu=createPauseMenu({canvas:document.querySelector('canvas'),getPlayer:()=>({label:'Plana',hp:110,maxHp:110,combatStats:{},attackSlots:[]}),releaseControls(){}})",context);
@@ -18,3 +20,10 @@ click('#pause-settings-toggle');assert(!el('#pause-settings').hidden);
 right();assert(el('#pause-settings').hidden);assert(vm.runInContext('menu.paused',context));
 right();assert(!vm.runInContext('menu.paused',context));
 console.log('PASS: right-click backs out of EX/Settings and resumes only at pause root.');
+
+click('#pause-game');assert.equal(el('canvas').inert,true);assert.notEqual(el('.playtest-sidebar').inert,true);
+let intercepted=false;const shortcut={key:'Escape',ctrlKey:true,target:el('canvas'),preventDefault(){intercepted=true},stopImmediatePropagation(){intercepted=true}};
+keyboardHandlers.forEach(handler=>handler(shortcut));assert.equal(intercepted,false);assert(vm.runInContext('menu.paused',context));
+keyboardHandlers.forEach(handler=>handler({...shortcut,ctrlKey:false,target:el('admin-input')}));assert.equal(intercepted,false);assert(vm.runInContext('menu.paused',context));
+right();assert.notEqual(el('canvas').inert,true);
+console.log('PASS: pause affects canvas only, leaves sidebar enabled and ignores browser shortcuts/outside-page keys.');

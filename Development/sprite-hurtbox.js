@@ -5,14 +5,14 @@ const animationCache=new WeakMap();
 export function animationSpriteHurtbox(character,getFrameRectangle,padding=8) {
   const identity=character.animationFrames||character.image;
   let sizes=animationCache.get(identity);if(!sizes){sizes=new Map();animationCache.set(identity,sizes);}
-  const size=character.spriteSize||89.6,key=`${size}:${character.referenceSize||215}`;
+  const size=character.spriteSize||89.6,key=`${size}:${character.referenceSize||215}:${JSON.stringify(character.gifPoseAnchors||{})}`;
   if(sizes.has(key))return sizes.get(key);
   const scale=(size-padding*2)/(character.referenceSize||215),poses=[];
   if(character.animationFrames) {
-    const clips=[character.animationFrames,...Object.values(character.actionAnimations||{})];
-    for(const frames of clips)for(const frame of frames) {
-      const image=frame.image;
-      poses.push({image,crop:{x:0,y:0,width:image.naturalWidth,height:image.naturalHeight,footY:image.naturalHeight}});
+    const clips=[['normal',character.animationFrames],...Object.entries(character.actionAnimations||{})];
+    for(const [name,frames] of clips)for(const frame of frames) {
+      const image=frame.image,anchor=character.gifPoseAnchors?.[name];
+      poses.push({image,crop:{x:0,y:0,width:image.naturalWidth,height:image.naturalHeight,footY:anchor?.footY??image.naturalHeight,anchorX:anchor?.anchorX}});
     }
   } else {
     for(const direction of Object.keys(character.rows||{}))for(let frame=0;frame<character.layout.columnEdges.length-1;frame++) {

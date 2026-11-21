@@ -1,3 +1,4 @@
+import {superSynergyChoices,applySuperSynergyChoice} from './super-synergy-rules.js';
 import { synergyRecipes } from './synergy-recipes.js';
 import { umbrellaUpgradeSettings, arisWeaponSettings } from './game-config.js';
 
@@ -23,11 +24,12 @@ export function goldenCrafterChoices(player,recipes=synergyRecipes) {
         description:recipe.description||`Fuse ${first.name||first.id} and ${second.name||second.id} into ${recipe.result.name||recipe.result.id}.`});
     }
   }
-  return choices;
+  return [...choices,...(typeof superSynergyChoices==='function'?superSynergyChoices(player):[])];
 }
 
 /** Replace the two ingredients with one synergy atomically; cancellation never calls this. */
 export function applyGoldenCrafterChoice(player,id,recipes=synergyRecipes) {
+  if(id.startsWith('super-synergy:'))return applySuperSynergyChoice(player,id);
   const choice=goldenCrafterChoices(player,recipes).find(choice=>choice.id===id);
   if(!choice)return {consumed:false,success:false,message:'No compatible MAX-level weapon pair.'};
   let result;

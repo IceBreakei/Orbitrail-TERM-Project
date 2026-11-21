@@ -1,6 +1,6 @@
 const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');let damageListener;const enemies=new Map(),hits=[];
 const c=vm.createContext({Image:class{constructor(){this.naturalWidth=958;this.naturalHeight=246}decode(){return Promise.resolve()}},onEnemyDamage:fn=>{damageListener=fn;return ()=>{damageListener=null}},getAllEnemies:()=>[...enemies.values()],getEnemy:id=>enemies.get(id),damageEnemy:(id,damage,source,type)=>{hits.push({id,damage,type});return true},applySkillControl(){}});
-for(const name of ['game-config','combat-stats','combat-hitboxes','luminous-nova','firing-rings','luminous-nova-skill'])vm.runInContext(fs.readFileSync('Development/'+name+'.js','utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export \{.*\} from .*;\r?\n/gm,'').replaceAll('export ',''),c);
+for(const name of ['game-config','item-catalog','combat-stats','combat-hitboxes','luminous-nova','firing-rings','luminous-nova-skill'])vm.runInContext(fs.readFileSync('Development/'+name+'.js','utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export \{.*\} from .*;\r?\n/gm,'').replaceAll('export ',''),c);
 vm.runInContext('var skill=luminousNovaSkillSettings',c);
 const run=s=>vm.runInContext(s,c);
 run('var player={label:"Plana",x:0,y:0,level:1,attackSlots:[createLuminousNovaWeapon()],combatStats:{}};var ex=createLuminousNovaSkill({random:()=>.5});ex.cast(player,0)');

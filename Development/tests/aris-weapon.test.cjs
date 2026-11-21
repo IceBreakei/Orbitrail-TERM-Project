@@ -4,7 +4,7 @@ const c=vm.createContext({URL,Image:class{decode(){return Promise.resolve()}},
  getAllEnemies:()=>[...enemies.values()],getEnemy:id=>enemies.get(id),
  damageEnemy(id,damage,source,type){hits.push({id,damage,type});return enemies.get(id)},
  applySkillControl(...args){knocks.push(args)}});
-for(const name of ['game-config','combat-stats','combat-hitboxes','firing-rings','aris-weapon'])vm.runInContext(fs.readFileSync(`Development/${name}.js`,'utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export \{.*\} from .*;\r?\n/gm,'').replaceAll('export ','').replaceAll('import.meta.url',"'file:///Development/aris-weapon.js'"),c);
+for(const name of ['game-config','item-catalog','combat-stats','combat-hitboxes','firing-rings','aris-weapon'])vm.runInContext(fs.readFileSync(`Development/${name}.js`,'utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export \{.*\} from .*;\r?\n/gm,'').replaceAll('export ','').replaceAll('import.meta.url',"'file:///Development/aris-weapon.js'"),c);
 const run=s=>vm.runInContext(s,c);
 run('var weapon=createArisWeapon();var player={x:0,y:0,attackSlots:[weapon],combatStats:{atkPercent:0,critPercent:0}};var attack=createArisAttack();');
 assert.equal(run('rollArisDamage(player,()=>0).damage'),27);

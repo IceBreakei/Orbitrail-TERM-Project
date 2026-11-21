@@ -1,3 +1,5 @@
+import { chiseDelayConfigured } from './game-config.js';
+import { syncRacerPassHealth, syncLifeJacketShield, lifeJacketStats, totalPlayerShield, chiseImmediateFraction } from './item-catalog.js';
 import { developmentSettings, damageReductionFormula } from './game-config.js';
 import { levelExpFormula } from './game-config.js';
 import { startingLevelExp, expIncreasePerLevel } from './game-config.js';
@@ -22,6 +24,8 @@ export function ensurePlayerStats(character) {
   character.maxExp = experienceForLevel(character.level);
   character.maxHp ??= 100;
   character.hp ??= character.maxHp;
+  syncRacerPassHealth(character);
+  syncLifeJacketShield(character);
   character.shield = Math.max(0, Math.min(character.maxHp, character.shield ?? 0));
   character.invincible ??= developmentSettings.invincible;
   ensureCombatStats(character);
@@ -56,19 +60,46 @@ export function changePlayerShield(character, amount) {
   }
 }
 
+// The runtime item effect registers once; plain stat consumers need no world dependencies.
+let playerDamageGuard=null;
+export function setPlayerDamageGuard(guard){playerDamageGuard=guard;}
 /** Absorb damage with shield first; spill excess into HP and show one hit number. */
 export function damagePlayer(character, amount) {
   ensurePlayerStats(character);
   if (!Number.isFinite(amount) || amount <= 0) return false;
-  const damage = Math.round(amount * damageReductionFormula(character.damageReductionPercent ?? []));
-  const absorbed = Math.min(character.shield, damage);
+  const damage = Math.round(amount * damageReductionFormula([].concat(character.damageReductionPercent??[],lifeJacketStats(character)?.reduction??0)));
+  if(damage<=0)return false;
+  if(playerDamageGuard?.(character,damage)){character.lastDamageResult={negated:true,healthDamage:0,shieldDamage:0};showDamageNumber(character,0,true,'miss');return false;}
+  const initialFraction=chiseDelayConfigured()?chiseImmediateFraction(character):1;
+  const immediate=Math.round(damage*initialFraction),deferred=damage-immediate;
+  if(deferred>0){
+    if(!(character.chisePendingDamage>0))character.chiseTickElapsed=0;
+    character.chisePendingDamage=(character.chisePendingDamage||0)+deferred;
+  }
+  const taken=applyResolvedPlayerDamage(character,immediate);
+  character.lastDamageResult.deferredDamage=deferred;
+  return taken||deferred>0;
+}
+
+/** Already-resolved damage bypasses attack-only negation, DR and Chise re-deferral. */
+export function applyResolvedPlayerDamage(character,damage){
+  ensurePlayerStats(character);
+  if(!Number.isFinite(damage)||damage<=0){character.lastDamageResult={negated:false,healthDamage:0,shieldDamage:0};return false;}
+  const jacket=character.lifeJacketState;
+  const jacketAbsorbed=Math.min(jacket?.remaining??0,damage);
+  if(jacket){jacket.remaining-=jacketAbsorbed;if(jacket.remaining<jacket.capacity)jacket.healElapsed=0;}
+  const absorbed = Math.min(character.shield, damage-jacketAbsorbed);
   character.shield -= absorbed;
   const previous = character.hp;
-  character.hp = Math.max(0, character.hp - (damage - absorbed));
-  const taken = absorbed + previous - character.hp;
+  character.hp = Math.max(0, character.hp - (damage - jacketAbsorbed - absorbed));
+  const healthDamage=previous-character.hp;
+  const taken = jacketAbsorbed + absorbed + healthDamage;
+  character.lastDamageResult={negated:false,healthDamage,shieldDamage:jacketAbsorbed+absorbed};
   if (taken > 0) {
-    character.damageFlashElapsed = 0;
-    showDamageNumber(character, taken, true);
+    if(healthDamage>0)character.damageFlashElapsed = 0;
+    const shieldDamage=jacketAbsorbed+absorbed;
+    if(shieldDamage>0)showDamageNumber(character,shieldDamage,true,'shield');
+    if(healthDamage>0)showDamageNumber(character,healthDamage,true);
   }
   return taken > 0;
 }
@@ -113,7 +144,7 @@ export function createPlayerStatsTools(getPlayer, onChange) {
       if (inspectedCharacter !== character || document.activeElement !== input) input.value = character.combatStats[input.dataset.combatStat];
     }
     inspectedCharacter = character;
-    status.textContent = `${character.label} | LV ${character.level} | EXP ${character.exp}/${character.maxExp} | HP ${character.hp}/${character.maxHp} | Shield ${character.shield}/${character.maxHp}`;
+    status.textContent = `${character.label} | LV ${character.level} | EXP ${character.exp}/${character.maxExp} | HP ${character.hp}/${character.maxHp} | Shield ${totalPlayerShield(character)}/${character.maxHp}`;
   }
   invincibility.addEventListener('change', () => {
     getPlayer().invincible = invincibility.checked;
@@ -145,8 +176,9 @@ export function createPlayerStatsTools(getPlayer, onChange) {
       if (action === 'preview-supercrit') showDamageNumber(character, 23, false, 'supercritical');
       if (action === 'reset') {
         Object.assign(character, { level: 1, exp: 0, pendingUpgrades: 0, hp: character.maxHp, shield: 0, invincible: developmentSettings.invincible });
-        character.combatStats = { ...defaultCombatStats };
+        character.combatStats = {}; // Reinitialize character defaults, including base CRT.
         delete character.damageFlashElapsed;
+        delete character.chisePendingDamage;delete character.chiseTickElapsed;
         ensurePlayerStats(character);
       }
       update();

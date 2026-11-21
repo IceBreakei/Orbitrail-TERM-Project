@@ -1,3 +1,35 @@
+import { updateOverclocking } from './overheated-overclocking.js';
+import { unlockStageClearRewards } from './item-catalog.js';
+import { updateChiseDamage } from './chise-plushie.js';
+import { createCharacterSurvivalUnlocks } from './character-survival-unlocks.js';
+import { updateLifeJacket } from './life-jacket.js';
+import { createSafetyHelmetEffects } from './safety-helmet.js';
+import { createSaintPredatorAttack } from './saint-predator.js';
+import { createSaintPredatorWeapon } from './game-config.js';
+import { createMolotovAttack } from './molotov-cocktail.js';
+import { createMolotovWeapon } from './game-config.js';
+import { createBadCookingAttack } from './bad-cooking.js';
+import { createBadCookingWeapon } from './game-config.js';
+import { createItemEquipAdmin, equipAdminWeapon } from './loadout-admin.js';
+import { equippedSkills } from './skill-cast-state.js';
+import { superSynergyRecipes } from './super-synergy-recipes.js';
+import { createDecagrammatonAttack } from './decagrammaton.js';
+import { createDecagrammatonUltimate } from './decagrammaton-ultimate.js';
+import { configureItemUnlocks, unlockItem, unlockStageBossRewards, setUnlockSimulation, isUnlockSimulation } from './item-catalog.js';
+import { getFirebaseAuth } from '../firebase-client.js';
+import {createSuperSynergySystem} from './super-synergy-system.js';
+import {reverseTuningUpsideDown} from './tuning-parts.js';
+import {updateTrumpetTuning,bindTrumpetVolume} from './trumpet-tuning.js';
+import {slowdownMultiplier} from './slowdown-tuning.js';
+import {createStunnedAdmin,stunnedReady} from './stunned-status.js';
+import {updateNeutralizationTuning} from './neutralization-tuning.js';
+import {updateRepairTuning} from './repair-tuning.js';
+import {createFrozenAdmin,frozenReady} from './frozen-status.js';
+import {updateTuningExplosions,drawTuningExplosions,clearTuningExplosions} from './tuning-explosions.js';
+import { createTuningAdmin } from './tuning-admin.js';
+import { createTuningSystem } from './tuning-system.js';
+import { artilleryExplosionReady } from './artillery-explosion.js';
+import { stageProgressionSettings } from './game-config.js';
 import { createPrincessKeySkill } from './princess-key-skill.js';
 import { synergyRecipes } from './synergy-recipes.js';
 import { createGachaFiles } from './gacha-files.js';
@@ -6,7 +38,7 @@ import { animationSpriteHurtbox } from './sprite-hurtbox.js';
 import { createLuminousNovaSkill } from './luminous-nova-skill.js';
 import { createLuminousNovaAttack, createLuminousNovaWeapon, getLuminousNova } from './luminous-nova.js';
 import { createCrafterSystem } from './crafter-system.js';
-import { bossMinimumSpriteSize } from './game-config.js';
+import { arisuBossSizeMultiplier, bossMinimumSpriteSize } from './game-config.js';
 import { bossActionFrames } from './boss-action-frames.js';
 import { campaignSettings, pickEndlessEnemy } from './campaign-config.js';
 import { createCampaignSchedule } from './campaign-schedule.js';
@@ -63,7 +95,17 @@ import { createNpcTools } from './npc-tools.js';
 import { createMapTransition } from './map-transition.js';
 
 const authorized = await requireAdmin();
+if(authorized){try {const {auth}=await getFirebaseAuth();configureItemUnlocks(localStorage,auth.currentUser?.uid,{developer:authorized});}catch {configureItemUnlocks(null,null);}}
+document.querySelector('#admin-simulate-account')?.addEventListener('click',event=>{
+  setUnlockSimulation(!isUnlockSimulation());
+  event.currentTarget.setAttribute('aria-pressed',String(isUnlockSimulation()));
+  event.currentTarget.textContent=isUnlockSimulation()?'Return to developer unlocks':'Simulate non-admin account';
+  document.querySelector('#admin-account-status').textContent=isUnlockSimulation()
+    ?'Fresh non-admin locks active. Objectives unlock rewards for this test profile only. Existing equipped gear is unchanged.'
+    :'Developer account: all reward unlocks available. Disabled equipment and recipe requirements still apply.';
+});
 const survivalClock = createSurvivalClock();
+const characterSurvivalUnlocks=createCharacterSurvivalUnlocks();
 const runScore = createRunScore();
 const campaignSchedule = createCampaignSchedule();
 // Session-only inspection; leaderboard placement and persistence remain deferred.
@@ -74,7 +116,13 @@ window.addEventListener('run-score-calculated', ({detail}) => {
 const survivalDisplay = authorized ? createSurvivalDisplay() : null;
 const arisAttack = authorized ? createArisAttack() : null;
 const princessSkill = authorized ? createPrincessKeySkill() : null;
+const decagrammatonAttack=authorized?createDecagrammatonAttack():null;
+const decagrammatonUltimate=authorized?createDecagrammatonUltimate():null;
 const princessAttack = authorized ? createPrincessKeyAttack() : null;
+const safetyHelmetEffects=authorized?createSafetyHelmetEffects({getViewport:()=>({x:camera.x,y:camera.y,width:canvas.width,height:canvas.height})}):null;
+const saintPredatorAttack = authorized ? createSaintPredatorAttack() : null;
+const molotovAttack = authorized ? createMolotovAttack() : null;
+const badCookingAttack = authorized ? createBadCookingAttack() : null;
 const luminousAttack = authorized ? createLuminousNovaAttack() : null;
 const luminousSkill = authorized ? createLuminousNovaSkill() : null;
 const umbrellaAttack = authorized ? createUmbrellaAttack() : null;
@@ -118,15 +166,19 @@ const endlessBuildup = createEndlessEvents(() => {
 });
 let endlessMode = false;
 let pendingStageTransition = null;
+let stageTransitionDelay = 0;
+let frozenCanvasFrame = null;
 let endlessStartedAt = null; // Active survival time when Stage 4 first completes.
 let pauseMenu;
 let levelUpMenu;
 let crafters;
 let goldenCrafters;
+let superSynergy;
 let gachaFiles;
+let tuningParts;
 let awaitingFileStageAdvance=false;
 /** Share one gameplay pause condition across movement, clocks, transitions and casting. */
-function isGameplayPaused() { return Boolean(pauseMenu?.paused || levelUpMenu?.active || crafters?.active || goldenCrafters?.active || gachaFiles?.active); }
+function isGameplayPaused() { return Boolean(pauseMenu?.paused || levelUpMenu?.active || crafters?.active || goldenCrafters?.active || gachaFiles?.active || tuningParts?.active); }
 let mapAudio;
 let hud;
 let playerStatsTools;
@@ -138,11 +190,17 @@ let skillCasting;
 const characters = {
   plana: {
     label: 'Plana',
+    baseATK: playerSettings.planaBaseATK,
+    baseSPD: playerSettings.planaBaseSPD,
+    baseCritPercent: playerSettings.planaCritPercent,
+    sizeStat: playerSettings.planaSize, // Flat future weapon stat; does not resize the sprite/hitbox.
+    characterSkills: [], // Future level-up skills are separate from weapons/equipment.
+
     maxHp: playerSettings.planaHp, // EDIT starting player HP; session initialization fills to this value.
     pickupRange: playerSettings.planaPickup, // EDIT auto-pickup radius from the sprite center (+10% from 90px).
     attackSlots: [{ id: 'plana-umbrella', name: "Plana's Umbrella", icon: '../sprites/attacks/plana umbrella.png',
       iconCrop: { x: 100, y: 228, width: 68, height: 304 }, iconRotation: 45, level: 1 }],
-    movementSpeedMultiplier: playerSettings.speed / movementSpeed, // Player travel speed is 240 px/s; NPCs use their own multiplier.
+    movementSpeedMultiplier: playerSettings.speed / (playerSettings.planaBaseSPD / 100) / movementSpeed, // 1.3x base SPD already accounts for the original 240 px/s.
     source: '../sprites/Plana Sprite Sheet.png',
     // Original sheet, top to bottom (row indices are zero-based):
     // 0 down, 1 down-left, 2 left, 3 up-left,
@@ -278,10 +336,13 @@ for(const [id,base,label] of [
 for(const [id,label,source,frames] of [
   ['arisu','Arisu Boss','../sprites/enemies/bosses/arisu boss/arisu normal.gif',arisuFrames],
   ['neru','Neru Boss','../sprites/enemies/bosses/neru/A1-transparent-clean-outline.gif',neruFrames]
-]) characters[id]={label,boss:true,source,gifFrames:frames,spriteSize:bossSpriteSize,referenceSize:200,
+]) characters[id]={label,boss:true,source,gifFrames:frames,spriteSize:bossSpriteSize*(id==='arisu'?arisuBossSizeMultiplier:1),referenceSize:200,
   contactRecoveryDelay:false,horizontalFacingOnly:true,defaultDirection:'left',facing:'left',
   x:310,y:260,direction:'left',elapsed:0,moving:false};
 
+
+// Stable visible-body anchors measured across each Neru GIF, excluding transparent canvas margins.
+characters.neru.gifPoseAnchors={normal:{anchorX:101.5,footY:189},shoot:{anchorX:105.5,footY:170}};
 
 // Strip maps are 1.5 times the viewport on their finite axis.
 // The level is infinite horizontally. Only intersecting tiles are drawn each frame;
@@ -313,15 +374,22 @@ const mapTransition = authorized ? createMapTransition(canvas) : null;
 
 /** Switch only the background/scrolling axis; entities keep their world positions. */
 function switchMap(targetMap = null) {
+  const carryStageFiles=Boolean(pendingStageTransition&&targetMap===pendingStageTransition);
   if (!mapTransition || mapTransition.active || !maps.first.image) return;
   planaSkill?.reset();
   arisAttack?.reset();
   luminousAttack?.reset();
+  badCookingAttack?.reset();
+  molotovAttack?.reset();
+  saintPredatorAttack?.reset();
+  safetyHelmetEffects?.reset();
   princessAttack?.reset();
+  decagrammatonAttack?.reset();decagrammatonUltimate?.reset();
   princessSkill?.reset();
   // Snapshot BACKGROUND ONLY. Characters, NPCs, and aim graphics are drawn later.
   context.clearRect(0, 0, canvas.width, canvas.height);
   drawPlayarea();
+  molotovAttack?.drawGround(context,camera);
   const outgoingMap = currentMap;
   mapTransition.begin(layer => drawPlayarea(layer, outgoingMap));
   const player = characters[selected];
@@ -348,9 +416,13 @@ function switchMap(targetMap = null) {
   npcTools?.cleanup();
   expPickups?.clear();
   crafters?.clear();
+  tuningParts?.clear();
+  superSynergy?.relocate();
+  clearTuningExplosions();
   goldenCrafters?.clear();
   awaitingFileStageAdvance=false;
-  gachaFiles?.clear();
+  if(carryStageFiles)gachaFiles?.relocate(player.x,player.y);
+  else gachaFiles?.clear();
   mapAudio?.setMap(currentMap);
   // Keep held inputs, attack timers, AI and aiming live throughout the transition.
   document.querySelector('#switch-map').textContent = `Switch map (current: ${maps[currentMap].label})`;
@@ -361,10 +433,16 @@ document.querySelector('#switch-map').addEventListener('click', switchMap);
 
 /** Reset character positions and horizontal camera without changing sprite settings. */
 function resetScene() {
+  pendingStageTransition=null;stageTransitionDelay=0;
   planaSkill?.reset();
   arisAttack?.reset();
   luminousAttack?.reset();
+  badCookingAttack?.reset();
+  molotovAttack?.reset();
+  saintPredatorAttack?.reset();
+  safetyHelmetEffects?.reset();
   princessAttack?.reset();
+  decagrammatonAttack?.reset();decagrammatonUltimate?.reset();
   princessSkill?.reset();
   umbrellaAttack?.reset();
   aiming?.reset();
@@ -699,7 +777,7 @@ function updateCharacter(character, delta, direction, chaseTarget) {
     : directionVectors[direction];
   const length = Math.hypot(x, y);
   const baseSpeed = movementSpeed * (character.movementSpeedMultiplier || 1) * statMultiplier(character, 'spdPercent');
-  const step = Math.max(baseSpeed, character.catchupSpeed || 0) * delta;
+  const step = Math.max(baseSpeed, character.catchupSpeed || 0) * delta * slowdownMultiplier(character);
   const distance = (chaseTarget ? Math.min(step, length) : step) / (length || 1);
   const previousX = character.x;
   const previousY = character.y;
@@ -710,6 +788,8 @@ function updateCharacter(character, delta, direction, chaseTarget) {
     character.y = chaseTarget.y;
   }
   const isEnemy = character !== characters[selected];
+  // Boss bodies can cross props, shoreline, and strip edges while pursuing the player.
+  if (isBossEnemy(character)) return;
   if (character.harmlessEscaping || character.behavior === 'horde') return; // Escape animations may cross the shoreline/walls to leave view.
   if (currentMap === 'fourth') {
     const resolved = resolveIslandMotion(character, previousX, previousY, character.x, character.y, maps.fourth, isEnemy);
@@ -808,13 +888,22 @@ function drawPose(character, pose, opacity) {
   context.save();
   context.globalAlpha = opacity;
   context.translate(character.x - camera.x, character.y - camera.y + (character.bossVisualOffsetY||0));
-  if(character.bossSquash) context.scale(1+(1-character.bossSquash)*.3,character.bossSquash);
+  if(character.bossSquash) {
+    const feet=drawY+(crop.footY-crop.y)*scale;
+    context.translate(0,feet);
+    context.scale(1+(1-character.bossSquash)*.3,character.bossSquash);
+    context.translate(0,-feet);
+  }
   if (pose.mirrored) context.scale(-1, 1);
+  if ((character===characters[selected]||character.isPlayerVisual)&&character.tuningParts&&reverseTuningUpsideDown(character)) {
+    const centerY=drawY+height/2;
+    context.translate(0,centerY);context.scale(1,-1);context.translate(0,-centerY);
+  }
   context.drawImage(character.image, crop.x, crop.y, crop.width, crop.height,
     drawX, drawY, width, height);
   const flash = character.death
     ? 0.95 * Math.min(1, character.death.elapsed / 0.035)
-    : getDamageFlashOpacity(character);
+    : Math.max(character.ultimateWhite||0,getDamageFlashOpacity(character));
   if (flash > 0) {
     context.globalAlpha = opacity * flash;
     context.drawImage(getWhiteSprite(character.image), crop.x, crop.y, crop.width, crop.height,
@@ -851,11 +940,12 @@ function drawCharacter(character) {
   }
   if (character.animationFrames) {
     const frames=character.actionAnimations?.[character.bossAction?.clip] || character.animationFrames;
-    const frame = frames[gifFrameAt(frames, character.bossAction?.clip ? (character.bossAction.elapsed||0)*1000 : character.gifElapsed || 0)];
+    const frame = frames[gifFrameAt(frames, character.frozenPoseElapsed ?? (character.bossAction?.clip ? (character.bossAction.elapsed||0)*1000 : character.gifElapsed || 0))];
     const image = frame.image;
-    const animatedCharacter={...character,image};
+    const animatedCharacter={...character,image,isPlayerVisual:character===characters[selected]};
+    const anchor=character.gifPoseAnchors?.[character.bossAction?.clip||'normal'];
     drawPose(animatedCharacter, {
-      crop: { x: 0, y: 0, width: image.naturalWidth, height: image.naturalHeight, footY: image.naturalHeight },
+      crop: { x: 0, y: 0, width: image.naturalWidth, height: image.naturalHeight, footY: anchor?.footY??image.naturalHeight,anchorX:anchor?.anchorX },
       mirrored: character.facing !== (character.nativeFacing || 'left')
     }, 1);
     character.spriteHurtbox=animatedCharacter.spriteHurtbox;
@@ -881,9 +971,10 @@ function drawCharacter(character) {
 
 /** Score and queue one campaign transition after its full checkpoint/clock conditions are met. */
 function advanceStageAfterClear() {
-  if(gachaFiles?.active||gachaFiles?.count){awaitingFileStageAdvance=true;return;}
+  if(gachaFiles?.active){awaitingFileStageAdvance=true;return;}
   if(pendingStageTransition) return;
         if (!endlessMode) {
+          unlockStageClearRewards(characters[selected]);
           const result = runScore.complete({character:characters[selected],elapsedSeconds:survivalClock.seconds,
             stage:currentMap,hardcore:characters[selected].hardcore === true});
           window.dispatchEvent(new CustomEvent('run-score-calculated',{detail:result}));
@@ -895,6 +986,7 @@ function advanceStageAfterClear() {
           endlessStartedAt = survivalClock.seconds; // Stage 4 completion starts endless timers exactly once.
         }
         pendingStageTransition = next.mapId;
+        stageTransitionDelay = stageProgressionSettings.bossClearDelay;
 }
 
 /** Update and render only the active avatar; the inactive character stays hidden. */
@@ -905,6 +997,7 @@ function animate(time) {
   const activeCharacter = characters[selected];
   levelUpMenu?.update();
   survivalClock.advance(delta, isGameplayPaused(), !isPlayerDefeated(activeCharacter));
+  characterSurvivalUnlocks.update(delta,activeCharacter,{paused:isGameplayPaused(),alive:!isPlayerDefeated(activeCharacter)});
   if (endlessMode && isPlayerDefeated(activeCharacter)) {
     const result = runScore.complete({character: activeCharacter, elapsedSeconds:survivalClock.seconds,
       stage:currentMap,endless:true,hardcore:activeCharacter.hardcore === true});
@@ -913,7 +1006,8 @@ function animate(time) {
   const direction = isGameplayPaused() ? undefined : getMovementDirection();
   if (!isGameplayPaused()) {
     // Queue progression until any existing background ripple finishes; never lose a boss-clear transition.
-    if (pendingStageTransition && !mapTransition?.active && switchMap(pendingStageTransition)) {
+    if(pendingStageTransition)stageTransitionDelay=Math.max(0,stageTransitionDelay-delta);
+    if (pendingStageTransition && stageTransitionDelay<=1e-8 && !mapTransition?.active && switchMap(pendingStageTransition)) {
       pendingStageTransition = null;
     }
     skillCasting?.update(delta);
@@ -926,6 +1020,7 @@ function animate(time) {
     const playerBefore = { x: activeCharacter.x, y: activeCharacter.y };
     updateCharacter(activeCharacter, delta, direction);
     const playerMotion = { x: activeCharacter.x - playerBefore.x, y: activeCharacter.y - playerBefore.y };
+    activeCharacter.stationaryForTuning=Math.hypot(playerMotion.x,playerMotion.y)<1e-6;
     updateCamera(delta);
     npcTools?.cleanup(); // Reclaim distant/invalid NPC slots before the next spawn batch.
     if (campaignSettings.enabled && !endlessMode && !pendingStageTransition && !isPlayerDefeated(activeCharacter)) {
@@ -946,26 +1041,49 @@ function animate(time) {
     const attackFacing = activeCharacter.horizontalFacingOnly
       ? activeCharacter.facing : activeCharacter.direction;
     const aimAngle = aiming.getAngle(activeCharacter, camera.x, directionVectors[attackFacing], camera.y);
+    updateLifeJacket(activeCharacter,delta);
+    updateOverclocking(activeCharacter,delta);
+    updateChiseDamage(activeCharacter,delta);
+    safetyHelmetEffects?.update(delta);
+    updateTrumpetTuning(delta);
+    updateNeutralizationTuning(delta);
+    updateRepairTuning(activeCharacter,delta);
     luminousSkill?.update(delta,activeCharacter);
     princessSkill?.update(delta,activeCharacter,aimAngle);
     luminousAttack?.setSkillFinishing(Boolean(luminousSkill?.finishing));
-    umbrellaAttack?.update(delta, activeCharacter, aimAngle);
+    umbrellaAttack?.update(delta, activeCharacter, aimAngle,npcTools?.eraseProjectiles);
     arisAttack?.update(delta, activeCharacter, aimAngle);
     luminousAttack?.update(delta,activeCharacter,aimAngle);
+    badCookingAttack?.update(delta,activeCharacter);
+    molotovAttack?.update(delta,activeCharacter,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height});
+    saintPredatorAttack?.update(delta,activeCharacter,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height});
     princessAttack?.setExMode(Boolean(princessSkill?.casting),Boolean(princessSkill?.sprayActive));
     princessAttack?.update(delta,activeCharacter,aimAngle,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height});
-    planaSkill?.update(delta);
+    decagrammatonAttack?.setExMode(Boolean(princessSkill?.casting),Boolean(princessSkill?.sprayActive));
+    decagrammatonAttack?.update(delta,activeCharacter,aimAngle,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height});
+    decagrammatonUltimate?.update(delta,activeCharacter,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height});
+    planaSkill?.update(delta,npcTools?.eraseProjectiles);
+    updateTuningExplosions(delta);
+    superSynergy?.update(activeCharacter,playerBefore);
     expPickups?.update(activeCharacter, playerBefore, delta);
     levelUpMenu?.update();
     if(!levelUpMenu?.active) {
-      crafters?.update(activeCharacter,playerBefore);
-      if(!crafters?.active)goldenCrafters?.update(activeCharacter,playerBefore);
+      crafters?.update(activeCharacter,playerBefore,delta);
+      if(!crafters?.active)goldenCrafters?.update(activeCharacter,playerBefore,delta);
       if(!crafters?.active&&!goldenCrafters?.active)gachaFiles?.update(activeCharacter,playerBefore);
+      if(!crafters?.active&&!goldenCrafters?.active&&!gachaFiles?.active)tuningParts?.update(activeCharacter,playerBefore,delta);
     }
     hud?.update(activeCharacter);
   }
+  // A frozen game frame needs no repeated sprite/effect rendering. Browser UI continues normally.
+  const frozenKey=isGameplayPaused()?`${canvas.width}x${canvas.height}`:null;
+  if(frozenKey&&frozenCanvasFrame===frozenKey){requestAnimationFrame(animate);return;}
+  frozenCanvasFrame=frozenKey;
   context.clearRect(0, 0, canvas.width, canvas.height);
+  context.save();
+  const shake=npcTools?.screenShake||{x:0,y:0};context.translate(shake.x,shake.y);
   drawPlayarea();
+  molotovAttack?.drawGround(context,camera);
   mapTransition?.draw(context, isGameplayPaused() ? 0 : delta);
   if (currentMap === 'fourth' && showSpriteBounds) drawIsland(context, maps.fourth, camera, true);
   if (currentMap === 'third' && showSpriteBounds) {
@@ -998,14 +1116,22 @@ function animate(time) {
   crafters?.draw(context,camera,canvas.width,canvas.height);
   goldenCrafters?.draw(context,camera,canvas.width,canvas.height);
   gachaFiles?.draw(context,camera);
+  tuningParts?.draw(context,camera);
+  superSynergy?.draw(context,camera);
   npcTools?.draw(context);
   npcTools?.drawSpecials(); // Specials render above regular enemies.
   npcTools?.drawBosses(); // Bosses render above other enemies, below the controlled player.
   arisAttack?.draw(context, camera);
+  badCookingAttack?.draw(context,camera);
+  safetyHelmetEffects?.draw(context,camera);
+  molotovAttack?.drawThrows(context,camera);
+  saintPredatorAttack?.draw(context,camera);
   luminousAttack?.draw(context,camera);
   princessAttack?.draw(context,camera);
   princessSkill?.draw(context,camera);
+  decagrammatonAttack?.draw(context,camera);decagrammatonUltimate?.draw(context,camera);
   luminousSkill?.draw(context,camera);
+  drawTuningExplosions(context,camera);
   planaSkill?.draw(context, camera); // EX umbrella and its trail stay behind the player.
   // Canvas shadows follow the current frame's alpha silhouette, keeping the aura on the sprite.
   context.save();
@@ -1016,6 +1142,7 @@ function animate(time) {
   drawCharacter(activeCharacter); // The player is the highest-priority actor.
   context.restore();
   umbrellaAttack?.draw(context, camera);
+  context.restore(); // Shake world rendering only; HUD and world positions remain stable.
   survivalDisplay?.draw(context, survivalClock.seconds, canvas.width, canvas.height);
   drawDamageNumbers(context, camera, canvas.width, canvas.height);
   const facing = activeCharacter.horizontalFacingOnly ? activeCharacter.facing : activeCharacter.direction;
@@ -1036,6 +1163,7 @@ function animate(time) {
 
 /** Knockback collides with solid map props even though ordinary enemy walking ignores them. */
 function canKnockbackStand(enemy, x, y) {
+  if (isBossEnemy(enemy)) return true;
   const body = getCombatHitbox({ ...enemy, x, y }, true);
   const map = maps[currentMap];
   if (currentMap === 'fourth') return canPlaceIslandLoot(body.x, body.y, Math.max(body.rx, body.ry), map);
@@ -1069,6 +1197,25 @@ function isLootLandingClear(x, y, radius) {
 
 // Start the preview only for the authorized development account.
 if (authorized) {
+  document.querySelector('#admin-clock-form')?.addEventListener('submit',event=>{
+    event.preventDefault();
+    const minute=Number(document.querySelector('#admin-clock-minute').value);
+    const second=Number(document.querySelector('#admin-clock-second').value);
+    const result=document.querySelector('#admin-clock-result');
+    if(!Number.isSafeInteger(minute)||minute<0||!Number.isInteger(second)||second<0||second>59)return;
+    if(endlessMode||pendingStageTransition||mapTransition?.active){result.textContent='Set the clock while a campaign stage is active and no map transition is running.';return;}
+    const seconds=minute*60+second;
+    if(!campaignSchedule.seek(seconds))return;
+    npcTools?.seekInternalClock(seconds);
+    result.textContent=`Internal clock set to ${minute}:${String(second).padStart(2,'0')} on the current stage.`;
+  });
+  superSynergy=createSuperSynergySystem({canvas,getPlayer:()=>characters[selected]});
+  tuningParts=createTuningSystem({canvas,getPlayer:()=>characters[selected],onOpen:()=>{releaseControls();skillCasting?.cancel('pause');},onChange:()=>hud?.update(characters[selected])});
+  bindTrumpetVolume(document.querySelector('#music-volume'));
+  createStunnedAdmin({root:document.querySelector('#frozen-admin'),getEnemies:getAllEnemies,getCamera:()=>camera,getSize:()=>canvas});
+  createFrozenAdmin({root:document.querySelector('#frozen-admin'),getEnemies:getAllEnemies,getCamera:()=>camera,getSize:()=>canvas});
+  createTuningAdmin({root:document.querySelector('#tuning-admin'),getPlayer:()=>characters[selected],system:tuningParts});
+  document.querySelector('#pause-tuning-open').addEventListener('click',()=>tuningParts.open());
   crafters=createCrafterSystem({getPlayer:()=>characters[selected],canvas,
     onOpen:()=>{releaseControls();skillCasting?.cancel('pause');},
     onChange:()=>{hud?.update(characters[selected]);playerStatsTools?.update();},
@@ -1080,13 +1227,16 @@ if (authorized) {
     onResult:message=>{status.textContent=message;}});
   gachaFiles=createGachaFiles({canvas,getPlayer:()=>characters[selected],onOpen:()=>{releaseControls();skillCasting?.cancel('pause');},onChange:()=>{hud?.update(characters[selected]);if(awaitingFileStageAdvance&&!gachaFiles?.active&&gachaFiles?.count===0){awaitingFileStageAdvance=false;advanceStageAfterClear();}}});
   for(const type of ['normal','triple','super'])document.querySelector(`#spawn-${type}-file`).addEventListener('click',()=>{const p=characters[selected];gachaFiles.spawn(p.x-70,p.y,type);});
+  document.querySelector('#give-golden-hammer-piece').addEventListener('click',()=>{
+    status.textContent=superSynergy.givePiece()?'Golden Hammer progress increased.':'Golden Hammer is already available or has been used this run.';
+  });
   document.querySelector('#spawn-golden-crafter').addEventListener('click',()=>{
     const player=characters[selected];goldenCrafters.spawn(player.x-80,player.y);
   });
   document.querySelector('#spawn-crafter').addEventListener('click',()=>{
     const player=characters[selected];crafters.spawn(player.x+80,player.y);
   });
-  Promise.all([...Object.values(characters), ...Object.values(maps).filter(map => map.source && !map.disabled), ...maps.first.tiles, ...maps.second.tiles, ...maps.third.tiles].map(loadSheet).concat(gachaFiles.ready,goldenCrafters.ready,crafters.ready, aiming.ready, expPickups.ready, loadEnemyDeathGraphics(), umbrellaAttack.ready, arisAttack.ready,luminousAttack.ready,luminousSkill.ready,princessSkill.ready, planaSkill.ready, loadDamageNumberGraphics()))
+  Promise.all([...Object.values(characters), ...Object.values(maps).filter(map => map.source && !map.disabled), ...maps.first.tiles, ...maps.second.tiles, ...maps.third.tiles].map(loadSheet).concat(superSynergy.ready,stunnedReady,frozenReady,artilleryExplosionReady,gachaFiles.ready,goldenCrafters.ready,crafters.ready, molotovAttack.ready, aiming.ready, expPickups.ready, loadEnemyDeathGraphics(), umbrellaAttack.ready, arisAttack.ready,luminousAttack.ready,luminousSkill.ready,princessSkill.ready, planaSkill.ready, loadDamageNumberGraphics()).map(task => window.pageLoading?.track(task) || task))
     .then(() => {
       observeViewport(canvas, () => {
         mapTransition?.cancel();
@@ -1121,6 +1271,7 @@ if (authorized) {
           if(detail.skillId==='luminous-nova-aura')luminousSkill.cast(detail.player,detail.angle,()=>{
             const player=detail.player;return aiming.getAngle(player,camera.x,directionVectors[player.direction]||directionVectors.down,camera.y);
           });
+          if(detail.skillId==='decagrammaton-ultimate'){decagrammatonUltimate.cast(detail.player);return;}
           if(detail.skillId==='princess-key-ex') {
             princessAttack.setExMode(true,false);
             princessSkill.cast(detail.player,detail.angle,detail.damageMultiplier,()=>aiming.getAngle(detail.player,camera.x,directionVectors[detail.player.direction]||directionVectors.down,camera.y));
@@ -1133,40 +1284,43 @@ if (authorized) {
         umbrellaAttack.setAutoattackEnabled(enabled);
         arisAttack.setAutoattackEnabled(enabled);
         luminousAttack.setAutoattackEnabled(enabled);
+        badCookingAttack.setAutoattackEnabled(enabled);
+        molotovAttack.setAutoattackEnabled(enabled);
+        saintPredatorAttack.setAutoattackEnabled(enabled);
         princessAttack.setAutoattackEnabled(enabled);
+        decagrammatonAttack.setAutoattackEnabled(enabled);
       });
       // Generate one testing button per implemented synergy, without requiring MAX ingredients.
-      for(const recipe of synergyRecipes) {
+      for(const recipe of [...synergyRecipes,...superSynergyRecipes]) {
         const button=document.createElement('button');button.type='button';
         button.textContent=`Equip ${recipe.result.name}`;
         button.addEventListener('click',()=>{
           const player=characters[selected];player.attackSlots??=[];
           if(player.attackSlots.some(item=>item?.id===recipe.result.id))return;
-          let index=player.attackSlots.findIndex(item=>!item);
+          let index=recipe.result.isSuperSynergy?player.attackSlots.findIndex(item=>item?.id===recipe.synergyId):-1;
+          if(index<0)index=player.attackSlots.findIndex(item=>!item);
           if(index<0)index=player.attackSlots.length;
           if(index>=6){status.textContent='No empty weapon slot available.';return;}
           const weapon=recipe.createWeapon?recipe.createWeapon():{...recipe.result};
-          player.attackSlots[index]={...weapon,level:1,isSynergy:true,consumedWeaponIds:[...recipe.ingredients]};
+          player.attackSlots[index]={...weapon,level:1,isSynergy:true,consumedWeaponIds:[...(weapon.consumedWeaponIds||recipe.ingredients||[])]};
+          if(recipe.result.isSuperSynergy)player.equipmentSlots=(player.equipmentSlots||[]).map(item=>item?.id===recipe.itemId?null:item);
           hud.update(player);
         });
         document.querySelector('#admin-equip-synergies').append(button);
       }
-      document.querySelector('#admin-equip-luminous').addEventListener('click',()=>{
-        const player=characters[selected];if(getLuminousNova(player))return;
-        player.attackSlots??=[];const empty=player.attackSlots.findIndex(item=>!item);
-        if(empty>=0)player.attackSlots[empty]=createLuminousNovaWeapon();
-        else if(player.attackSlots.length<6)player.attackSlots.push(createLuminousNovaWeapon());
-        hud.update(player);
-      });
-      document.querySelector('#admin-equip-aris').addEventListener('click', () => {
-        const player = characters[selected];
-        if (getArisWeapon(player)) return;
-        player.attackSlots ??= [];
-        const empty = player.attackSlots.findIndex(item => !item);
-        if (empty >= 0) player.attackSlots[empty] = createArisWeapon();
-        else if (player.attackSlots.length < 6) player.attackSlots.push(createArisWeapon());
-        hud.update(player);
-      });
+      const ultimateTest=document.createElement('button');ultimateTest.type='button';ultimateTest.textContent='Activate Protocol SUPERNOVA';
+      ultimateTest.addEventListener('click',()=>{const player=characters[selected];if(decagrammatonUltimate.cast(player)){const ultimate=equippedSkills(player).find(skill=>skill.id==='decagrammaton-ultimate');if(ultimate){ultimate.skillCooldownDuration=300;ultimate.skillCooldownRemaining=300;}}});
+      document.querySelector('#admin-ultimate-tests').append(ultimateTest);
+      for(const [id,createWeapon] of [['saint',createSaintPredatorWeapon],['molotov',createMolotovWeapon],['cooking',createBadCookingWeapon],['luminous',createLuminousNovaWeapon],['aris',createArisWeapon]]){
+        const button=document.querySelector(`#admin-equip-${id}`);
+        button.title='Equip this weapon, or increase its level by one if already equipped (up to MAX).';
+        button.addEventListener('click',()=>{
+          const player=characters[selected];if(!equipAdminWeapon(player,createWeapon)){status.textContent='No empty weapon slot available.';return;}
+          hud.update(player);
+        });
+      }
+      createItemEquipAdmin({root:document.querySelector('#admin-equip-items'),getPlayer:()=>characters[selected],
+        onChange:player=>{hud.update(player);playerStatsTools?.update();}});
       document.querySelector('#admin-reset-cooldowns').addEventListener('click', () => skillCasting.resetCooldowns());
       for (const button of document.querySelectorAll('[data-admin-skill-slot]')) {
         button.addEventListener('click', () => skillCasting.castSlot(Number(button.dataset.adminSkillSlot)));
@@ -1239,6 +1393,12 @@ if (authorized) {
         onSpawn: npcTools.refresh, isEndless: () => endlessMode,
         getBossTypes: () => Object.keys(characters).filter(type => characters[type].boss) });
       onEnemyDefeat(({ enemy }) => {
+        if(enemy.type==='arisu'&&isBossEnemy(enemy))unlockItem('malkuth-hat');
+        if(!endlessMode&&isBossEnemy(enemy)){
+          const objectiveStage={first:1,second:2}[currentMap];
+          if(objectiveStage)unlockStageBossRewards(objectiveStage,enemy.type);
+        }
+        tuningParts?.roll(enemy);
         crafters?.roll(enemy);
         goldenCrafters?.roll(enemy);
         gachaFiles?.roll(enemy);
@@ -1251,14 +1411,16 @@ if (authorized) {
         advanceStageAfterClear();
       });
       levelUpMenu = createLevelUpMenu({ canvas, getPlayer: () => characters[selected],
-        isPauseMenuOpen: () => Boolean(pauseMenu?.paused || crafters?.active || goldenCrafters?.active || gachaFiles?.active), releaseControls,
+        isPauseMenuOpen: () => Boolean(pauseMenu?.paused || crafters?.active || goldenCrafters?.active || gachaFiles?.active || tuningParts?.active), releaseControls,
         onOpen: () => skillCasting?.cancel('levelup'),
         onChoose: player => { hud.update(player); playerStatsTools.update(); }
       });
-      pauseMenu = createPauseMenu({ canvas, isBlocked: () => Boolean(levelUpMenu?.active || crafters?.active || goldenCrafters?.active || gachaFiles?.active), getPlayer: () => characters[selected], releaseControls,
+      pauseMenu = createPauseMenu({ canvas, isBlocked: () => Boolean(levelUpMenu?.active || crafters?.active || goldenCrafters?.active || gachaFiles?.active || tuningParts?.active), getPlayer: () => characters[selected], releaseControls,
         onPause: () => skillCasting?.cancel('pause') });
       document.querySelector('#run-seed-status').textContent = `Run seed: ${runSeed} | Started: ${runStartedAt.toLocaleString()}`;
+      window.restoreDevSession?.();
+      window.pageLoading?.finish();
       requestAnimationFrame(animate);
     })
-    .catch(error => { status.textContent = error.message; });
+    .catch(error => { status.textContent = error.message; window.pageLoading?.fail('Unable to load game assets. Please reload to try again.'); });
 }

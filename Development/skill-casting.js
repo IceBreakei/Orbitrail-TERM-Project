@@ -59,7 +59,7 @@ export function createSkillCasting({ canvas, aiming, getPlayer, getCharacters, i
       if (accepted) {
         // Read restored targeting after recognition, rather than stale drawing-mode facing.
         const angle = getCastAngle();
-        setStatus(`${result.label}! Accuracy: ${Math.round(result.accuracy * 100)}% | ${result.damageMultiplier.toFixed(2)}x damage. Cooldown: 3:00.`);
+        setStatus(`${result.label}! Accuracy: ${Math.round(result.accuracy * 100)}% | ${result.damageMultiplier.toFixed(2)}x damage. Cooldown: ${Math.floor((result.weapon?.successCooldown??180)/60)}:00.`);
         onRecognized({ player: request.owner, weapon: result.weapon, angle,
           skillId: result.skillId, accuracy: result.accuracy, damageMultiplier: result.damageMultiplier,
           clipPredictions: result.clipPredictions, predictions: [{ label: result.label, score: result.score }], components: result.components });
@@ -204,7 +204,7 @@ export function createSkillCasting({ canvas, aiming, getPlayer, getCharacters, i
       const result = adminSkillResult(getPlayer(), slot);
       if (!result.valid) { setStatus(result.reason); return; }
       cancel('admin');
-      setSkillCooldown(result.weapon, skillCastSettings.successCooldown);
+      setSkillCooldown(result.weapon, result.weapon.successCooldown??skillCastSettings.successCooldown);
       onRecognized({ ...result, player: getPlayer(), angle: getCastAngle(), predictions: [] });
       setStatus(`Admin: cast slot ${slot + 1}.`);
     },

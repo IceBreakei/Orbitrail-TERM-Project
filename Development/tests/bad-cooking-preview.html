@@ -1,0 +1,10 @@
+<!doctype html><meta charset="utf-8"><title>Bad Cooking visual check</title><style>body{margin:0;background:#1e344b}canvas{display:block}</style><canvas width="720" height="480"></canvas><script type="module">
+import {createBadCookingAttack} from '../bad-cooking.js';
+import {createBadCookingWeapon} from '../game-config.js';
+const canvas=document.querySelector('canvas'),c=canvas.getContext('2d');
+const p={x:360,y:240,label:'Plana',attackSlots:[createBadCookingWeapon()]},a=createBadCookingAttack();
+a.update(1,p);
+for(let y=0;y<480;y+=32)for(let x=0;x<720;x+=32){c.fillStyle=(x/32+y/32)%2?'#9aafdc':'#a6b9e6';c.fillRect(x,y,32,32)}
+a.draw(c,{x:0,y:0});
+c.fillStyle='#fff';c.fillRect(354,228,12,24);
+</script>

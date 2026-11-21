@@ -44,6 +44,7 @@ assert.equal(vm.runInContext('totalATKFormula(120, [20, 30])', context), 170);
 console.log('PASS: independent base ATK plus additive bonus percentages.');
 assert.equal(vm.runInContext('totalCritModFormula(50, [20, 30])', context), 100);
 console.log('PASS: additive critical damage modifier percentages.');
+vm.runInContext(fs.readFileSync('Development/item-catalog.js','utf8').replaceAll('export ',''), context);
 vm.runInContext(fs.readFileSync('Development/combat-stats.js','utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export \{.*\} from .*;\r?\n/gm,'').replaceAll('export ',''), context);
 assert.equal(vm.runInContext('characterCriticalMultiplier({})', context), 1.5);
 assert.equal(vm.runInContext('characterCriticalMultiplier({combatStats:{critDamagePercent:20}}, undefined, 30)', context), 2);

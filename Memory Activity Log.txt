@@ -1,0 +1,67 @@
+MEMORY ACTIVITY LOG - START HERE / READING ORDER
+Original chat begins October 30, 2026 at 8:54 AM America/Vancouver.
+Generated UTC: 2026-11-20T12:21:51.366207+00:00
+
+The full archive is split into the numbered TXT files below (maximum 8 MiB each).
+Read them in ascending numeric order. Part 001 contains original coverage and limitations.
+Main conversation is chronological first; delegated records and supplemental evidence follow.
+These are verbatim consecutive segments, not summaries. A long record may continue into the next part.
+No headers are inserted into parts: concatenating their bytes exactly restores the full archive.
+Later user corrections override earlier records. Verify current code before relying on old implementations.
+Use Memory Activity Log.index.json to find records by preview, timestamp, source or section.
+Each entry now gives file, part_line and part_byte; original line/byte refer to the concatenated archive.
+Read only relevant ranges. Do not load the whole archive into context.
+Refresh: python tools/update_memory_activity_log.py
+
+Total: 28 parts; 207,807,886 bytes; 12,472 records.
+Verified concatenated SHA256: 3f56e3f1b476ad0c46321e5aac9eb8974dbdc7641f676db56abb951b3e7a025b
+
+READING ORDER
+001. Memory Activity Log Parts/Memory Activity Log - 001.txt (7.17 MiB) | records starting here 000001-000186 | 2026-10-30T15:54:34.847Z to 2026-10-31T12:48:32.607Z
+     Section: Chronological main conversation and tool/code activity
+002. Memory Activity Log Parts/Memory Activity Log - 002.txt (6.95 MiB) | records starting here 000187-000275 | 2026-10-31T12:48:32.981Z to 2026-10-31T13:41:35.249Z
+003. Memory Activity Log Parts/Memory Activity Log - 003.txt (5.95 MiB) | records starting here 000276-000309 | 2026-10-31T13:41:35.914Z to 2026-10-31T13:55:28.466Z
+004. Memory Activity Log Parts/Memory Activity Log - 004.txt (6.87 MiB) | records starting here 000310-000335 | 2026-10-31T13:55:28.847Z to 2026-10-31T14:07:55.394Z
+005. Memory Activity Log Parts/Memory Activity Log - 005.txt (5.91 MiB) | records starting here 000336-000378 | 2026-10-31T14:07:56.092Z to 2026-10-31T15:03:56.700Z
+006. Memory Activity Log Parts/Memory Activity Log - 006.txt (7.21 MiB) | records starting here 000379-000423 | 2026-10-31T15:03:57.396Z to 2026-10-31T16:24:44.945Z
+007. Memory Activity Log Parts/Memory Activity Log - 007.txt (6.65 MiB) | records starting here 000424-000457 | 2026-10-31T16:24:45.262Z to 2026-10-31T20:23:03.994Z
+008. Memory Activity Log Parts/Memory Activity Log - 008.txt (6.41 MiB) | records starting here 000458-000575 | 2026-10-31T20:23:04.554Z to 2026-11-01T08:32:05.670Z
+009. Memory Activity Log Parts/Memory Activity Log - 009.txt (6.83 MiB) | records starting here 000576-000704 | 2026-11-01T08:32:06.300Z to 2026-11-01T10:10:53.459Z
+010. Memory Activity Log Parts/Memory Activity Log - 010.txt (6.09 MiB) | continuation / supplemental evidence
+011. Memory Activity Log Parts/Memory Activity Log - 011.txt (8.00 MiB) | records starting here 000705-001010 | 2026-11-01T10:11:19.473Z to 2026-11-01T13:07:52.136Z
+012. Memory Activity Log Parts/Memory Activity Log - 012.txt (7.97 MiB) | records starting here 001011-001950 | 2026-11-01T13:08:09.319Z to 2026-11-01T16:41:55.984Z
+013. Memory Activity Log Parts/Memory Activity Log - 013.txt (6.48 MiB) | records starting here 001951-002115 | 2026-11-01T16:41:56.075Z to 2026-11-02T00:13:52.632Z
+014. Memory Activity Log Parts/Memory Activity Log - 014.txt (7.52 MiB) | records starting here 002116-002541 | 2026-11-02T00:13:52.671Z to 2026-11-02T08:20:35.583Z
+015. Memory Activity Log Parts/Memory Activity Log - 015.txt (7.96 MiB) | records starting here 002542-003327 | 2026-11-02T08:20:35.618Z to 2026-11-02T14:41:38.133Z
+016. Memory Activity Log Parts/Memory Activity Log - 016.txt (6.31 MiB) | records starting here 003328-003795 | 2026-11-02T14:41:38.393Z to 2026-11-02T16:30:28.272Z
+017. Memory Activity Log Parts/Memory Activity Log - 017.txt (7.12 MiB) | records starting here 003796-004430 | 2026-11-02T16:30:28.312Z to 2026-11-02T21:32:46.059Z
+018. Memory Activity Log Parts/Memory Activity Log - 018.txt (6.27 MiB) | records starting here 004431-004503 | 2026-11-02T21:32:46.210Z to 2026-11-02T21:39:38.897Z
+019. Memory Activity Log Parts/Memory Activity Log - 019.txt (7.99 MiB) | records starting here 004504-005153 | 2026-11-02T21:39:53.005Z to 2026-11-03T09:58:34.072Z
+020. Memory Activity Log Parts/Memory Activity Log - 020.txt (5.21 MiB) | records starting here 005154-005628 | 2026-11-03T09:58:57.244Z to 2026-11-03T15:21:03.172Z
+021. Memory Activity Log Parts/Memory Activity Log - 021.txt (7.89 MiB) | records starting here 005629-006454 | 2026-11-03T15:21:03.327Z to 2026-11-04T03:08:50.502Z
+022. Memory Activity Log Parts/Memory Activity Log - 022.txt (8.00 MiB) | records starting here 006455-007467 | 2026-11-04T03:08:50.542Z to 2026-11-04T17:48:17.075Z
+023. Memory Activity Log Parts/Memory Activity Log - 023.txt (7.98 MiB) | records starting here 007468-008338 | 2026-11-04T17:48:24.476Z to 2026-11-12T18:21:19.396Z
+024. Memory Activity Log Parts/Memory Activity Log - 024.txt (7.99 MiB) | records starting here 008339-009779 | 2026-11-12T18:21:19.942Z to 2026-11-14T02:39:22.395Z
+025. Memory Activity Log Parts/Memory Activity Log - 025.txt (7.51 MiB) | records starting here 009780-011205 | 2026-11-14T02:39:23.029Z to 2026-11-14T03:01:23.346Z
+     Section: Delegated work: associated child-agent visible messages and tool/code records
+026. Memory Activity Log Parts/Memory Activity Log - 026.txt (7.99 MiB) | records starting here 011206-011866 | 2026-11-14T03:01:23.346Z to 2026-11-14T03:17:49.474Z
+027. Memory Activity Log Parts/Memory Activity Log - 027.txt (6.54 MiB) | records starting here 011867-012472 | 2026-11-14T03:17:49.474Z to 2026-11-14T03:27:24.105Z
+     Section: Final response prepared for this archive-generation turn
+     Section: Existing chat_log.txt preserved verbatim as supplemental historical evidence
+028. Memory Activity Log Parts/Memory Activity Log - 028.txt (7.41 MiB) | continuation / supplemental evidence
+     Section: Git commit history and recorded line-level patches
+     Section: Current tracked working-tree patch (not an attribution of every line to the assistant)
+     Section: Current repository status
+     Section: Current text/source files, verbatim baseline for future line-by-line comparisons
+     Section: Archive verification and refresh instructions
+
+SECTION LOCATOR
+Chronological main conversation and tool/code activity: Memory Activity Log Parts/Memory Activity Log - 001.txt line 196
+Delegated work: associated child-agent visible messages and tool/code records: Memory Activity Log Parts/Memory Activity Log - 025.txt line 40996
+Final response prepared for this archive-generation turn: Memory Activity Log Parts/Memory Activity Log - 027.txt line 11619
+Existing chat_log.txt preserved verbatim as supplemental historical evidence: Memory Activity Log Parts/Memory Activity Log - 027.txt line 11624
+Git commit history and recorded line-level patches: Memory Activity Log Parts/Memory Activity Log - 028.txt line 1
+Current tracked working-tree patch (not an attribution of every line to the assistant): Memory Activity Log Parts/Memory Activity Log - 028.txt line 40231
+Current repository status: Memory Activity Log Parts/Memory Activity Log - 028.txt line 45965
+Current text/source files, verbatim baseline for future line-by-line comparisons: Memory Activity Log Parts/Memory Activity Log - 028.txt line 46194
+Archive verification and refresh instructions: Memory Activity Log Parts/Memory Activity Log - 028.txt line 81833

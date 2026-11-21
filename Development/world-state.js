@@ -1,3 +1,5 @@
+import {recordRateUpHit} from './rate-up-tuning.js';
+import {tuningPerk} from './tuning-parts.js';
 import { midoriDodges } from './midori.js';
 import { enemyPopulationSettings, harmlessEnemySettings } from './game-config.js';
 export { enemyPopulationSettings } from './game-config.js';
@@ -14,7 +16,7 @@ import { normalSpriteSize } from './scene-metrics.js';
 /** Boss identity is explicit, never inferred from an elite's enlarged sprite. */
 export function isBossEnemy(enemy) {
   if(enemy.boss === false) return false;
-  return enemy.boss === true || enemy.type === 'iroha' || enemy.type === 'shiroko';
+  return enemy.boss === true || ['iroha', 'shiroko', 'arisu', 'neru'].includes(enemy.type);
 }
 
 /** Render special enemies above normal actors, while bosses always own the final layer. */
@@ -113,6 +115,8 @@ export function damageEnemy(id, amount, source, hitType = 'normal', options = {}
     showDamageNumber(enemy, 0, false, 'miss');
     return false;
   }
+  const mainWeaponId=source?.mainWeaponId??(source?.label==='Plana'?'plana-umbrella':null);
+  if(source?.tuningParts&&options.weaponId===mainWeaponId)recordRateUpHit(enemy,tuningPerk(source.tuningParts,'rateUpChance'));
   const harmless = ['yuuka','sensei'].includes(enemy.type);
   if (harmless) {
     dropYuukaCredits(enemy); // Each accepted hit, including the final hit.

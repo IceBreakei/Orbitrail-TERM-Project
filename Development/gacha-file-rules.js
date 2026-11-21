@@ -1,8 +1,9 @@
+import { createMalkuthHat, createRacerPass, createSafetyHelmet, createLifeJacket, createOverheatedOverclocking, overclockingDescription, isContentUnlocked, lifeJacketDescription, safetyHelmetDescription, racerPassDescription, malkuthDescription, isItemUnlocked, isItemRewardEnabled } from './item-catalog.js';
 import { rollLevelUpgrades } from './level-upgrades.js';
 import { recordWeaponMax } from './weapon-max-order.js';
 
-// Add actual super items here when their effects are defined. Empty pools fall back to normal Files.
-export const superFileItems=[];
+// Super rewards respect item unlocks; unavailable pools fall back to normal Files.
+export const superFileItems=[createMalkuthHat(true),createRacerPass(true),createSafetyHelmet(true),createLifeJacket(true),createOverheatedOverclocking(true)];
 export const fileSettings={superChance:.05,tripleChance:.09,newChance:.1,weaponChance:.7,
   dropChance:0,bossGuaranteed:true,icon:'../sprites/icons/3 Stars Character Icon.png',maxGround:20,
   creditReplacementPerMax:.05,creditReplacementCap:.6};
@@ -20,6 +21,7 @@ export function acceptFileProduct(player,product) {
   const slots=product.kind==='item'?(player.equipmentSlots??=[]):(player.attackSlots??=[]);
   const owned=slots.find(item=>item?.id===product.weapon.id);
   if(owned) {
+    if(product.kind==='item'&&product.weapon.isSuper&&!owned.isSuper&&!owned.awakened){Object.assign(owned,{...product.weapon});return true;}
     if(owned.isSynergy)return false;
     const max=owned.maxLevel||7;if((owned.level||1)>=max)return false;
     owned.level=(owned.level||1)+1;if(product.kind!=='item')recordWeaponMax(player,owned);return true;
@@ -32,13 +34,19 @@ export function acceptFileProduct(player,product) {
 /** Generate products using a shadow inventory so triple rewards cannot overfill or overlevel it. */
 export function rollFileRewards(player,{random=Math.random,forceType,getOptions=rollLevelUpgrades,superItems=superFileItems}={}) {
   const roll=random();let type=forceType||(roll<fileSettings.superChance?'super':roll<fileSettings.superChance+fileSettings.tripleChance?'triple':'normal');
-  const supers=superItems.filter(item=>!player.equipmentSlots?.some(owned=>owned?.id===item.id)&&
-    (player.equipmentSlots||[]).filter(Boolean).length<6);
+  const supers=superItems.filter(item=>{
+    if(!isItemRewardEnabled(player,item.id))return false;
+    const owned=player.equipmentSlots?.find(owned=>owned?.id===item.id);
+    if(item.id==='malkuth-hat'&&!isItemUnlocked(item.id)&&!owned)return false;
+    if(item.defaultUnlocked===false&&!isContentUnlocked(item.id)&&!owned)return false;
+    return owned?!owned.isSuper&&!owned.awakened:(player.equipmentSlots||[]).filter(Boolean).length<6;
+  });
   if(type==='super'&&!supers.length)type='normal';
   const result={type,products:[],credits:fileCredits(type,random,player.moneyUpBonus||0,player.stageCoinMultiplier??1)};
   if(type==='super') {
     const item=supers[Math.min(supers.length-1,Math.floor(random()*supers.length))];
-    result.products.push({kind:'item',weapon:{...item,level:1},name:item.name,super:true});return result;
+    const description=item.id==='overheated-overclocking'?overclockingDescription(item):item.id==='life-jacket'?lifeJacketDescription(item):item.id==='safety-helmet'?safetyHelmetDescription(item):item.id==='racer-pass'?racerPassDescription(item):item.id==='malkuth-hat'?malkuthDescription(item):undefined;
+    result.products.push({kind:'item',weapon:{...item,level:1},name:item.name,super:true,description});return result;
   }
   const shadow={...player,attackSlots:(player.attackSlots||[]).map(w=>w?{...w}:null),equipmentSlots:(player.equipmentSlots||[]).map(w=>w?{...w}:null)};
   const free={weapon:6-shadow.attackSlots.filter(Boolean).length,item:6-shadow.equipmentSlots.filter(Boolean).length};
@@ -46,7 +54,7 @@ export function rollFileRewards(player,{random=Math.random,forceType,getOptions=
     const maxed=[...shadow.attackSlots,...shadow.equipmentSlots].filter(w=>w&&(w.isSynergy||(w.level||1)>=(w.maxLevel||7))).length;
     // Editable saturation behavior: each MAX slot adds 5 percentage points toward the 100-Credit substitution.
     if(random()<Math.min(fileSettings.creditReplacementCap,maxed*fileSettings.creditReplacementPerMax)){result.credits+=100;continue;}
-    const options=getOptions(shadow).filter(choice=>choice.weapon&&!choice.weapon.isSynergy);
+    const options=getOptions(shadow,{all:true}).filter(choice=>choice.weapon&&!choice.weapon.isSynergy);
     let selected=null;
     const allowNew=random()<fileSettings.newChance;
     for(let attempt=0;attempt<5&&!selected;attempt++) {
@@ -57,7 +65,11 @@ export function rollFileRewards(player,{random=Math.random,forceType,getOptions=
         return category===k&&(owned||(allowNew&&free[k]>index));
       });
       let candidates=pool(kind);if(!candidates.length&&kind==='weapon'){kind='item';candidates=pool(kind);}
-      if(candidates.length){const choice=candidates[Math.min(candidates.length-1,Math.floor(random()*candidates.length))];selected={...choice,kind};}
+      if(candidates.length){
+        const weights=candidates.map(c=>Math.max(0,Number(c.weapon?.weight??1)||0)),total=weights.reduce((a,b)=>a+b,0);let roll=random()*total,pick=candidates.length-1;
+        for(let i=0;i<candidates.length;i++){roll-=weights[i];if(roll<0){pick=i;break;}}
+        selected={...candidates[pick],kind};
+      }
     }
     if(selected&&acceptFileProduct(shadow,selected))result.products.push(selected);else result.credits+=100;
   }

@@ -1,0 +1,13 @@
+<!doctype html><html><head><meta charset="utf-8"><base href="../"><title>Admin equip panel preview</title><link rel="stylesheet" href="movement.css"></head><body class="simulation-page"><main><div class="playtest-layout" id="preview"></div></main><script type="module">
+import {createItemEquipAdmin} from './loadout-admin.js';
+import {synergyRecipes} from './synergy-recipes.js';import {superSynergyRecipes} from './super-synergy-recipes.js';
+const source=new DOMParser().parseFromString(await(await fetch('movement.html')).text(),'text/html');
+const panel=document.importNode(source.querySelector('.admin-test-sidebar'),true);document.querySelector('#preview').append(panel);
+const screen=document.createElement('div');screen.className='simulated-screen';screen.style.background='#315e89';screen.style.minHeight='500px';screen.textContent='Game preview area';document.querySelector('#preview').append(screen);
+const player={equipmentSlots:[]};createItemEquipAdmin({root:document.querySelector('#admin-equip-items'),getPlayer:()=>player});
+for(const recipe of [...synergyRecipes,...superSynergyRecipes]){const b=document.createElement('button');b.textContent='Equip '+recipe.result.name;document.querySelector('#admin-equip-synergies').append(b);}
+const ultimate=document.createElement('button');ultimate.textContent='Activate Protocol SUPERNOVA';document.querySelector('#admin-ultimate-tests').append(ultimate);
+const aside=document.createElement('aside');aside.className='playtest-sidebar';aside.textContent='Playtesting controls';document.querySelector('#preview').append(aside);
+const box=panel.querySelector('.loadout-test-sidebar').getBoundingClientRect();document.body.dataset.panelFits=String(box.width<=panel.getBoundingClientRect().width);
+document.body.dataset.ready='true';
+</script></body></html>

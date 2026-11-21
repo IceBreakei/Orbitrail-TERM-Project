@@ -3,7 +3,7 @@ const nodes=[],actions=[];let cancelled=0;
 function node(tag){const classes=new Set();const e={tag,children:[],listeners:{},style:{},classList:{toggle(key,on){if(on)classes.add(key);else classes.delete(key)},contains:key=>classes.has(key)},append(...items){this.children.push(...items)},replaceChildren(){this.children=[]},setAttribute(k,v){this[k]=v},addEventListener(k,v){this.listeners[k]=v},showModal(){this.open=true},close(){this.open=false},focus(){this.focused=true}};nodes.push(e);return e;}
 const player={label:'Plana',hp:110,maxHp:110,combatStats:{},attackSlots:[{id:'plana-umbrella',name:'Umbrella',level:5},{id:'aris-laser',name:'Supernova',level:7}],equipmentSlots:[{id:'test-item',name:'Test item',level:1,maxLevel:2}]};
 const c=vm.createContext({document:{createElement:node,body:node('body')},Image:class{},canvas:{getBoundingClientRect:()=>({left:100,top:80,width:1280,height:720})},getPlayer:()=>player,onCancel:()=>cancelled++,onAction:id=>actions.push(id),ensurePlayerStats:p=>p,createBitmapText:canvas=>({setText:value=>{canvas.renderedText=value}}),getLootTotals:()=>({credits:1000,secretTechNotes:1}),rollLevelUpgrades:()=>[{weapon:player.attackSlots[0],description:'Increase area by 20%.'}]});
-for(const name of ['game-config','synergy-recipes','golden-crafter-rules','weapon-max-order','crafter-rules','character-stats-panel','weapon-glow','synergy-icon','upgrade-label','crafter-menu'])vm.runInContext(fs.readFileSync('Development/'+name+'.js','utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ',''),c);
+for(const name of ['game-config','synergy-recipes','golden-crafter-rules','weapon-max-order','item-catalog','crafter-rules','character-stats-panel','weapon-glow','synergy-icon','upgrade-label','crafter-menu'])vm.runInContext(fs.readFileSync('Development/'+name+'.js','utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ',''),c);
 vm.runInContext('var menu=createCrafterMenu({canvas,getPlayer,onCancel,onAction});menu.open()',c);
 const grids=nodes.filter(n=>n.className==='crafter-slot-grid');assert.equal(grids.length,2);assert.equal(grids[0].children.length,6);assert.equal(grids[1].children.length,6);
 assert.equal(grids[0]['aria-label'],'Weapons');assert.equal(grids[1]['aria-label'],'Equipment');
@@ -56,3 +56,10 @@ assert(!goldConfirm.disabled);goldConfirm.listeners.click();assert.equal(actions
 assert(nodes.some(n=>n.renderedText==='Umbrella'));assert(nodes.some(n=>n.renderedText==='Supernova'));
 
 
+
+c.superSynergyChoices=()=>[{id:'super-synergy:test:0:0',name:'Test Super',kind:'super-synergy',slots:[0,6],target:{id:'test-super',name:'Test Super'},description:'Fuse weapon and item.',disabled:false}];
+vm.runInContext('synergyRecipes.length=0;goldMenu.open()',c);
+const superGrids=nodes.filter(n=>n.className==='crafter-slot-grid').slice(-2);assert.equal(superGrids[1].hidden,false);assert.equal(superGrids[1].children[0].disabled,false);
+superGrids[0].children[0].listeners.click();const pickedGrids=nodes.filter(n=>n.className==='crafter-slot-grid').slice(-2);pickedGrids[1].children[0].listeners.click();
+assert.equal(goldConfirm.disabled,false);goldConfirm.listeners.click();assert.equal(actions.at(-1),'super-synergy:test:0:0');assert(nodes.some(n=>n.renderedText==='Test item'));
+console.log('PASS: Golden Crafter can select a weapon plus equipment for a Super Synnergy.');

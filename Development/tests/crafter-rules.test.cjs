@@ -1,6 +1,6 @@
 const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');let credits=10000,notes=1;
 const c=vm.createContext({getLootTotals:()=>({credits,secretTechNotes:notes}),spendCredits:n=>{if(credits<n)return false;credits-=n;return true},spendSecretTechNotes:n=>{if(notes<n)return false;notes-=n;return true}});
-for(const n of ['game-config','weapon-max-order','crafter-rules'])vm.runInContext(fs.readFileSync('Development/'+n+'.js','utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ',''),c);
+for(const n of ['game-config','weapon-max-order','item-catalog','crafter-rules'])vm.runInContext(fs.readFileSync('Development/'+n+'.js','utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ',''),c);
 const run=s=>vm.runInContext(s,c);
 assert.equal(run('crafterSettings.dropChance'),1/1301);assert.equal(run('crafterSettings.maxGround'),20);
 assert.equal(run('crafterEnhancementCost(1)'),50);assert.equal(run('crafterEnhancementCost(5)'),250);

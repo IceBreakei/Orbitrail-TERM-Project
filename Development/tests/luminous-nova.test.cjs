@@ -1,7 +1,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
 const enemies=new Map(),hits=[],knocks=[];
 const c=vm.createContext({getAllEnemies:()=>[...enemies.values()],getEnemy:id=>enemies.get(id),damageEnemy:(id,damage,player,type)=>{hits.push({id,damage,type});return damage},applySkillControl:(...args)=>knocks.push(args)});
-for(const name of ['game-config','combat-stats','combat-hitboxes','luminous-nova'])vm.runInContext(fs.readFileSync('Development/'+name+'.js','utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export \{.*\} from .*;\r?\n/gm,'').replaceAll('export ',''),c);
+for(const name of ['game-config','item-catalog','combat-stats','combat-hitboxes','luminous-nova'])vm.runInContext(fs.readFileSync('Development/'+name+'.js','utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export \{.*\} from .*;\r?\n/gm,'').replaceAll('export ',''),c);
 const run=s=>vm.runInContext(s,c);
 run('var player={label:"Plana",x:0,y:0,level:1,attackSlots:[createLuminousNovaWeapon()],combatStats:{}};var attack=createLuminousNovaAttack({random:()=>0})');
 assert.equal(run('rollLuminousNovaDamage(player,()=>0).damage'),12);assert.equal(run('rollLuminousNovaDamage(player,()=>1).damage'),16);

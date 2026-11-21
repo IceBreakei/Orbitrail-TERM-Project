@@ -1,0 +1,21 @@
+﻿const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const c=vm.createContext({});
+vm.runInContext(fs.readFileSync('Development/item-catalog.js','utf8').replaceAll('export ',''),c);
+vm.runInContext(fs.readFileSync('Development/character-stats-panel.js','utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ',''),c);
+const display=p=>{c.player=p;return vm.runInContext("characterStatRows.find(row=>row[0]==='CRT')[2](player)",c)};
+assert.equal(display({combatStats:{critPercent:10},combatBuffs:{nova:{critPercent:22.3}}}),'32.3%');
+assert.equal(display({combatStats:{critPercent:10},combatBuffs:{}}),'10%');
+assert.equal(display({combatStats:{critPercent:90},combatBuffs:{nova:{critPercent:22.3},expired:null}}),'100%');
+assert.equal(display({combatStats:{critPercent:0},combatBuffs:{nova:{critPercent:22.3}}}),'22.3%');
+assert(fs.readFileSync('Development/level-up-menu.js','utf8').includes('const statRows = characterStatRows;'));
+console.log('PASS: level-up shares live stat rows; CRT includes active buffs, handles removed buffs, clamps100%, and keeps clean decimals.');
+
+const stat=(label,p)=>{c.player=p;c.label=label;return vm.runInContext('characterStatRows.find(row=>row[0]===label)[2](player)',c)};
+assert.equal(stat('ATK',{baseATK:130,combatStats:{atkPercent:0}}),'+30%');
+assert.equal(stat('SPD',{baseSPD:130,combatStats:{spdPercent:0}}),'+30%');
+assert.equal(stat('ATK',{baseATK:130,combatStats:{atkPercent:20}}),'+50%');
+assert.equal(stat('SPD',{baseSPD:130,combatStats:{spdPercent:-40}}),'-10%');
+assert.equal(stat('ATK',{combatStats:{atkPercent:0}}),'+0%');
+assert.equal(stat('HP',{hp:70,maxHp:70}),'70/70');
+assert.equal(stat('CRT',{combatStats:{critPercent:10},equipmentSlots:[{id:'malkuth-hat',level:1}]}),'0%');
+console.log('PASS shared panel shows character base ATK/SPD plus bonuses, signed penalties, HP and item crit changes.');

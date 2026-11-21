@@ -1,3 +1,4 @@
+import { itemSkillDamageMultiplier } from './item-catalog.js';
 import { createArisAttack,supernovaBeamPhase } from './aris-weapon.js';
 import { luminousNovaFinisherDamage } from './luminous-nova-skill.js';
 import { luminousNovaSkillSettings,arisWeaponSettings,supernovaSkillSettings,princessKeySkillSettings as settings } from './game-config.js';
@@ -25,11 +26,11 @@ export function princessResiduePose(age) {
 /** Kei's temporary amplifier plus Supernova's aimable beam, with delayed impact residues. */
 export function createPrincessKeySkill({random=Math.random}={}) {
   let state=null,residues=[];const buffKey='princess-key-ex';
-  const weapon=player=>player.attackSlots?.find(w=>w?.id==='princess-key');
+  const weapon=player=>player.attackSlots?.find(w=>['princess-key','decagrammaton'].includes(w?.id));
   const beam=createArisAttack({getWeapon:weapon,specialHitCooldown:settings.hitCooldown,
     rollSpecialDamage(player,target,multiplier) {
-      const hit=rollAttackDamage(player,totalWeaponDamage(player,'princess-key',arisWeaponSettings.damageMultiplier,[],
-        {projectileCount:1,hitCooldownFrames:settings.hitCooldown*60}),random,{target,damageMod:multiplier});
+      const hit=rollAttackDamage(player,totalWeaponDamage(player,weapon(player)?.id||'princess-key',arisWeaponSettings.damageMultiplier,[],
+        {projectileCount:1,hitCooldownFrames:settings.hitCooldown*60}),random,{target,damageMod:multiplier,skillAttack:true});
       hit.damage=princessBeamTickDamage(hit.damage,state?.tickBonus||0);return hit;
     },
     onSpecialHit(target,hit,player) {
@@ -66,7 +67,7 @@ export function createPrincessKeySkill({random=Math.random}={}) {
         beam.update(step,player,aim);if(state)state.beamInProgress=false;
       }
       const accumulated=state?.damageDealt||0;
-      const explosionTotal=Math.round(accumulated)+luminousNovaFinisherDamage(accumulated,player);
+      const explosionTotal=Math.round(accumulated*itemSkillDamageMultiplier(player))+luminousNovaFinisherDamage(accumulated,player);
       for(const residue of residues) {
         residue.age+=step;
         if(!residue.exploded&&residue.age>=settings.residueSeconds) {

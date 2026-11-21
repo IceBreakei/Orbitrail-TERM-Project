@@ -1,5 +1,6 @@
+import { weaponSizeMultiplier } from './game-config.js';
 import { umbrellaUpgradeSettings, umbrellaSettings } from './game-config.js';
-import { rollAttackDamage, totalWeaponDamage } from './combat-stats.js';
+import { rollAttackDamage, totalWeaponDamage, startingWeaponTuning } from './combat-stats.js';
 
 /** Locate Plana's equipped umbrella without selecting or switching active weapons. */
 export function getUmbrella(player) {
@@ -13,8 +14,10 @@ export function umbrellaLevelStats(player) {
   const areaTiers = Number(level >= 3) + Number(level >= 6);
   return {
     level, damageMultiplier: (1 + umbrellaUpgradeSettings.damageIncrease) ** damageTiers,
-    areaScale: Math.sqrt(1 + areaTiers * umbrellaUpgradeSettings.areaIncrease),
-    intervalMultiplier: level >= 4 ? umbrellaUpgradeSettings.intervalMultiplier : 1,
+    areaScale: weaponSizeMultiplier(player) * Math.sqrt(1 + areaTiers * umbrellaUpgradeSettings.areaIncrease) *
+      (1+(player.tuningParts?startingWeaponTuning(player,'plana-umbrella','attackSizePercent'):0)/100),
+    intervalMultiplier: (level >= 4 ? umbrellaUpgradeSettings.intervalMultiplier : 1) *
+      (1-(player.tuningParts?startingWeaponTuning(player,'plana-umbrella','attackTimeReductionPercent'):0)/100),
     guaranteedCritical: level >= 7,
     awakened: Boolean(getUmbrella(player)?.awakened)
   };
@@ -26,11 +29,11 @@ export function umbrellaBaseDamage() {
 }
 
 /** Apply weapon upgrades first, then player ATK and the appropriate critical multiplier. */
-export function rollUmbrellaDamage(player, base = umbrellaBaseDamage(), random = Math.random, damageMod = 1, target) {
+export function rollUmbrellaDamage(player, base = umbrellaBaseDamage(), random = Math.random, damageMod = 1, target, {growthEligible=true,skillAttack=false} = {}) {
   const stats = umbrellaLevelStats(player);
   const hit=rollAttackDamage(player, totalWeaponDamage(player, 'plana-umbrella', base / 10,
-    [ (stats.damageMultiplier - 1) * 100 ], { projectileCount: 1, hitCooldownFrames: umbrellaSettings.hitCooldown * 60 }), random, {
-    damageMod, target, forceCritical: stats.guaranteedCritical,
+    [ (stats.damageMultiplier - 1) * 100 ], { growthEligible, projectileCount: 1, hitCooldownFrames: umbrellaSettings.hitCooldown * 60 }), random, {
+    damageMod, target, skillAttack, weaponId:'plana-umbrella', forceCritical: stats.guaranteedCritical,
     criticalMultiplier: stats.guaranteedCritical ? umbrellaUpgradeSettings.finalCriticalMultiplier : undefined
   });
   if(stats.guaranteedCritical && hit.critical)hit.type='supercritical';

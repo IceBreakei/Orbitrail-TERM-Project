@@ -4,19 +4,28 @@ const nodes=[];
 function element(tag){const node={tag,children:[],listeners:{},hidden:false,append(...items){this.children.push(...items)},replaceChildren(){this.children=[]},setAttribute(){},addEventListener(name,fn){this.listeners[name]=fn},showModal(){this.open=true},close(){this.open=false},focus(){},querySelector(){return this.children.find(x=>x.tag==='button'&&!x.disabled)||null}};nodes.push(node);return node;}
 const canvas={parentElement:element('div'),focus(){}};
 const c=vm.createContext({createCrafterMenu:options=>{menuHandlers=options;return {open(){},close(){},refresh(){}}},document:{createElement:element,body:element('body')},Image:class{constructor(){this.naturalWidth=2048}decode(){return Promise.resolve()}},setTimeout:()=>1,clearTimeout(){},safeDropLanding:(x,y)=>allowLanding?{x,y}:null,getLootTotals:()=>({credits,secretTechNotes:notes}),spendCredits:n=>{if(credits<n)return false;credits-=n;return true},spendSecretTechNotes:n=>{if(notes<n)return false;notes-=n;return true},canvas});
-for(const n of ['game-config','combat-hitboxes','synergy-recipes','golden-crafter-rules','weapon-max-order','crafter-rules','crafter-system'])vm.runInContext(fs.readFileSync('Development/'+n+'.js','utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ',''),c);
+for(const n of ['game-config','combat-hitboxes','synergy-recipes','golden-crafter-rules','weapon-max-order','item-catalog','crafter-rules','pickup-reentry','crafter-system'])vm.runInContext(fs.readFileSync('Development/'+n+'.js','utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ',''),c);
 const run=s=>vm.runInContext(s,c);
 run('var player={label:"Plana",x:0,y:0,attackSlots:[{id:"plana-umbrella",name:"Umbrella",level:1}]};var system=createCrafterSystem({getPlayer:()=>player,canvas});system.spawn(0,0);system.update(player,player)');assert(run('system.active'));assert.equal(run('system.count'),1);
 menuHandlers.onCancel();assert.equal(run('system.active'),false);assert.equal(run('system.count'),1);
 run('system.update(player,player)');assert.equal(run('system.active'),false);
-run('player.x=100;system.update(player,player);player.x=0;system.update(player,player)');assert(run('system.active'));
+// Remaining over the icon cannot run down its lock, even after a long time.
+run('system.update(player,player,10)');assert.equal(run('system.active'),false);
+// The leave frame is blocked and does not count its movement interval toward the delay.
+run('player.x=100;system.update(player,{x:0,y:0},1.5);system.update(player,player,1.49)');assert.equal(run('system.active'),false);
+run('player.x=0;system.update(player,{x:100,y:0},.01)');assert.equal(run('system.active'),false);
+// Recontact during the delay requires leaving and waiting a fresh 1.5 seconds.
+run('player.x=100;system.update(player,{x:0,y:0},0);system.update(player,player,1.5);player.x=0;system.update(player,{x:100,y:0},0)');assert(run('system.active'));
 menuHandlers.onAction('weapon:0:level');assert.equal(run('player.attackSlots[0].level'),2);assert.equal(run('system.count'),0);assert.equal(run('system.active'),false);
+// A consumed Crafter does not suppress another drop placed under the player.
+run('system.spawn(0,0);system.update(player,player,0)');assert(run('system.active'));
+menuHandlers.onAction('weapon:0:level');assert.equal(run('system.count'),0);
 for(let i=0;i<20;i++)assert(run('system.spawn(100,100)'));
 assert.equal(run('system.spawn(100,100)'),false);assert.equal(run('system.roll({x:0,y:0},()=>{throw Error("cap must short circuit")})'),false);
 run('system.clear()');assert.equal(run('system.count'),0);
 assert.equal(run('system.roll({x:100,y:100},()=>1)'),false);assert(run('system.roll({x:100,y:100},()=>0)'));
 allowLanding=false;assert.equal(run('system.spawn(100,100)'),false);
-console.log('PASS: walk-over menu, cancellation/reentry, free upgrade consumption, 20-ground cap, map clear, drop roll and safe placement.');
+console.log('PASS: walk-over menu, cancellation/full leave plus1.5s reentry, free upgrade consumption, 20-ground cap, map clear, drop roll and safe placement.');
 
 // The icon is above its ground anchor: touching its top must trigger, even >32px from anchor.
 assert.equal(run('crafterTouchesPlayer({x:0,y:0},{label:"Plana",x:0,y:-65})'),true);

@@ -1,3 +1,4 @@
+import { decagrammatonReferenceStrokes } from './decagrammaton-ultimate.js';
 import { segmentPlanaPattern } from './plana-pattern.js';
 import { drawingModelImage, drawingBounds, normalizeSkillStrokes } from './skill-drawing.js';
 import { drawingAccuracy, skillDamageMultiplier } from './skill-accuracy.js';
@@ -19,6 +20,12 @@ function hasBothSymbols(strokes) {
 
 /** Combine full-symbol CLIP, isolated QuickDraw parts and forgiving spatial validation. */
 export async function recognizeWeaponPattern(strokes, weapon, recognizer, isCurrent = () => true) {
+  if(!isCurrent())return {valid:false,cancelled:true};
+  if(weapon?.id==='decagrammaton-ultimate'){
+    const accuracy=drawingAccuracy(strokes,decagrammatonReferenceStrokes());
+    const valid=accuracy>=.72;return {valid,skillId:'decagrammaton-ultimate',label:'Activate Protocol SUPERNOVA',score:accuracy,accuracy,matchAccuracy:accuracy,damageMultiplier:1,reason:valid?undefined:'Draw a square overlaid with a diamond.'};
+  }
+  if(weapon?.id==='decagrammaton')return recognizePrincessKeyPattern(strokes,recognizer,isCurrent);
   if(weapon?.id==='princess-key')return recognizePrincessKeyPattern(strokes,recognizer,isCurrent);
   if (weapon?.id === 'luminous-nova') return recognizeLuminousNovaPattern(strokes,recognizer,isCurrent);
   if (weapon?.id === 'aris-laser') return recognizeSupernovaPattern(strokes, recognizer, isCurrent);
@@ -68,7 +75,7 @@ export async function recognizeLoadoutPattern(strokes, skills, recognizer, isCur
     if (weapon.skillCooldownRemaining > 0) continue;
     if (!isCurrent()) return { valid: false, cancelled: true };
     const result = await recognizeWeaponPattern(strokes, weapon, recognizer, isCurrent);
-    const accuracy = weapon.id==='princess-key'?drawingAccuracy(strokes,princessKeyReferenceStrokes()):weapon.id === 'aris-laser' ? drawingAccuracy(strokes, supernovaReferenceStrokes()) :
+    const accuracy = ['princess-key','decagrammaton'].includes(weapon.id)?drawingAccuracy(strokes,princessKeyReferenceStrokes()):weapon.id === 'aris-laser' ? drawingAccuracy(strokes, supernovaReferenceStrokes()) :
       weapon.id === 'luminous-nova' ? drawingAccuracy(strokes,luminousNovaReferenceStrokes()) : weapon.id === 'plana-umbrella' ? drawingAccuracy(strokes) : 0;
     const candidate = {...result, weapon, matchAccuracy: result.matchAccuracy??accuracy};
     if (result.valid) validMatches.push(candidate);
@@ -122,11 +129,11 @@ export async function recognizeSupernovaPattern(strokes, recognizer, isCurrent) 
 /** Choose a cancellation target locally; empty/unrelated ink never selects a default slot. */
 export function closestDrawingSkill(strokes, skills) {
   if (!drawingBounds(strokes)) return null;
-  if(linkedFrameEvidence(strokes))return skills.find(w=>w.id==='princess-key'&&!(w.skillCooldownRemaining>0))||null;
+  if(linkedFrameEvidence(strokes))return skills.find(w=>['princess-key','decagrammaton'].includes(w.id)&&!(w.skillCooldownRemaining>0))||null;
   let best = null, score = .25, runnerUp = 0;
   for (const weapon of skills) {
     if (weapon.skillCooldownRemaining > 0) continue;
-    const reference = weapon.id==='princess-key'?princessKeyReferenceStrokes():weapon.id === 'luminous-nova'?luminousNovaReferenceStrokes():weapon.id === 'aris-laser' ? supernovaReferenceStrokes() : undefined;
+    const reference = weapon.id==='decagrammaton-ultimate'?decagrammatonReferenceStrokes():['princess-key','decagrammaton'].includes(weapon.id)?princessKeyReferenceStrokes():weapon.id === 'luminous-nova'?luminousNovaReferenceStrokes():weapon.id === 'aris-laser' ? supernovaReferenceStrokes() : undefined;
     if (!reference && weapon.id !== 'plana-umbrella') continue;
     const accuracy = drawingAccuracy(strokes, reference);
     if (accuracy > score) { runnerUp = score === .25 ? 0 : score; score = accuracy; best = weapon; }

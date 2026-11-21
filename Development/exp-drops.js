@@ -1,3 +1,4 @@
+import { racerPassBonuses } from './game-config.js';
 import { eliteExpTotalFormula } from './game-config.js';
 import { pickupSettings, pickupRangeFormula } from './game-config.js';
 import { mobExpFormula, reportSettings } from './game-config.js';
@@ -351,7 +352,7 @@ export function createExpPickups(getPlayer, options = {}) {
       // Walking over loot begins the same center-bound flight as a magnet pickup.
       // Arona can finish these pickups without gaining any attraction radius.
       if (sweptDistance <= pickupRadius) drop.walkOverPickup = true;
-      const range = pickupRangeFormula(ensureCombatStats(player).pickupPercent, player.pickupRange ?? 40);
+      const range = pickupRangeFormula(ensureCombatStats(player).pickupPercent+racerPassBonuses(player).pickup, player.pickupRange ?? 40);
       if (!range && !drop.walkOverPickup) {
         // Swapping to an avatar without attraction stops pending magnets immediately.
         drop.attracted = false;

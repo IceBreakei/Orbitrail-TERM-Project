@@ -83,6 +83,11 @@ export function createCampaignEvents({seed=0,getPoints,spawn,onEnd=()=>{},warn=(
   if(!e.repeatSeconds&&!group.waves.length&&group.nextWave===Infinity&&e.lifetimeSeconds==null){ended.add(e.id);groups.delete(e.id);}
  }
  return {
+  seek(seconds){
+   for(const group of [...groups.values()])finish(group);
+   groups.clear();prepared.clear();ended.clear();
+   for(const event of chart)if(event.timeSeconds<seconds)ended.add(event.id);
+  },
   get activeSeconds(){return active;},get activeGroups(){return groups.size;},get generatedSlots(){return index;},
   update(internalSeconds,delta,{stage,enabled=true}={}){
    active+=Math.max(0,delta);

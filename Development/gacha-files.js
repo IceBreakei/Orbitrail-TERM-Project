@@ -1,3 +1,4 @@
+import { applyEnhancedWeaponGlow } from './weapon-glow.js';
 import { createCharacterStatsPanel } from './character-stats-panel.js';
 import { drawSynergyIcon } from './synergy-icon.js';
 import { fileSettings,rollFileRewards,acceptFileProduct } from './gacha-file-rules.js';
@@ -51,6 +52,7 @@ export function createGachaFiles({canvas,getPlayer,onOpen=()=>{},onChange=()=>{}
       if(!product){actions.hidden=true;rewardIcon.hidden=true;rays.hidden=true;cone.hidden=true;done.hidden=false;detail.hidden=true;done.focus();return;}
       actions.hidden=false;detail.hidden=false;rewardIcon.hidden=false;rays.hidden=false;cone.hidden=false;
       rewardIcon.setAttribute('aria-label',product.name||product.weapon.name);
+      applyEnhancedWeaponGlow(rewardIcon,product.weapon);
       const title=document.createElement('h3'),category=document.createElement('span'),description=document.createElement('p');
       label(title,product.name||product.weapon.name);label(category,product.super?'SUPER ITEM':product.category||'Weapon');
       label(description,product.description||`Receive ${product.weapon.name||'this product'}.`,true);
@@ -63,7 +65,7 @@ export function createGachaFiles({canvas,getPlayer,onOpen=()=>{},onChange=()=>{}
           const crop=product.weapon.iconCrop||{x:0,y:0,width:image.naturalWidth,height:image.naturalHeight};
           const angle=(product.weapon.iconRotation||0)*Math.PI/180;
           const extent=Math.max(Math.abs(crop.width*Math.cos(angle))+Math.abs(crop.height*Math.sin(angle)),Math.abs(crop.width*Math.sin(angle))+Math.abs(crop.height*Math.cos(angle)));
-          const scale=140/extent;context.save();context.translate(80,80);context.rotate(angle);
+          const scale=(product.weapon.iconFit?156:140)/extent;context.save();context.translate(80,80);if(product.weapon.iconFlipX)context.scale(-1,1);context.rotate(angle);
           context.drawImage(image,crop.x,crop.y,crop.width,crop.height,-crop.width*scale/2,-crop.height*scale/2,crop.width*scale,crop.height*scale);context.restore();
         };image.src=product.weapon.icon;
       }
@@ -93,5 +95,8 @@ export function createGachaFiles({canvas,getPlayer,onOpen=()=>{},onChange=()=>{}
     roll(enemy){return (enemy.boss===true||['shiroko','iroha','arisu','neru'].includes(enemy.type))&&fileSettings.bossGuaranteed?spawn(enemy.x,enemy.y):false;},
     update(player,previous){if(active)return;const body=getCombatHitbox(player,false);for(const drop of drops.values())if(segmentHitsBody({x:drop.x,y:drop.y,rx:22+body.rx,ry:22+body.ry},previous?.x??player.x,previous?.y??player.y,body.x,body.y)){open(drop);break;}},
     draw(context,camera){if(!image.naturalWidth)return;for(const drop of drops.values()){const x=drop.x-camera.x,y=drop.y-camera.y;if(x<-30||y<-30||x>canvas.width+30||y>canvas.height+30)continue;context.drawImage(image,x-22,y-22,44,44);}},
+    relocate(x,y){let index=0;for(const drop of drops.values()){
+      const point=safeDropLanding(x+48+index*28,y);if(point)Object.assign(drop,point);else Object.assign(drop,{x,y});index++;
+    }},
     clear(){drops.clear();if(active)close();}};
 }

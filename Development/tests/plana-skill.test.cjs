@@ -4,7 +4,7 @@ const enemies=new Map(),hits=[];
 const context=vm.createContext({Math:Object.assign(Object.create(Math),{random:()=>.5}),URL,getAllEnemies:()=>[...enemies.values()],getEnemy:id=>enemies.get(id),
  damageEnemy(id,damage){const e=enemies.get(id);e.hp-=damage;hits.push({id,damage});if(e.hp<=0)enemies.delete(id)},
  Image:class{constructor(){this.naturalWidth=2172}decode(){return Promise.resolve()}}});
-for(const name of ['game-config','skill-drawing','plana-pattern','skill-accuracy','skill-pattern-recognition','combat-stats','weapon-progression','combat-hitboxes','knockback','enemy-control','plana-umbrella-skill'])vm.runInContext(source(name),context);
+for(const name of ['game-config','skill-drawing','plana-pattern','skill-accuracy','skill-pattern-recognition','item-catalog','combat-stats','weapon-progression','combat-hitboxes','knockback','enemy-control','plana-umbrella-skill'])vm.runInContext(source(name),context);
 const run=code=>vm.runInContext(code,context);
 run("var circle=Array.from({length:81},(_,i)=>({x:150+100*Math.cos(i/80*Math.PI*2),y:150+100*Math.sin(i/80*Math.PI*2)}));var sketch=[circle,[{x:120,y:160},{x:180,y:220}],[{x:180,y:160},{x:120,y:220}],[{x:150,y:90},{x:150,y:145}],[{x:125,y:115},{x:150,y:90},{x:175,y:115}]]");
 assert(run('segmentPlanaPattern(sketch).valid'));

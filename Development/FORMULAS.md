@@ -333,7 +333,7 @@ The supplied random expression was incomplete and asymmetric; implementation fol
 Weapon damage and Growth (current; supersedes additive weapon damage level bonuses)
 ---------------------------------------------------------------------------------
 weaponDamage = baseWeaponFactor * product(1 + eachApplicableBonusPercent / 100)
-Growth rank: character.growthRank (default0, capped3). Reserved purchase costs500/10000/50000; total60500. No shop/enhancement/mod/enchantment implementation yet.
+Growth rank: character.growthRank (default0, capped3). Reserved purchase costs500/10000/50000; total60500. No shop/enhancement/Tuning Parts/enchantment implementation yet.
 Growth nominal damage = 0.1 * rank * playerLevel / primaryProjectileCount * tickMultiplier
 Growth factor = Growth nominal damage / 10
 Tick multiplier = clamp(hitCooldownFrames / 20, 0.2, 1). Seconds are converted to60Hz frames by each weapon.
@@ -529,3 +529,14 @@ Residue explosion damage per target =100%of actual damage dealt by the player du
 D = actual player damage accumulated during the active buff at detonation.
 Residue Damage = round(D) + min(round(0.10 * D), floor(50 * (10 * totalATK / 100))).
 The cap applies only to the added10%bonus;the full-Dcomponent remains uncapped. Beam accumulation unchanged. Residue remains noncritical and does not reapply other damage multipliers.
+
+Terminology: "Mod" was the temporary name for Tuning Parts. All earlier Mod damage/projectile modifiers refer to this starting-weapon-only system. Defined base-damage part bonuses enter the multiplicative weapon-base product before flat enhancement/Growth additions; critical-damage bonuses enter the additive crit modifier. Undefined parts/modifiers remain unavailable until specified. Yuuka's former Mod drop is her guaranteed eligible Tuning Part drop.
+
+### Decagrammaton
+- Attack interval = 7 / 60 seconds (fixed minimum).
+- Each cycle: 3 blue primary projectiles + 3 paired pink secondary projectiles.
+- Blue base weapon multiplier = 0.60; pink = 0.90. Both use the shared weapon/ATK/randomization/critical/damage-modifier calculation.
+- Enhancement flat bonus split count = 3 for both projectile types; paired pink bullets do not add to the count.
+- While equipped, add a 1.3 multiplier to the additive Damage Bonus family (a +0.3 contribution). The consumed hat contributes no crit penalty.
+- Ultimate cooldown = 300 seconds, independent from the retained EX cooldown (180 seconds).
+- Ultimate executes each visible non-boss for its remaining HP at elapsed >= 1.5 seconds; no drawing-accuracy damage scaling is needed for an execution. Boss damage = 0. Visual lifetime = 1.95 seconds.

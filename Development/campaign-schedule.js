@@ -13,7 +13,14 @@ export function createCampaignSchedule() {
  return {
   get seconds(){return seconds;},get stage(){return stage;},get frozen(){return frozen();},
   get fightingBoss(){return fighting();},get cleared(){return cleared();},
-  get readyToAdvance(){return cleared()&&(stage!=='second'||seconds>=campaignSettings.stageStarts.third);},
+  get readyToAdvance(){return cleared();},
+  seek(value){
+   if(!Number.isFinite(value)||value<0)return false;
+   seconds=Math.floor(value);
+   spawned=new Set(rows().filter(row=>row.kind!=='regular'&&row.start<seconds).map(row=>row.id));
+   defeated=new Set(spawned);
+   return true;
+  },
   setStage(id){if(id===stage)return;stage=id;seconds=campaignSettings.stageStarts[id]??0;spawned=new Set();defeated=new Set();},
   update(delta,spawnEncounter){
    if(!frozen()) {

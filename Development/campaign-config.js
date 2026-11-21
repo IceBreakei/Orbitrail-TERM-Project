@@ -21,7 +21,7 @@ export const campaignEnemyRows = [
  row('s1-highlander1','first','regular','highlander1',125,5,.6,12,300,510),
  row('s1-highlander3','first','regular','highlander3',30,6,.7,12,300,660),
  row('s1-highlander2','first','regular','highlander2',150,7,.6,9,355,510),
- row('s1-shiroko','first','boss','shiroko',8000,15,.8,2000,360,Infinity,{gate:true,freeze:true}),
+ row('s1-shiroko','first','boss','shiroko',25000,20,1.2,5000,360,Infinity,{gate:true,freeze:true}),
  row('s2-sweeper','second','regular','whiteSweeper',180,7,.85,9,390,660),
  row('s2-heavy','second','regular','heavySweeper',220,8,.65,9,455,660),
  row('s2-mega-sweeper','second','mini','megaSweeper',3500,11,1,1500,480,Infinity,{baseEnemy:'whiteSweeper'}),
@@ -29,21 +29,21 @@ export const campaignEnemyRows = [
  row('s2-mega-heavy','second','mini','megaHeavySweeper',2500,10,.9,1000,600,Infinity,{baseEnemy:'heavySweeper'}),
  row('s2-mob1','second','regular','mob',100,5,1.1,8,660,840),
  row('s2-mob2','second','regular','mob2',450,11,.8,10,720,840),
- row('s2-arisu','second','boss','arisu',15000,15,.8,2000,720),
- // Clarified order: Arisu first, then OPS at13:00 freezes the clock. Both must be defeated.
- row('s2-mega-ops','second','mini','megaOpsSweeper',5500,18,1,2000,780,Infinity,{baseEnemy:'opsSweeper',gate:true,freeze:true}),
+ row('s2-arisu','second','boss','arisu',45000,20,1,6000,720,Infinity,{gate:true,freeze:true}),
+ // Optional later mini-boss; Arisu alone clears Stage 2.
+ row('s2-mega-ops','second','mini','megaOpsSweeper',5500,18,1,2000,780,Infinity,{baseEnemy:'opsSweeper'}),
  row('s3-arius1','third','regular','arius1',650,14,.7,12,840,960),
  row('s3-arius2','third','regular','arius2',650,12,.9,12,840,960),
  row('s3-mega-arius2','third','mini','megaArius2',7500,20,1.1,1200,900,Infinity,{baseEnemy:'arius2'}),
  row('s3-mega-arius3','third','mini','megaArius3',7500,20,1.1,1200,900,Infinity,{baseEnemy:'arius3'}),
  row('s3-arius3','third','regular','arius3',900,14,.7,11,945,1140),
  row('s3-pedro','third','regular','pedrozilla',750,12,1,11,945,1140),
- row('s3-iroha','third','mini','iroha',23000,20,1.1,2000,1050,Infinity,{gate:true,freeze:true}),
+ row('s3-iroha','third','boss','iroha',55000,25,.75,6000,1050,Infinity,{gate:true,freeze:true}),
  row('s4-mobs','fourth','regular',mobs,2000,18,.6,14,1080,1140),
  row('s4-highlanders','fourth','regular',highlanders,3000,17,.4,15,1140,1200),
  row('s4-arius','fourth','regular',arius,3000,16,.4,15,1140,1200),
  row('s4-mega-pedro','fourth','regular','megaPedrozilla',1000,12,.85,20,1200,1380,{mega:true}),
- row('s4-neru','fourth','boss','neru',30000,20,1.2,5000,1200,Infinity,{gate:true}),
+ row('s4-neru','fourth','boss','neru',57000,20,.9,2000,1200,Infinity,{gate:true}),
  row('s4-sweepers','fourth','regular',sweepers,1000,14,.65,23,1380,1500)
 ];
 

@@ -21,8 +21,8 @@ function inventoryIcon(target) {
     const angle=(target.iconRotation||0)*Math.PI/180;
     const width=Math.abs(crop.width*Math.cos(angle))+Math.abs(crop.height*Math.sin(angle));
     const height=Math.abs(crop.width*Math.sin(angle))+Math.abs(crop.height*Math.cos(angle));
-    const scale=116/Math.max(width,height),context=canvas.getContext('2d');
-    context.save();context.translate(64,64);context.rotate(angle);
+    const scale=(target.iconFit?124:116)/Math.max(width,height),context=canvas.getContext('2d');
+    context.save();context.translate(64,64);if(target.iconFlipX)context.scale(-1,1);context.rotate(angle);
     context.drawImage(image,crop.x,crop.y,crop.width,crop.height,-crop.width*scale/2,-crop.height*scale/2,crop.width*scale,crop.height*scale);context.restore();
   };
   image.src=target.icon;return canvas;
@@ -94,15 +94,15 @@ export function createCrafterMenu({canvas,getPlayer,onCancel,onAction,golden=fal
     const displayTarget=golden&&currentChoice?currentChoice.target:target;
     const levelText=currentChoice?.id.endsWith(':enhance')?`+${target?.enhancementRank||0} -> +${currentChoice.rank}`:currentChoice?.id.endsWith(':level')?upgradeLevelLabel(target):`LV ${target?.level||1}${target?.enhancementRank?` +${target.enhancementRank}`:''}`;
     text(name,golden&&currentChoice?currentChoice.name:target?`${target.name||target.id||'Equipment'} ${levelText}`:'Empty slot',1.4);
-    text(category,golden?'>> Synergy':selected<6?'>> Weapon':'>> Equipment',1.05);heading.append(name,category);
+    text(category,golden?(currentChoice?.kind==='super-synergy'?'>> Super Synnergy':'>> Synergy'):selected<6?'>> Weapon':'>> Equipment',1.05);heading.append(name,category);
     const body=document.createElement('div');body.className='crafter-detail-body';
     const icon=inventoryIcon(displayTarget),description=document.createElement('div');
     let info=golden?'No compatible MAX-level weapon pair.':'Select an equipped weapon or item.';
     if(target&&!currentChoice)info=golden?'No compatible MAX-level weapon pair.':'Maximum level reached. No upgrade is available.';
     if(currentChoice) {
-      if(golden)info=`${currentChoice.slots.map(index=>player.attackSlots[index].name||player.attackSlots[index].id).join(' + ')}: ${currentChoice.description||`Create ${currentChoice.name}`}`;
-      else if(currentChoice.id.endsWith(':level'))info=rollLevelUpgrades(player).find(choice=>choice.weapon===target)?.description||`Upgrade to LV ${(target.level||1)+1}.`;
-      else if(currentChoice.id.endsWith(':awaken'))info='Awaken the main weapon. Requires 1 Secret Tech Note.';
+      if(golden)info=`${currentChoice.slots.map(index=>targetAt(index)?.name||targetAt(index)?.id).join(' + ')}: ${currentChoice.description||`Create ${currentChoice.name}`}`;
+      else if(currentChoice.id.endsWith(':level'))info=rollLevelUpgrades(player,{all:true}).find(choice=>choice.weapon===target)?.description||`Upgrade to LV ${(target.level||1)+1}.`;
+      else if(currentChoice.id.endsWith(':awaken'))info=currentChoice.kind==='item'?'Awaken Malkuth?s Hat: attack damage is multiplied by 1.5, with no critical chance penalty. Requires 1 Secret Tech Note.':'Awaken the main weapon. Requires 1 Secret Tech Note.';
       else info=`Add 2 base damage per enhancement rank, split across primary projectiles. ${currentChoice.cost} Credits. ${Math.round(currentChoice.chance*100)}% success.`;
     }
     // Wrap long explanations using the bitmap renderer instead of browser fonts.
@@ -113,9 +113,9 @@ export function createCrafterMenu({canvas,getPlayer,onCancel,onAction,golden=fal
       const pair=document.createElement('div');pair.className='golden-fusion-preview';
       for(let i=0;i<2;i++) {
         if(i){const plus=document.createElement('span');text(plus,'+',2);pair.append(plus);}
-        const ingredient=picked[i]!==undefined?player.attackSlots[picked[i]]:null;
+        const ingredient=picked[i]!==undefined?targetAt(picked[i]):null;
         const card=document.createElement('div');card.className='golden-fusion-ingredient';
-        const label=document.createElement('p');text(label,ingredient?.name||'Select weapon',1.2);
+        const label=document.createElement('p');text(label,ingredient?.name||(goldenCrafterChoices(player).some(c=>c.kind==='super-synergy')?'Select weapon or item':'Select weapon'),1.2);
         const box=document.createElement('div');box.className='golden-fusion-box';
         box.append(inventoryIcon(ingredient));box.addEventListener('click',()=>{if(picked[i]!==undefined){picked.splice(i,1);render();}});card.append(label,box);pair.append(card);
       }
@@ -130,16 +130,17 @@ export function createCrafterMenu({canvas,getPlayer,onCancel,onAction,golden=fal
     }
     confirm.disabled=!currentChoice||currentChoice.disabled;
     const confirmLabel=currentChoice?.id.endsWith(':enhance')?`Enhance +${currentChoice.rank}`:currentChoice?.id.endsWith(':level')?upgradeLevelLabel(target):currentChoice?.label||'Unavailable';
-    text(confirm,golden?'SYNNERGIZE!':confirmLabel,golden?1.7:1.1);
+    text(confirm,golden?(currentChoice?.kind==='super-synergy'?'SUPER SYNNERGIZE!':'SYNNERGIZE!'):confirmLabel,golden?1.7:1.1);
     const loot=getLootTotals();text(balance,`Credits: ${loot.credits}   Secret Tech Notes: ${loot.secretTechNotes}`,1.05);
   }
   function render() {
     const player=getPlayer();renderStats(player);slotButtons=[];
+    if(golden)equipment.hidden=!goldenCrafterChoices(player).some(choice=>choice.kind==='super-synergy');
     const eligibleSlots=new Set(golden?goldenCrafterChoices(player).filter(choice=>picked.length!==1||choice.slots.includes(picked[0])).flatMap(choice=>choice.slots):[]);weapons.replaceChildren();equipment.replaceChildren();
     text(title,golden?'SYNNERGIZE!':'UPGRADE!',2.8);text(cancel,'Cancel',1.2);text(help,'CONFIRM: SPACE / ENTER   |   CANCEL: SHIFT / ESC',.9);
     for(let index=0;index<12;index++) {
       const target=targetAt(index),button=document.createElement('button');button.type='button';button.className='crafter-slot';
-      button.disabled=!target||(golden&&(index>=6||!eligibleSlots.has(index)));button.setAttribute('aria-label',target?`${target.name||target.id}, LV ${target.level||1}`:`Empty ${index<6?'weapon':'equipment'} slot ${index%6+1}`);
+      button.disabled=!target||(golden&&(!eligibleSlots.has(index)));button.setAttribute('aria-label',target?`${target.name||target.id}, LV ${target.level||1}`:`Empty ${index<6?'weapon':'equipment'} slot ${index%6+1}`);
       button.append(inventoryIcon(target));
       if(target?.level){const level=document.createElement('span');level.className='crafter-slot-level';text(level,`LV ${target.level}${target.enhancementRank?` +${target.enhancementRank}`:''}`,.8);button.append(level);}
       button.addEventListener('click',()=>{
