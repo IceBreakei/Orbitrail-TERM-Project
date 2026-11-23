@@ -4,7 +4,7 @@ const c=vm.createContext({showDamageNumber(){},getLootTotals:()=>({secretTechNot
 for(const name of ['game-config','item-catalog','combat-stats','player-stats','weapon-progression','firing-rings','aris-weapon','luminous-nova','weapon-max-order','upgrade-label','level-upgrades'])vm.runInContext(fs.readFileSync(`Development/${name}.js`,'utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export \{.*\} from .*;\r?\n/gm,'').replaceAll('export ','').replaceAll('import.meta.url',"'file:///Development/aris-weapon.js'"),c);
 const run=s=>vm.runInContext(s,c);
 run("var weapon={id:'plana-umbrella',name:\"Plana's Umbrella\",level:1};var player={label:'Plana',attackSlots:[weapon],maxHp:110,hp:1};ensurePlayerStats(player);addPlayerExp(player,player.maxExp)");
-assert.equal(run('player.level'),2);assert.equal(run('player.hp'),110);assert.equal(run('player.pendingUpgrades'),1);
+assert.equal(run('player.level'),2);assert.equal(run('player.hp'),1);assert.equal(run('player.pendingUpgrades'),1);
 assert.equal(run('rollLevelUpgrades(player).length'),4);
 for(let level=2;level<=7;level++) {
  run('player.pendingUpgrades=1');assert(run("applyLevelUpgrade(player,'umbrella-level')"));

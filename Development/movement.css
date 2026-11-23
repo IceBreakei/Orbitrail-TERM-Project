@@ -256,7 +256,7 @@ body.fullscreen-preview::before {
 .pause-stat-row img { width: 30px; height: 30px; object-fit: contain; }
 .pause-stat-row canvas:last-child { justify-self: end; }
 .pause-overlay canvas { background: transparent; max-width: 100%; object-fit: contain; }
-.pause-menu-card {
+.pause-menu-card, .pause-quit-card {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -273,7 +273,7 @@ body.fullscreen-preview::before {
   box-shadow: 0 0 0 2px #173d52;
   background: repeating-linear-gradient(45deg, #ffffff00 0 18px, #ffffff1a 18px 22px), #41bcec;
 }
-.pause-menu-card button, .pause-dev-link {
+.pause-menu-card button, .pause-quit-card button, .pause-dev-link {
   width: 100%;
   padding: 9px 4px;
   border: 2px solid white;
@@ -284,7 +284,7 @@ body.fullscreen-preview::before {
   text-decoration: none;
   font: 18px monospace;
 }
-.pause-menu-card button:hover, .pause-menu-card button:focus-visible,
+.pause-menu-card button:hover, .pause-menu-card button:focus-visible, .pause-quit-card button:hover, .pause-quit-card button:focus-visible,
 .pause-dev-link:hover, .pause-dev-link:focus-visible { background: white; color: #10283f; }
 .pause-settings { width:100%; box-sizing:border-box; display:grid; gap:10px; padding:12px; border:2px solid #d7f6ff; background:#123c59bb; }
 .pause-settings canvas { border:0; border-radius:0; background:transparent; max-width:100%; height:auto!important; }
@@ -293,7 +293,7 @@ body.fullscreen-preview::before {
 .pause-help { position: absolute; right: 20px; bottom: 10px; margin: 0; font-size: 16px; }
 @media (max-width: 800px) {
   .pause-character-stats { left: 3%; width: 35%; top: 5%; height: 85%; }
-  .pause-menu-card { left: 68%; max-width: 48%; padding: 15px; gap: 10px; }
+  .pause-menu-card, .pause-quit-card { left: 68%; max-width: 48%; padding: 15px; gap: 10px; }
   .pause-stat-content { top: 18%; }
   .pause-stat-row { grid-template-columns: 24px auto minmax(0, 1fr); gap: 2px; min-height: 30px; }
   .pause-stat-row img { width: 24px; height: 24px; }
@@ -752,8 +752,8 @@ body.fullscreen-preview::before {
 .pause-ex-list::-webkit-scrollbar-thumb,.pause-ex-detail::-webkit-scrollbar-thumb { background:#7cddff; border:2px solid #12334a; border-radius:4px; }
 
 /* Menu labels share a fixed bitmap line box; titles never word-wrap. */
-.pause-menu-card button, .pause-dev-link { display: flex; align-items: center; justify-content: center; min-height: 50px; }
-.pause-menu-card button canvas, .pause-dev-link canvas { border: 0; border-radius: 0; margin: 0 auto; image-rendering: pixelated; }
+.pause-menu-card button, .pause-quit-card button, .pause-dev-link { display: flex; align-items: center; justify-content: center; min-height: 50px; }
+.pause-menu-card button canvas, .pause-quit-card button canvas, .pause-dev-link canvas { border: 0; border-radius: 0; margin: 0 auto; image-rendering: pixelated; }
 .pause-skills-header > span { flex: 0 0 auto; white-space: nowrap; }
 .pause-weapon-divider h2, .pause-skills-panel h3 { white-space: nowrap; }
 .pause-skills-header, .pause-weapon-divider summary { min-height: 52px; }
@@ -1220,3 +1220,38 @@ canvas[data-bitmap-text] { background:transparent!important; border:0!important;
 /* Equipment art fits the frame; alpha-margin crops preserve each item's aspect ratio. */
 #hud-equipment-slots .hud-slot > .hud-slot-icon { inset:15%; width:70%; height:70%; z-index:4; }
 .level-up-choice-body .level-up-weapon-icon[data-icon-fit="true"] { padding:0; }
+
+/* Support artwork sits under the portrait and reuses the weapon-skill cooldown sweep. */
+.hud-portrait-column{display:flex;flex-direction:column;align-items:flex-start;flex:0 0 80px;width:80px;gap:8px;}
+.hud-support{width:36px;height:36px;flex-shrink:0;background:transparent;border:0;}
+.hud-support[hidden]{display:none!important;}
+.hud-support-icon{position:absolute;inset:0;z-index:2;display:block;}
+.hud-support-icon svg{width:100%;height:100%;}
+
+/* Active buffs stay inside the game viewport; counters use transparent bitmap ink. */
+.hud-buffs{position:absolute;left:12px;bottom:12px;z-index:2;display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px;max-width:calc(100% - 24px);pointer-events:none;}
+.hud-buffs[hidden]{display:none!important;}
+.hud-buff{position:relative;width:46px;height:46px;flex:none;border:0;border-radius:0;background:transparent;box-shadow:none;}
+.hud-buff-icon{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:transparent;border:0;border-radius:0;}
+.hud-buff-icon svg{width:100%;height:100%;}
+.hud-buff-icon[hidden],.hud-buff-stacks[hidden]{display:none!important;}
+.hud-buff-stacks{position:absolute;top:-7px;right:-6px;z-index:1;width:auto;height:20px;max-width:40px;background:transparent;border:0;border-radius:0;image-rendering:pixelated;}
+
+/* Four equal upgrade cards share the available game height; descriptions fit their own cells. */
+.level-up-overlay{overflow:hidden;}
+.level-up-selection{min-height:0;}
+#level-up-progress{flex:none;margin-bottom:8px;}
+#level-up-choices{flex:1;min-height:0;grid-template-rows:repeat(4,minmax(0,1fr));gap:8px;}
+.level-up-choice{min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr);padding:6px 12px;}
+.level-up-empty-slot{min-height:0;}
+.level-up-choice-header{min-height:0;padding-bottom:3px;}
+.level-up-choice-header span:first-child{flex:1;}
+.level-up-choice-header span:last-child{flex:none;}
+.level-up-choice-body{min-height:0;padding-top:4px;gap:10px;}
+.level-up-choice-body .level-up-weapon-icon{width:min(50px,100%);height:auto;max-height:100%;aspect-ratio:1;box-sizing:border-box;object-fit:contain;}
+.level-up-choice-body .level-up-description{height:100%;min-height:0;display:flex;align-items:center;overflow:hidden;}
+.level-up-description canvas{flex:none;}
+.level-up-actions{flex:none;padding-top:8px;margin-top:0;gap:8px;}
+.level-up-actions button{min-height:34px;padding:4px;}
+.level-up-help{flex:none;margin-top:6px;}
+@media(max-width:850px){.level-up-choice{padding:4px 8px;}#level-up-choices{gap:6px;}.level-up-choice-body{gap:8px;}.level-up-choice-body .level-up-weapon-icon{width:min(36px,100%);}}

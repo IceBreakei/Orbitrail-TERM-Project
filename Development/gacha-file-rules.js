@@ -1,9 +1,9 @@
-import { createMalkuthHat, createRacerPass, createSafetyHelmet, createLifeJacket, createOverheatedOverclocking, overclockingDescription, isContentUnlocked, lifeJacketDescription, safetyHelmetDescription, racerPassDescription, malkuthDescription, isItemUnlocked, isItemRewardEnabled } from './item-catalog.js';
+import { createSportsDrink, sportsDrinkDescription, createMalkuthHat, createRacerPass, createSafetyHelmet, createLifeJacket, createOverheatedOverclocking, overclockingDescription, isContentUnlocked, lifeJacketDescription, safetyHelmetDescription, racerPassDescription, malkuthDescription, isItemUnlocked, isItemRewardEnabled } from './item-catalog.js';
 import { rollLevelUpgrades } from './level-upgrades.js';
 import { recordWeaponMax } from './weapon-max-order.js';
 
 // Super rewards respect item unlocks; unavailable pools fall back to normal Files.
-export const superFileItems=[createMalkuthHat(true),createRacerPass(true),createSafetyHelmet(true),createLifeJacket(true),createOverheatedOverclocking(true)];
+export const superFileItems=[createMalkuthHat(true),createRacerPass(true),createSafetyHelmet(true),createLifeJacket(true),createOverheatedOverclocking(true),createSportsDrink(true)];
 export const fileSettings={superChance:.05,tripleChance:.09,newChance:.1,weaponChance:.7,
   dropChance:0,bossGuaranteed:true,icon:'../sprites/icons/3 Stars Character Icon.png',maxGround:20,
   creditReplacementPerMax:.05,creditReplacementCap:.6};
@@ -18,6 +18,7 @@ export function fileCredits(type,random=Math.random,moneyUpBonus=0,stageMultipli
 
 /** Apply one accepted product without spending level-up choices; dropping never applies it. */
 export function acceptFileProduct(player,product) {
+  if(product.weapon?.isCharacterSkill)return false;
   const slots=product.kind==='item'?(player.equipmentSlots??=[]):(player.attackSlots??=[]);
   const owned=slots.find(item=>item?.id===product.weapon.id);
   if(owned) {
@@ -45,7 +46,7 @@ export function rollFileRewards(player,{random=Math.random,forceType,getOptions=
   const result={type,products:[],credits:fileCredits(type,random,player.moneyUpBonus||0,player.stageCoinMultiplier??1)};
   if(type==='super') {
     const item=supers[Math.min(supers.length-1,Math.floor(random()*supers.length))];
-    const description=item.id==='overheated-overclocking'?overclockingDescription(item):item.id==='life-jacket'?lifeJacketDescription(item):item.id==='safety-helmet'?safetyHelmetDescription(item):item.id==='racer-pass'?racerPassDescription(item):item.id==='malkuth-hat'?malkuthDescription(item):undefined;
+    const description=item.id==='sports-drink'?sportsDrinkDescription(item):item.id==='overheated-overclocking'?overclockingDescription(item):item.id==='life-jacket'?lifeJacketDescription(item):item.id==='safety-helmet'?safetyHelmetDescription(item):item.id==='racer-pass'?racerPassDescription(item):item.id==='malkuth-hat'?malkuthDescription(item):undefined;
     result.products.push({kind:'item',weapon:{...item,level:1},name:item.name,super:true,description});return result;
   }
   const shadow={...player,attackSlots:(player.attackSlots||[]).map(w=>w?{...w}:null),equipmentSlots:(player.equipmentSlots||[]).map(w=>w?{...w}:null)};
@@ -54,7 +55,7 @@ export function rollFileRewards(player,{random=Math.random,forceType,getOptions=
     const maxed=[...shadow.attackSlots,...shadow.equipmentSlots].filter(w=>w&&(w.isSynergy||(w.level||1)>=(w.maxLevel||7))).length;
     // Editable saturation behavior: each MAX slot adds 5 percentage points toward the 100-Credit substitution.
     if(random()<Math.min(fileSettings.creditReplacementCap,maxed*fileSettings.creditReplacementPerMax)){result.credits+=100;continue;}
-    const options=getOptions(shadow,{all:true}).filter(choice=>choice.weapon&&!choice.weapon.isSynergy);
+    const options=getOptions(shadow,{all:true}).filter(choice=>choice.weapon&&!choice.weapon.isSynergy&&!choice.weapon.isCharacterSkill);
     let selected=null;
     const allowNew=random()<fileSettings.newChance;
     for(let attempt=0;attempt<5&&!selected;attempt++) {

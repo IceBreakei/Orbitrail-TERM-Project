@@ -22,6 +22,8 @@ export function unlockContent(id){
 export function unlockStageBossRewards(stage,bossType){
   if(stage===1&&bossType==='shiroko')unlockContent('saint-predator');
   if(stage===2&&bossType==='arisu')unlockContent('aris-laser');
+  if(stage===3&&bossType==='iroha')unlockContent('maid-force');
+  if(stage===4&&bossType==='neru')unlockContent('wakamo-bayonet');
 }
 export function configureItemUnlocks(storage,uid,{developer=false}={}) {
   developerUnlocks=Boolean(uid&&developer);simulateAccount=false;simulatedUnlocks.clear();
@@ -101,12 +103,13 @@ export function overclockingDescription(item){const stats=overclockingStats({equ
 export function itemSkillDamageMultiplier(player){return Math.max(0,1+(overclockingStats(player).skillDamage+(Number(player.skillDamageBonusPercent)||0))/100);}
 export function itemHpDrainNegated(player){return player.equipmentSlots?.some(item=>item&&(item.negatesItemPenalties||item.negatesItemHpDrain)&&Number.isFinite(item.maxLevel)&&item.level>=item.maxLevel)||false;}
 export function unlockStageClearRewards(player){
+ if(player.equipmentSlots?.some(i=>i?.id==='sports-drink')){unlockContent('achievement:soaking');unlockContent('water-dousing');}
  if(!player.attackSlots?.some(w=>w?.id==='luminous-nova'))return false;
  unlockContent('achievement:its-safe-i-swear');unlockContent('overheated-overclocking');return true;
 }
 export function itemUpgradeChoices(player){
  const choices=malkuthUpgradeChoices(player),slots=player.equipmentSlots||[];
- for(const [id,prefix,create,describe,max] of [['racer-pass','racer',createRacerPass,racerPassDescription,3],['safety-helmet','helmet',createSafetyHelmet,safetyHelmetDescription,5],['life-jacket','jacket',createLifeJacket,lifeJacketDescription,5],['chise-plushie','chise',createChisePlushie,chisePlushieDescription,3],['overheated-overclocking','overclock',createOverheatedOverclocking,overclockingDescription,3],['special-pharmaceuticals','pharmaceuticals',createSpecialPharmaceuticals,specialPharmaceuticalsDescription,3]]){
+ for(const [id,prefix,create,describe,max] of [['sports-drink','sports',createSportsDrink,sportsDrinkDescription,3],['racer-pass','racer',createRacerPass,racerPassDescription,3],['safety-helmet','helmet',createSafetyHelmet,safetyHelmetDescription,5],['life-jacket','jacket',createLifeJacket,lifeJacketDescription,5],['chise-plushie','chise',createChisePlushie,chisePlushieDescription,3],['overheated-overclocking','overclock',createOverheatedOverclocking,overclockingDescription,3],['special-pharmaceuticals','pharmaceuticals',createSpecialPharmaceuticals,specialPharmaceuticalsDescription,3]]){
   if(!isItemRewardEnabled(player,id))continue;const item=slots.find(i=>i?.id===id);
   if(['chise-plushie','overheated-overclocking','special-pharmaceuticals'].includes(id)&&!item&&!isContentUnlocked(id))continue;
   if(item&&!item.isSuper&&!item.awakened&&(item.level||1)<max)choices.push({id:`${prefix}-level`,name:`${item.name} LV ${item.level||1} -> ${(item.level||1)+1===max?'MAX':`LV ${(item.level||1)+1}`}`,
@@ -124,7 +127,14 @@ export function syncRacerPassHealth(player){
 }
 export function applyItemUpgrade(player,id) {
   const choice=itemUpgradeChoices(player).find(choice=>choice.id===id);if(!choice)return false;
-  if(id==='malkuth-level'||id==='racer-level'||id==='helmet-level'||id==='jacket-level'||id==='chise-level'||id==='overclock-level'||id==='pharmaceuticals-level')choice.weapon.level++;
+  if(id==='sports-level'||id==='malkuth-level'||id==='racer-level'||id==='helmet-level'||id==='jacket-level'||id==='chise-level'||id==='overclock-level'||id==='pharmaceuticals-level')choice.weapon.level++;
   else {const slots=player.equipmentSlots??=[],empty=slots.findIndex(item=>!item);if(empty>=0)slots[empty]=choice.weapon;else slots.push(choice.weapon);}
   return true;
 }
+
+export function createSportsDrink(superItem=false){return {id:'sports-drink',name:'Sports Drink',icon:'../sprites/items/Sports Drink.png',iconFit:true,iconCrop:{x:57,y:14,width:179,height:223},level:1,maxLevel:superItem?1:3,isSuper:superItem,awakened:superItem,itemType:'Stat',weight:4,defaultUnlocked:true};}
+export function sportsDrinkDescription(item){return item.isSuper||item.awakened?'Gain 30% crit, but your aiming direction becomes slightly unstable.':`Gain 1% crit every second up to ${[10,15,20][Math.min(2,Math.max(0,(item.level||1)-1))]}%. Enemy-hit HP damage halves the accumulated buff. Eating food grants +5% crit for 10 seconds.`;}
+export function sportsDrinkCritBonus(player){const item=player.equipmentSlots?.find(i=>i?.id==='sports-drink');if(!item)return 0;if(item.isSuper||item.awakened)return 30;return Math.min([10,15,20][Math.min(2,Math.max(0,(item.level||1)-1))],player.sportsDrinkState?.crit||0)+(player.sportsDrinkState?.foodRemaining>0?5:0);}
+/** Food only: healing from potions, shields and other items must not call this hook. */
+export function consumeSportsDrinkFood(player){if(!player.equipmentSlots?.some(i=>i?.id==='sports-drink'))return;const state=player.sportsDrinkState??={crit:0,elapsed:0,time:0,foodRemaining:0};state.foodRemaining=10;}
+export function updateSportsDrink(player,delta){const item=player.equipmentSlots?.find(i=>i?.id==='sports-drink');if(!item){delete player.sportsDrinkState;player.sportsDrinkAimOffset=0;return;}const state=player.sportsDrinkState??={crit:0,elapsed:0,time:0,foodRemaining:0};const dt=Math.max(0,Number(delta)||0);state.time+=dt;state.foodRemaining=Math.max(0,state.foodRemaining-dt);player.sportsDrinkAimOffset=0;if(item.isSuper||item.awakened){state.crit=0;state.elapsed=0;player.sportsDrinkAimOffset=(Math.sin(state.time*3.7)+.4*Math.sin(state.time*6.1))*.035*itemPenaltyMultiplier(player)||0;return;}state.elapsed+=dt;const ticks=Math.floor(state.elapsed);state.elapsed-=ticks;state.crit=Math.min([10,15,20][Math.min(2,Math.max(0,(item.level||1)-1))],state.crit+ticks);}

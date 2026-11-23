@@ -5,7 +5,7 @@ import { planaSkillSettings } from './game-config.js';
 import { drawSynergyIcon } from './synergy-icon.js';
 
 /** Show live character stats while freezing gameplay, independently of preview size. */
-export function createPauseMenu({ canvas, getPlayer, releaseControls, onPause = () => {}, isBlocked = () => false }) {
+export function createPauseMenu({ canvas, getPlayer, releaseControls, onPause = () => {}, onQuit = () => {}, isBlocked = () => false }) {
   const overlay = document.querySelector('#pause-menu');
   const resume = document.querySelector('#pause-resume');
   const pauseButton = document.querySelector('#pause-game');
@@ -24,6 +24,14 @@ export function createPauseMenu({ canvas, getPlayer, releaseControls, onPause = 
   const volumeText=createBitmapText(valueGraphic,{variant:'font2',scale:1.25,wrap:false});
   function updateVolumeText(){const text=`${volume.value}%`;volumeText.setText(text);volumeValue.setAttribute('aria-label',text);}
   updateVolumeText();
+  const quitConfirmation=document.querySelector('#pause-quit-confirmation'),quitYes=document.querySelector('#pause-quit-yes'),quitNo=document.querySelector('#pause-quit-no'),exitButton=document.querySelector('#pause-exit'),pauseCard=overlay.querySelector('.pause-menu-card'),help=overlay.querySelector('.pause-help'),defaultHelp=help.textContent;let quitOpen=false,quitChoice=0;
+  createBitmapText(document.querySelector('#pause-quit-title'),{variant:'font2',scale:2,wrap:false}).setText('QUIT?');
+  for(const [button,label] of [[quitYes,'Yes'],[quitNo,'No']]){const graphic=document.createElement('canvas');button.replaceChildren(graphic);createBitmapText(graphic,{variant:'font2',scale:1.5,wrap:false}).setText(label);}
+  function chooseQuit(index){quitChoice=index;quitYes.classList.toggle('selected',index===0);quitNo.classList.toggle('selected',index===1);}
+  function cancelQuit(){help.textContent=defaultHelp;quitOpen=false;quitConfirmation.hidden=true;pauseCard.hidden=false;exitButton.focus();}
+  exitButton.addEventListener('click',()=>{if(!paused)return;showSkills(false);settings.hidden=true;help.textContent='CONFIRM: ENTER / SPACE | CANCEL: SHIFT / ESC';quitOpen=true;quitConfirmation.hidden=false;pauseCard.hidden=true;chooseQuit(0);quitYes.focus();});
+  [[quitYes,0],[quitNo,1]].forEach(([button,index])=>{button.addEventListener('pointerenter',()=>chooseQuit(index));button.addEventListener('focus',()=>chooseQuit(index));});
+  quitYes.addEventListener('click',()=>{if(!quitOpen)return;setPaused(false);onQuit();});quitNo.addEventListener('click',cancelQuit);
   let paused = false;
   let previousInert = [];
   const skillsPanel = document.querySelector('#pause-skills-panel');
@@ -128,6 +136,7 @@ export function createPauseMenu({ canvas, getPlayer, releaseControls, onPause = 
   function setPaused(enabled) {
     if (paused === enabled || (enabled && isBlocked())) return;
     paused = enabled;
+    help.textContent=defaultHelp;quitOpen=false;quitConfirmation.hidden=true;pauseCard.hidden=false;
     releaseControls();
     overlay.hidden = !paused;
     pauseButton.setAttribute('aria-pressed', String(paused));
@@ -155,6 +164,7 @@ export function createPauseMenu({ canvas, getPlayer, releaseControls, onPause = 
     if (event.button !== 2 || !paused) return;
     event.preventDefault();
     event.stopPropagation();
+    if(quitOpen){cancelQuit();return;}
     if (!skillsPanel.hidden) showSkills(false);
     else if (!settings.hidden) {
       settings.hidden = true;
@@ -178,6 +188,14 @@ export function createPauseMenu({ canvas, getPlayer, releaseControls, onPause = 
     document.querySelector('#exit-fullscreen-preview').click();
   });
   window.addEventListener('keydown', event => {
+    if(quitOpen&&!event.ctrlKey&&!event.metaKey&&!event.altKey&&!event.repeat){
+      if(['Escape','Shift','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter',' ','Tab'].includes(event.key)){
+        event.preventDefault();event.stopImmediatePropagation();
+        if(event.key==='Escape'||event.key==='Shift')cancelQuit();
+        else if(event.key==='Enter'||event.key===' ')(quitChoice===0?quitYes:quitNo).click();
+        else{chooseQuit(1-quitChoice);(quitChoice===0?quitYes:quitNo).focus();}return;
+      }
+    }
     if (event.key !== 'Escape' || event.repeat || isBlocked() || event.ctrlKey || event.metaKey || event.altKey) return;
     if(event.target!==canvas&&event.target!==pauseButton&&!overlay.contains?.(event.target))return;
     event.preventDefault();

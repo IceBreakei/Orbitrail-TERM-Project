@@ -10,7 +10,8 @@ vm.runInContext(fs.readFileSync('Development/game-config.js','utf8').replaceAll(
 vm.runInContext(fs.readFileSync('Development/item-catalog.js','utf8').replaceAll('export ',''),context);
 vm.runInContext(fs.readFileSync('Development/character-stats-panel.js','utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ',''),context);
 const source=fs.readFileSync('Development/pause-menu.js','utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ','').replaceAll('import.meta.url',"'file:///Development/pause-menu.js'");
-vm.runInContext(source+";var menu=createPauseMenu({canvas:document.querySelector('canvas'),getPlayer:()=>({label:'Plana',hp:110,maxHp:110,combatStats:{},attackSlots:[]}),releaseControls(){}})",context);
+context.quitCount=0;
+vm.runInContext(source+";var menu=createPauseMenu({canvas:document.querySelector('canvas'),getPlayer:()=>({label:'Plana',hp:110,maxHp:110,combatStats:{},attackSlots:[]}),releaseControls(){},onQuit(){quitCount++}})",context);
 const click=id=>el(id).listeners.click({currentTarget:el(id)});
 const right=()=>el('#pause-menu').listeners.pointerdown({button:2,preventDefault(){},stopPropagation(){}});
 click('#pause-game');assert(vm.runInContext('menu.paused',context));
@@ -27,3 +28,7 @@ keyboardHandlers.forEach(handler=>handler(shortcut));assert.equal(intercepted,fa
 keyboardHandlers.forEach(handler=>handler({...shortcut,ctrlKey:false,target:el('admin-input')}));assert.equal(intercepted,false);assert(vm.runInContext('menu.paused',context));
 right();assert.notEqual(el('canvas').inert,true);
 console.log('PASS: pause affects canvas only, leaves sidebar enabled and ignores browser shortcuts/outside-page keys.');
+
+click('#pause-game');click('#pause-exit');assert(!el('#pause-quit-confirmation').hidden);assert(vm.runInContext('menu.paused',context));click('#pause-quit-no');assert(el('#pause-quit-confirmation').hidden);assert(vm.runInContext('menu.paused',context));click('#pause-exit');right();assert(el('#pause-quit-confirmation').hidden);assert(vm.runInContext('menu.paused',context));click('#pause-exit');click('#pause-quit-yes');assert(!vm.runInContext('menu.paused',context));assert(el('#pause-menu').hidden);assert.notEqual(el('canvas').inert,true);console.log('PASS Exit confirmation, No/right-click stay paused, Yes restores canvas before home callback');
+
+assert.equal(context.quitCount,1);console.log('PASS Yes invokes return-home callback exactly once');

@@ -1,5 +1,5 @@
 /** Center the reference 1280x720 game area in a dark surround, preserving the session. */
-export function setupFullscreenPreview(canvas, releaseControls) {
+export function setupFullscreenPreview(canvas, releaseControls, {onSimulate=()=>{}}={}) {
   const enter = document.querySelector('#enter-fullscreen-preview');
   const exit = document.querySelector('#exit-fullscreen-preview');
   const layout = document.querySelector('.playtest-layout');
@@ -31,4 +31,5 @@ export function setupFullscreenPreview(canvas, releaseControls) {
 
   enter.addEventListener('click', () => setFullscreen(true));
   exit.addEventListener('click', () => setFullscreen(false));
+  document.querySelector('#simulate-game')?.addEventListener('click', () => {setFullscreen(true);onSimulate();});
 }

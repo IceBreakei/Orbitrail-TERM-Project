@@ -27,7 +27,8 @@ export function createLuminousNovaSkill({random=Math.random}={}) {
   const image=new Image();image.src='../sprites/attacks/Weapon_Icon_Kei.png';const ready=image.decode();
   function removeBuff(){if(state?.owner.combatBuffs)delete state.owner.combatBuffs[buffKey];}
   function reset(){removeBuff();state=null;}
-  const unsubscribe=onEnemyDamage(({source,damage})=>{
+  const unsubscribe=onEnemyDamage(({source,damage,triggersSkills})=>{
+    if(triggersSkills===false)return;
     if(state?.phase==='aura'&&source===state.owner&&Number.isFinite(damage))state.damageDealt+=Math.max(0,damage);
   });
   function cast(player,angle,getAngle=()=>angle) {

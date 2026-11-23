@@ -364,10 +364,15 @@ export function createNpcTools({ canvas, characters, camera, getPlayer, getPlaye
       if (npc.animationFrames) npc.gifElapsed = (npc.gifElapsed || 0) + delta * 1000 * (npc.animationSpeed || 1);
       const wasFrozen=npc.frozenRemaining>0;
       if(!wasFrozen)delete npc.frozenPoseElapsed;
-      if (time && updateEnemyControl(npc, time, moveKnockback)) {
+      if (time && updateEnemyControl(npc, time, npc.flattenedRemaining>0?()=>true:moveKnockback)) {
         if(wasFrozen)animateFrozenEnemy(npc,player,time);
         if (updateYuukaPresence(npc, camera, canvas.width, canvas.height, time)) { removeEnemy(npc.id); refresh(); }
         continue; // Stun suppresses movement AI, attacks and both contact checks.
+      }
+      if(npc.flattenedRemaining>0){
+        // Flattened suppresses movement/AI, but retains normal player contact damage.
+        if(time)updateNpcContact(npc,player,playerMotion,time,()=>true,getSurvivalSeconds());
+        npc.moving=false;continue;
       }
       if(time && bossBehaviors.updateNpc(npc,player,time,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height},playerMotion,attacker=>{
         const target={x:player.x+(attacker.chaseOffsetX||0),y:player.y+(attacker.chaseOffsetY||0)};

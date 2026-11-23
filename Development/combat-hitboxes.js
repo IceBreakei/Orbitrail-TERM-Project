@@ -32,7 +32,7 @@ export function getCombatHitbox(character, enemy = Boolean(character.id)) {
 }
 
 /** Damage-receiving sprite bounds are separate from the small contact-damage ellipse. */
-export function getEnemyHurtbox(character) {
+function unflattenedEnemyHurtbox(character) {
   const size=character.spriteSize||normalSpriteSize;
   const bounds=character.spriteHurtbox||{offsetX:0,offsetY:0,width:size-spriteDisplayPadding*2,height:size-spriteDisplayPadding*2};
   const oval=bounds.mask?.ellipse;
@@ -43,6 +43,14 @@ export function getEnemyHurtbox(character) {
   return {x:character.x+bounds.offsetX,y:character.y+bounds.offsetY,
     rx:Math.max(1,bounds.width/2),ry:Math.max(1,bounds.height/2),shape:'rectangle',
     mask:bounds.mask,mirrored:bounds.mirrored,maskWidth:bounds.width,maskHeight:bounds.height};
+}
+
+/** Flattening changes only the received-damage silhouette, never the contact-damage hitbox. */
+export function getEnemyHurtbox(character){
+ const body=unflattenedEnemyHurtbox(character);if(!(character.flattenedRemaining>0))return body;
+ const foot=character.y+(character.spriteSize||normalSpriteSize)/2-spriteDisplayPadding+(character.bossVisualOffsetY||0);
+ return {...body,x:character.x+(body.x-character.x)*1.12,y:foot+(body.y-foot)*.32,rx:body.rx*1.12,ry:body.ry*.32,
+   maskWidth:body.maskWidth?body.maskWidth*1.12:undefined,maskHeight:body.maskHeight?body.maskHeight*.32:undefined};
 }
 
 /** Test a segment against sprite rectangles or the existing contact ellipses. */

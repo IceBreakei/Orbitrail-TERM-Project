@@ -8,6 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Schale | Optimization test</title>
   <link rel="stylesheet" href="movement.css">
+  <link rel="stylesheet" href="title-menu.css">
   <script src="dev-session.js"></script>
   <script type="module" src="movement-optimized.js"></script>
 </head>
@@ -25,6 +26,7 @@
       <a class="tool-button" href="index.html">Dev lab</a>
       <a class="tool-button" href="movement.html">Optimization test ? return to original</a>
       <button type="button" id="enter-fullscreen-preview" aria-pressed="false">Preview game area (1280x720)</button>
+      <button type="button" id="simulate-game" disabled title="Simulate the home screen shown after logging in">Simulate Game</button>
       <button type="button" id="toggle-player-stats" aria-expanded="false" aria-controls="player-stats-panel">EXP / HP /
         Invincibility</button>
       <button type="button" id="admin-tools" aria-expanded="false" aria-controls="admin-panel">Admin tools</button>
@@ -126,6 +128,7 @@
     </details>
     <section id="admin-panel" class="admin-panel" hidden>
       <strong>Admin test session</strong>
+      <label><input id="admin-instant-start" type="checkbox"> Instant start game (skip menus)</label>
       <fieldset>
         <legend>Map soundtrack</legend>
         <button id="music-toggle" type="button" aria-pressed="true">Pause music</button>
@@ -148,8 +151,20 @@
     <div class="admin-test-sidebar">
     <aside class="loadout-test-sidebar" aria-label="Admin weapon and item equip controls">
       <strong>Admin / Weapons &amp; Items</strong>
+      <button type="button" id="admin-clear-loadout">Remove all weapons &amp; items</button>
       <details open><summary>Weapons</summary><div class="admin-equip-group">
         <button id="admin-equip-aris" type="button">Equip Supernova</button>
+        <button type="button" id="admin-equip-bayonet">Equip Wakamo's Bayonet</button>
+        <button type="button" id="admin-equip-balloons">Equip Cheering Balloons</button>
+        <button type="button" id="admin-equip-maid">Equip Maid Force</button>
+        <button type="button" id="admin-equip-surf">Equip Time to Surf</button>
+        <button type="button" id="admin-equip-serve">Equip Serve!</button>
+        <button type="button" id="admin-equip-compass">Equip Orbital Compass</button>
+        <button type="button" id="admin-equip-medal">Equip Moustache Medal</button>
+        <button type="button" id="admin-equip-handbook">Equip Student Handbook</button>
+        <button type="button" id="admin-equip-cards">Equip Throwing Cards</button>
+        <button type="button" id="admin-equip-bean">Equip Bean Bag Bomb</button>
+        <button type="button" id="admin-equip-water">Equip Water Dousing</button>
         <button type="button" id="admin-equip-saint">Equip Saint Predator</button>
         <button type="button" id="admin-equip-molotov">Equip Molotov Cocktail</button>
         <button type="button" id="admin-equip-cooking">Equip Bad Cooking</button>
@@ -161,6 +176,7 @@
     </aside>
     <aside class="skill-test-sidebar" aria-label="Admin skill testing">
       <strong>Admin / Skills</strong>
+      <details open><summary>Character skills</summary><div id="admin-character-skills" class="admin-equip-group"></div></details>
       <label><input id="disable-autoattack" type="checkbox"> Disable autoattacks</label>
       <button id="admin-reset-cooldowns" type="button">Reset cooldowns</button>
       <div id="admin-ultimate-tests"></div>
@@ -180,6 +196,16 @@
     </div>
     <div class="simulated-screen">
       <button id="exit-fullscreen-preview" class="fullscreen-exit" type="button" hidden>Exit game preview</button>
+<section id="title-menu" class="title-menu" aria-label="Main menu"><img class="title-brand" src="../sprites/Operation%20Orbitrail.png" alt="Operation Orbitrail"><span class="title-build">DEVELOPMENT</span><section class="title-shop" aria-label="Shop" hidden>
+ <img class="shop-sora" src="../sprites/Sora_Portrait.png" alt="Sora">
+ <header class="shop-header"><h1 data-shop-text>SHOP</h1><div class="shop-credit-counter" aria-label="Credits"><img src="../sprites/icons/credits.png" alt=""><span data-shop-credits></span></div></header>
+ <section class="shop-upgrades" aria-label="Buy Upgrades" hidden><div class="upgrade-tabs" role="tablist" aria-label="Upgrade categories"></div><div class="upgrade-grid" aria-label="Upgrades"></div><section class="upgrade-detail" aria-label="Selected upgrade"><div class="upgrade-detail-name"></div><div class="upgrade-detail-body"><span class="upgrade-placeholder" aria-hidden="true">?</span><div><div class="upgrade-detail-description"></div><div class="upgrade-detail-cost"></div><div class="upgrade-actions" hidden><button type="button" data-upgrade-buy disabled title="Purchasing is not connected yet">Buy</button><button type="button" data-upgrade-refund disabled title="Refunds are not connected yet">Refund</button></div></div></div></section></section><section class="shop-armory" aria-label="Armory" hidden><div class="armory-scroll" aria-label="Weapons and items"></div><div class="armory-found"></div><section class="armory-detail" aria-label="Selected equipment"><header><div class="armory-detail-name"></div><div class="armory-detail-type"></div></header><div class="armory-detail-body"><div class="armory-detail-icon"></div><div class="armory-description"></div></div></section></section><nav class="shop-options" aria-label="Shop options">
+ <button type="button" aria-disabled="true" aria-label="Character Gacha, not yet available"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="m13 6 45 26-45 26Z"/></svg><span data-shop-text>Character Gacha</span></button>
+ <button type="button" data-shop-upgrades aria-label="Buy Upgrades"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="25" cy="29" r="19"/><path d="m35 48 12-13 12 13M47 35v24" fill="none" stroke="white" stroke-width="6"/></svg><span data-shop-text>Buy Upgrades</span></button>
+ <button type="button" data-shop-armory aria-label="Armory"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="m9 4 9 4 34 39-6 7L9 18Zm46 0-9 4L12 47l6 7 37-36Z"/></svg><span data-shop-text>Armory</span></button>
+ <button type="button" data-shop-back aria-label="Quit shop"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M12 5h36v54H12z"/><path d="M23 15h17v29H23z" fill="#126a9e"/></svg><span data-shop-text>Quit</span></button>
+ </nav><footer class="shop-footer" data-shop-text>RIGHT CLICK / SHIFT: Back</footer>
+</section><section class="kit-selection-menu" aria-label="Choose your kit" hidden><h1></h1><img class="kit-portrait kit-portrait-left" alt=""><img class="kit-portrait kit-portrait-right" alt=""><div class="kit-choices" aria-label="Available kits"></div><nav class="kit-mode-options" aria-label="Choose mode" hidden><button type="button" disabled><h2 data-kit-flow-text>STAGE MODE</h2><p data-kit-flow-text data-flow-description>Not available yet.</p></button><button type="button" data-select-endless><h2 data-kit-flow-text>ENDLESS MODE</h2><p data-kit-flow-text data-flow-description>Survive for as long as you can!</p></button><button type="button" disabled><h2 data-kit-flow-text>TIME MODE</h2><p data-kit-flow-text data-flow-description>Not available yet.</p></button></nav><section class="kit-stage-options" aria-label="Choose stage" hidden><h2 data-kit-flow-text>STAGE 0 - Mixed</h2><button type="button" data-select-mixed aria-label="Start Endless on Stage 0 - Mixed"><div class="mixed-stage-preview"><img src="../sprites/playarea%201/Playarea.png" alt=""><img src="../sprites/playarea%202/palace-hall-single-angel.png" alt=""><img src="../sprites/playarea%203/playarea%203-1.png" alt=""><img src="../sprites/play%20area%204.png" alt=""></div><span data-kit-flow-text>Start</span></button></section><section class="kit-preparation-options" aria-label="Preparation" hidden><div class="preparation-slots"><div class="preparation-row"><span data-kit-flow-text>Support Item</span><button type="button" class="preparation-cycle" data-support-cycle="-1" aria-label="Previous Support Item">&#9664;</button><button type="button" data-preparation-slot="support"><span class="preparation-slot-icon"></span><span data-preparation-value="support"></span></button><button type="button" class="preparation-cycle" data-support-cycle="1" aria-label="Next Support Item">&#9654;</button></div><div class="preparation-row"><span data-kit-flow-text>Student Halo</span><button type="button" data-preparation-slot="halo"><span class="preparation-slot-icon"></span><span data-preparation-value="halo"></span></button></div></div><section class="preparation-detail"><h2 class="preparation-detail-name"></h2><div class="preparation-detail-description"></div></section><button type="button" class="preparation-go" data-preparation-go aria-label="GO! Start game"><svg viewBox="0 0 100 100" aria-hidden="true"><path d="M5 3 97 50 5 97Z"/></svg><span data-kit-flow-text>GO!</span></button></section><section class="kit-details"><div class="kit-overview"><h2 class="kit-name"></h2><div class="kit-character-summary"><canvas class="kit-sprite" width="200" height="190" aria-label="Selected character standing and running to the right"></canvas><div class="kit-stat-values"></div></div></div><div><h2 class="kit-weapon-name"></h2><div class="kit-weapon-description"></div></div><div><h2 class="kit-skill-name"></h2><div class="kit-skill-description"></div></div></section><footer></footer></section><section class="credits-menu" aria-label="Credits" hidden><h1 data-credits-text>CREDITS</h1><div class="credits-content" tabindex="0"><section><h2 data-credits-text>Sprites &amp; Characters</h2><p data-credits-text>NEXON</p><p data-credits-text>Blue Archive</p></section><section><h2 data-credits-text>Music</h2><p data-credits-text>Mitsukiyo</p><p data-credits-text>Karut</p><p data-credits-text>nor</p></section></div><button type="button" data-credits-quit data-credits-text>Quit</button><footer data-credits-text>RIGHT CLICK / SHIFT: Back</footer></section><section class="dorm-menu" aria-label="Dorm" hidden><canvas class="dorm-room" width="1280" height="720" aria-label="Plana and Arona roaming in the dorm"></canvas><header><h1></h1><button type="button" data-dorm-quit>Quit</button></header><p data-dorm-status role="status"></p><footer></footer></section><section class="leaderboard-menu" aria-label="Leaderboard" hidden><h1 class="leaderboard-heading"></h1><img class="leaderboard-portrait" alt=""><div class="leaderboard-grid" aria-live="polite"></div><nav class="leaderboard-controls" aria-label="Leaderboard filters"><button type="button" data-leaderboard-refresh></button><button type="button" data-leaderboard-stage></button><button type="button" data-leaderboard-character></button><button type="button" data-leaderboard-period aria-disabled="true" title="All Time is the current filter"></button><button type="button" data-leaderboard-mine></button><button type="button" data-leaderboard-quit></button><p class="leaderboard-note"></p></nav><nav class="leaderboard-pages" aria-label="Score pages"></nav><button class="leaderboard-settings-trigger" type="button" data-leaderboard-settings aria-label="Leaderboard settings"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="m19 3 10 0 2 7 6 3 7-1 4 9-6 5v7l5 5-5 8-7-2-6 3-2 7H17l-2-7-6-3-7 1-4-9 6-5v-7l-5-5 5-8 7 2 6-3Z" transform="translate(4 0) scale(.85)"/><circle cx="24" cy="24" r="7" fill="#103552"/></svg></button><section class="leaderboard-settings-shade" hidden><section class="leaderboard-settings-panel" role="dialog" aria-modal="true" aria-label="Leaderboard settings"><h2 data-leaderboard-settings-text>SETTINGS</h2><button type="button" data-leaderboard-settings-text aria-disabled="true">Leaderboard: Current</button><button type="button" data-change-score-name data-leaderboard-settings-text>Change Username</button><form class="leaderboard-name-form" hidden><label for="leaderboard-display-name">Display name</label><input id="leaderboard-display-name" maxlength="24" autocomplete="off"><button type="submit" data-leaderboard-settings-text>Save</button></form><button type="button" data-show-score-names aria-pressed="true"></button><button type="button" data-use-score-username aria-pressed="true"></button><button type="button" data-delete-session-scores></button><button type="button" data-close-leaderboard-settings data-leaderboard-settings-text>Quit</button></section></section><footer class="leaderboard-footer"></footer></section><section class="achievements-hub" aria-label="Achievements" hidden><h1 data-achievement-text>ACHIEVEMENTS</h1><nav aria-label="Achievement menus"><button type="button" data-achievement-action="achievements" aria-disabled="true" title="Achievement list coming later"><span data-achievement-text>Achievements</span></button><button type="button" data-achievement-action="fandoms" aria-disabled="true" title="Fandoms menu coming later"><span data-achievement-text>Fandoms</span></button><button type="button" data-achievement-action="fan-letters" aria-disabled="true" title="Fan Letters menu coming later"><span data-achievement-text>Fan Letters</span></button><button type="button" data-achievement-action="quit"><span data-achievement-text>Quit</span></button></nav><footer data-achievement-text>RIGHT CLICK / SHIFT: Back</footer></section><section class="title-settings" aria-label="Music settings" hidden><label for="title-volume" data-title-text>Music volume</label><input id="title-volume" class="game-volume-slider" type="range" min="0" max="100" value="0"><output for="title-volume"></output></section><nav class="title-navigation" aria-label="Main menu actions"><button type="button" data-title-action="leaderboard" aria-label="Leaderboard"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M5 36h16v24H5zm19-19h16v43H24zm19 10h16v33H43Z"/><path d="m32 2 3 7 8 1-6 5 1 8-6-4-6 4 1-8-6-5 8-1Z" fill="#ffd66d"/></svg><span data-title-text>Leaderboard</span></button><button type="button" data-title-action="achievements" aria-label="Achievements"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M18 6h28v19q0 16-14 16T18 25ZM32 41v12M21 58h22M18 12H7v10q0 12 15 12M46 12h11v10q0 12-15 12"/></svg><span data-title-text>Achievements</span></button><button type="button" data-title-action="shop" aria-label="Shop"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M9 25h46v32H9z"/><path d="M5 25 12 7h40l7 18v7q-7 7-14 0-7 7-13 0-7 7-13 0-7 7-14 0Z" fill="#46d8ff"/><path d="M26 39h13v18H26z" fill="#13548e"/></svg><span data-title-text>Shop</span></button><button type="button" class="title-play" data-title-action="play" aria-label="Play"><svg viewBox="0 0 80 80" aria-hidden="true"><path d="M12 5 Q8 4 8 10 V70 Q8 76 14 73 L73 43 Q79 40 73 36 Z"/></svg><span data-title-text>Play</span></button><button type="button" data-title-action="dorm" aria-label="Dorm"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="m4 28 28-23 28 23H50v31H14V28Z"/><path d="M26 38h12v21H26zm-6-10h8v7h-8zm17 0h8v7h-8z" fill="#246795"/></svg><span data-title-text>Dorm</span></button><button type="button" data-title-action="settings" aria-label="Settings"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M25 4h14l2 10 9 5 9-3 7 12-8 7v10l8 7-7 12-9-3-9 5-2 10H25l-2-10-9-5-9 3-7-12 8-7V35l-8-7 7-12 9 3 9-5Z" transform="translate(5 0) scale(.8)"/><circle cx="31" cy="32" r="9" fill="#145c91"/></svg><span data-title-text>Settings</span></button><button type="button" data-title-action="credits" aria-label="Credits"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M9 10h46v8H9zm0 18h46v8H9zm0 18h46v8H9Z"/></svg><span data-title-text>Credits</span></button></nav><p class="title-hint">LEFT / RIGHT: SELECT &middot; ENTER / SPACE: CONFIRM</p></section>
       <canvas id="arena" width="1280" height="720" tabindex="0"
         aria-label="Character movement area. Use arrow keys or WASD to move the selected character."></canvas>
       <div id="skill-feedback" class="skill-feedback" role="status" hidden></div>
@@ -205,8 +231,8 @@
           <span id="hud-exp-edge" class="hud-exp-edge" aria-hidden="true" hidden></span>
         </div>
         <div class="hud-player-row">
-          <div class="hud-portrait-box"><canvas id="hud-portrait" width="80" height="80" role="img"
-              aria-label="Character portrait"></canvas></div>
+          <div class="hud-portrait-column"><div class="hud-portrait-box"><canvas id="hud-portrait" width="80" height="80" role="img"
+              aria-label="Character portrait"></canvas></div><div id="hud-support" class="hud-slot hud-support" role="img" aria-label="Support Item" hidden><div class="hud-slot-cooldown" aria-hidden="true" hidden></div><span class="hud-support-icon" aria-hidden="true"></span></div></div>
           <div class="hud-player-info">
             <div class="hud-health-row">
               <div id="hud-hp" class="hud-hp" role="progressbar" aria-label="Player HP" aria-valuemin="0"
@@ -236,6 +262,7 @@
           </div>
         </div>
       </div>
+      <div id="hud-buffs" class="hud-buffs" role="group" aria-label="Active buffs" hidden></div>
       <!-- Mandatory upgrade selection freezes gameplay until every earned level is resolved. -->
       <section id="level-up-menu" class="level-up-overlay" role="dialog" aria-modal="false" aria-labelledby="level-up-title" hidden>
         <aside class="level-up-character">
@@ -331,9 +358,9 @@
             <output id="pause-volume-value" for="pause-music-volume">0%</output>
           </div>
           <button id="pause-exit-preview" type="button" hidden>Exit game preview</button>
-          <a class="pause-dev-link" href="index.html">EXIT</a>
+          <button class="pause-dev-link" id="pause-exit" type="button">EXIT</button>
         </div>
-        <p class="pause-help">RESUME: ESC / ENTER</p>
+        <section id="pause-quit-confirmation" class="pause-quit-confirmation" role="alertdialog" aria-modal="true" aria-label="Quit to home?" hidden><div class="pause-quit-card"><h2><canvas id="pause-quit-title" aria-label="Quit?"></canvas></h2><button type="button" id="pause-quit-yes" aria-label="Yes, return home">Yes</button><button type="button" id="pause-quit-no" aria-label="No, stay paused">No</button></div></section><p class="pause-help">RESUME: ESC / ENTER</p>
       </section>
     </div>
     <aside class="playtest-sidebar" aria-label="Playtesting controls">

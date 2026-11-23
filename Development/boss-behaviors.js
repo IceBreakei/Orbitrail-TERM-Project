@@ -79,9 +79,9 @@ export function createSteadyMovementTracker() {
 export function createBossBehaviors({random=Math.random}={}) {
   const bullets=[],zones=[],warnings=new Map(),landingShadows=new Map(),movement=createSteadyMovementTracker();
   let shakeRemaining=0,shakeElapsed=0;
-  function hit(player,amount,attacker) {
+  function hit(player,amount,attacker,projectile=false) {
     if(player.contactIFrames>0)return false;
-    if(damagePlayer(player,attacker?.weakRemaining>0?Math.floor(amount*weakenedAttackMultiplier(attacker)):amount)){player.contactIFrames=contactSettings.iFrameDuration;if(attacker)attacker.secondsSincePlayerHit=0;return true;}
+    if(damagePlayer(player,attacker?.weakRemaining>0?Math.floor(amount*weakenedAttackMultiplier(attacker)):amount,{projectile})){player.contactIFrames=contactSettings.iFrameDuration;if(attacker)attacker.secondsSincePlayerHit=0;return true;}
     return false;
   }
   function fire(npc,angle,speed,radius=5,options={}) {
@@ -296,7 +296,7 @@ export function createBossBehaviors({random=Math.random}={}) {
       const t=Math.max(0,Math.min(1,((body.x-b.previousX)*dx+(body.y-b.previousY)*dy)/(dx*dx+dy*dy||1)));
       const touching=Math.hypot(body.x-b.previousX-dx*t,body.y-b.previousY-dy*t)<body.rx+b.radius;
       if(touching&&delta>0&&(!(b.cannon||b.piercing)||!b.hitPlayer)){
-        const landed=hit(player,b.damage,alive.find(owner=>owner.id===b.owner));if((b.cannon||b.piercing)&&landed)b.hitPlayer=true;
+        const landed=hit(player,b.damage,alive.find(owner=>owner.id===b.owner),true);if((b.cannon||b.piercing)&&landed)b.hitPlayer=true;
       }
       if(touching&&delta>0&&!b.cannon&&!b.piercing||b.age>settings.projectileLifetime||!live.has(b.owner))bullets.splice(i,1);
     }
@@ -307,7 +307,7 @@ export function createBossBehaviors({random=Math.random}={}) {
       if(z.artillery) {
         z.age+=delta;
         const impact=settings.iroha.artilleryDelay+(z.impactOffset||0)+settings.iroha.artilleryFallSeconds;
-        if(!z.detonated&&z.age>=impact){z.detonated=true;if(Math.hypot(body.x-z.x,body.y-z.y)<z.radius+body.rx)hit(player,z.damage,alive.find(owner=>owner.id===z.owner));}
+        if(!z.detonated&&z.age>=impact){z.detonated=true;if(Math.hypot(body.x-z.x,body.y-z.y)<z.radius+body.rx)hit(player,z.damage,alive.find(owner=>owner.id===z.owner),true);}
         if(z.age>=impact+artilleryExplosionDuration)zones.splice(i,1);
         continue;
       }

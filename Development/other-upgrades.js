@@ -1,6 +1,5 @@
-/** Reserved shop/mode metadata only; no gameplay or purchase UI imports.
- * Await directives before enabling limits, bans, Hardcore, extra spawns or refunds.
- * Weapon Limit's 5-to-0 range refers to additional weapons; the starter is separate.
+/** Shop upgrade definitions, displayed in the upgrades browsing menu.
+ * Gameplay effects and purchasing remain disabled pending their implementation.
  */
 export const otherUpgradeSettings = { enabled:false };
 export const otherUpgradeCatalog = [

@@ -4,6 +4,7 @@ for(const name of ['game-config','item-catalog','combat-stats','combat-hitboxes'
 vm.runInContext('const skill=luminousNovaSkillSettings,settings=princessKeySkillSettings;var player={label:"Plana",x:0,y:0,level:1,attackSlots:[{id:"princess-key",level:1}],combatStats:{}};var ex=createPrincessKeySkill({random:()=>.5});ex.cast(player,0,1.5)',c);
 const run=s=>vm.runInContext(s,c);
 assert.equal(run('player.combatBuffs["princess-key-ex"].damageBonusMultiplier'),1.51);assert.equal(run('player.combatBuffs["princess-key-ex"].critPercent'),22.3);
+listener({source:run('player'),damage:99999,triggersSkills:false});assert.equal(run('ex.damageDealt'),0);
 listener({source:run('player'),damage:1000});
 enemies.set('front',{id:'front',type:'mob',x:200,y:0,spriteSize:10});enemies.set('side',{id:'side',type:'mob',x:200,y:150,spriteSize:10});
 run('ex.update(4.2,player,0)');assert.equal(hits.filter(h=>h.id==='front').length,5);assert.equal(hits.filter(h=>h.id==='side').length,0);assert.equal(run('ex.residueCount'),1);

@@ -28,14 +28,14 @@ run('var owner={x:0,y:0,combatStats:{atkPercent:0,critPercent:0}};var skill=crea
 assert.equal(hits.length,0);run('skill.update(.4)');
 assert(hits.some(h=>h.id==='mob'&&h.damage===18));assert(hits.some(h=>h.id==='boss'&&h.damage===18));
 assert(!hits.some(h=>h.id==='outside'||h.id==='behind'));
-assert.equal(enemies.get('mob').stunRemaining,3);assert.equal(enemies.get('boss').stunRemaining,3);
+assert.equal(enemies.get('mob').stunRemaining,5);assert.equal(enemies.get('boss').stunRemaining,5);
 run('skill.update(.1)');assert.equal(hits.filter(h=>h.id==='mob').length,1);
 context.enemy=enemies.get('mob');context.move=(e,dx,dy)=>{e.x+=dx;e.y+=dy};
 assert(run('updateEnemyControl(enemy,.11,move)'));assert(enemies.get('mob').y>0);
 run('updateEnemyControl(enemy,.11,move)');assert(Math.abs(enemies.get('mob').y-72)<1e-8);
-assert(run('updateEnemyControl(enemy,2.78,move)'));assert(!run('updateEnemyControl(enemy,.01,move)'));
+assert(run('updateEnemyControl(enemy,4.78,move)'));assert(!run('updateEnemyControl(enemy,.01,move)'));
 for(const [x,y,w,h] of run('umbrellaOpeningFrames'))assert(x>=0&&y>=0&&x+w<=2172&&y+h<=724);
-console.log('PASS:composite pattern,stroke order/split circle,missing/reversed parts,opening delay,swept1.5x damage,onehit perenemy,boss stun,sideways knockback,3second recovery,crop bounds.');
+console.log('PASS:composite pattern,stroke order/split circle,missing/reversed parts,opening delay,swept1.5x damage,onehit perenemy,boss stun,sideways knockback,5second recovery,crop bounds.');
 
 (async()=>{
   run("drawingModelImage=()=> 'data:image/png;base64,test';var calls=[];var fake={recognize:async image=>{calls.push(image);return [{label:'line',score:.2}]}}");

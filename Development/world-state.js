@@ -125,7 +125,6 @@ export function damageEnemy(id, amount, source, hitType = 'normal', options = {}
   const requiredHits = harmless ? (enemy.hitsToDefeat ?? harmlessEnemySettings[`${enemy.type}HitsToDefeat`]) : null;
   const actualDamage=Math.min(enemy.hp,amount);
   enemy.hp = Math.max(0, enemy.hp - amount);
-  for(const listener of damageListeners)listener({enemy,source,damage:actualDamage,requestedDamage:amount,hitType});
   // Count accepted hits, not damage points; misses and rejected hits never reach this branch.
   if (Number.isFinite(requiredHits) && requiredHits >= 1 && enemy.receivedHits >= requiredHits) enemy.hp = 0;
   showDamageNumber(enemy, amount, false, hitType, options.damageGroup); // Include overkill and crit styling.
@@ -137,8 +136,11 @@ export function damageEnemy(id, amount, source, hitType = 'normal', options = {}
     dropEnemyLoot(enemy);
     beginEnemyDeath(enemy, source);
     enemies.delete(id);
-    for (const listener of defeatListeners) listener({ enemy, bossesAliveBefore });
+    for (const listener of defeatListeners) listener({ enemy, bossesAliveBefore, source, weaponId:options.weaponId, hitType });
   }
+  // Notify after resolving this hit's defeat, so secondary effects cannot double-count its kill.
+  for(const listener of damageListeners)listener({enemy,source,damage:actualDamage,requestedDamage:amount,hitType,weaponId:options.weaponId,
+    isCritical:options.isCritical??['critical','orangecritical','supercritical'].includes(hitType),triggersSkills:options.triggersSkills!==false});
   return enemy;
 }
 

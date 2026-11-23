@@ -540,3 +540,25 @@ Terminology: "Mod" was the temporary name for Tuning Parts. All earlier Mod dama
 - While equipped, add a 1.3 multiplier to the additive Damage Bonus family (a +0.3 contribution). The consumed hat contributes no crit penalty.
 - Ultimate cooldown = 300 seconds, independent from the retained EX cooldown (180 seconds).
 - Ultimate executes each visible non-boss for its remaining HP at elapsed >= 1.5 seconds; no drawing-accuracy damage scaling is needed for an execution. Boss damage = 0. Visual lifetime = 1.95 seconds.
+
+Phrenapates: bonusCRT = min(10, defeatStacks) * [2,3,4][skillLevel-1]. Each credited Plana kill increments stacks and resets remaining duration to 4 seconds; once duration expires, stacks and the additive combat buff are removed. Card-related or umbrella killing blows independently roll random() < 0.10 to heal min(3, MaxHP - HP). Eligibility is explicit weapon metadata (usesCards / card tag) or plana-umbrella ID; no healing from other weapons.
+
+Celestia: each real critical refreshes an already-active four-second buff. A separate random() < 0.25 proc adds one stack up to five; bonusATK = min(5, stacks) * [4,6,8][level-1], additive to character ATK. On proc, splashDamage = triggering requested critical-hit damage, applied once to each living target within the 75px impact area without rerolling damage or crit. Splash is visually critical but semantically noncritical and unable to trigger skills/EX banking. Display is yellow normally, orange when characterCriticalMultiplier(player) >= 2; source weapon-only crit modifiers are excluded from that display decision.
+
+Orbital Compass: projectile base 120%, explosion 180% (1.5x projectile damage), attack interval 4s, projectile per-target cooldown 0.5s, single explosion hit (1s specification), speed 8*60 = 480px/s, duration 3s, return begins at 1.5s. Count by level: 1/1/2/2/3/3/4. Hit limit 3 then 13 at LV3. LV2 damage x1.2; LV6 x1.33; LV4 size x1.25. Explosion radius is 1.5x projectile circle radius; Racer Pass scales both.
+
+Orbital Compass movement correction: outbound speed = 480*cos((age/1.1)*pi/2) until 1.1s. Return speed = 720*min(1,(age-1.1)/0.5). Return direction tracks player until crossing, then locks for fly-through. Existing 3-second duration retained.
+
+Orbital Compass return direction correction: snapshot direction toward player at turnaround once; no continuous homing during return.
+
+Orbital Compass return heading = launch heading + PI. No player-position targeting at turnaround or during return.
+
+Serve!: damage 0.9 projectile / 1.8 explosion, hit cooldown20/60s per ball, interval3.5s (LV5 x0.85), lifetime3s, speed300px/s (LV4 x1.3). Count1, LV3=2, MAX=4. Hit budget10, LV5 unlimited. Projectile radius15px x Racer x LV6(1.3). X blast consists of two diagonal bands, base length140px/width24px x area(0.8 at LV1, 1.0 LV2 onward) x Racer x LV6(1.3). Each target takes at most one hit per X blast; visual lasts0.35s. LV4 damage x1.3. Enhancement split uses ball count.
+
+Time to Surf: wave count2, base130% damage, interval200/60s (LV5 x0.8), per-wave hit cooldown20/60s, unlimited hits, lifetime150/60s, speed1*60=60px/s. LV2 damage x1.25, MAX x1.5. LV3 provisional speed x1.3 and sway width x1.3. Wave size LV4 x1.25 and LV6 x1.25, multiplied by Racer Pass. Base wave width100/depth28px, sideways sway amplitude28px with1.3s period, opposite phase for upward/downward travel. Enhancement split count2.
+
+Maid Force: DWB=1.44*(MAX?1.1^spreadCount:1)*(LV3?1.30:1), plus existing flat enhancements split by initial attack count. Attack interval110/60s, LV6 x0.85. Count1, LV5=2, MAX=3. Chain chance70%, LV2=80%, LV5=90%; nearest eligible other target within100px, LV4=125px. Each scent hits once, lasts1.5s, travels7*60=420px/s; chain shares per-target0.5s cooldown and starts a fresh1.5s projectile lifetime. Area1.5*Racer; radius6px before area. Each hit rolls crit/variance independently through shared combat calculation.
+
+Cheering Balloons: base1.4 damage; LV2 x1.2, MAX x1.3. Interval2s, LV6 x0.85. Count1, LV3=2, LV5=3, MAX=4; enhancements split by attack count. Per-target cooldown0.5s; one hit per bounce flight, no total bounce-hit cap; lifetime3s. Initial fall240px at480px/s; subsequent arc duration=max(0.35,distance/480), bounce targeting radius300px. Character grade=clamp(round(sizeStat*5),1,5), defaultsizeStat0.2; area0.6+(grade-1)*0.1, multiplied by Racer Pass. Base radius24px. Provisional LV4 knockback5/60s at(grade+1)*60px/s, Racer multiplier applied. Unlock at600 active run seconds while flat character has Moustache Medal equipped.
+
+Wakamo Bayonet: base1.6 damage, LV2 x1.2, LV5 x1.3. Interval1.5s x0.8 atLV4 x0.8 atLV6, then standard Haste/frame rounding. Reach60px times area (LV5 x1.3 and Racer). Trigger checks nearest enemy hurtbox edge. Swing arc120degrees over0.18s, unlimited targets,0.5s per-target cooldown. MAX combo adds second reverse stroke0.7s after initial strike; both require nearby target and share cooldown. Enhancement split count1 normal/2MAX. Small knockback provisional5/60s at120px/s. No-target ready state does not consume attack cooldown or animate.

@@ -1,0 +1,18 @@
+<!doctype html><style>body{margin:0;background:#203553}canvas{display:block}</style><canvas width="980" height="180"></canvas><script>const serveSettings={blastDuration:.35,blastLength:140,blastWidth:24};function drawServeExplosion(context,camera,sheet,effect){
+ if(!sheet?.complete||!sheet.naturalWidth||effect.age<0||effect.age>=serveSettings.blastDuration)return;
+ const frame=Math.min(6,Math.floor(effect.age/serveSettings.blastDuration*7)),sx=frame*48;
+ const halfLength=serveSettings.blastLength*effect.scale/2,thickness=serveSettings.blastWidth*effect.scale;
+ const tileScale=thickness/44,capWidth=48*tileScale,centerSize=48*tileScale;
+ context.save();context.translate(effect.x-camera.x,effect.y-camera.y);context.imageSmoothingEnabled=false;
+ // Four arms use the same frame and meet beneath one center tile.
+ for(let i=0;i<4;i++){
+  context.save();context.rotate(Math.PI/4+i*Math.PI/2);
+  context.drawImage(sheet,sx,48,48,44,0,-thickness/2,Math.max(0,halfLength-capWidth/2),thickness);
+  context.drawImage(sheet,sx,92,48,42,halfLength-capWidth,-42*tileScale/2,capWidth,42*tileScale);
+  context.restore();
+ }
+ context.rotate(Math.PI/4);
+ context.drawImage(sheet,sx,0,48,48,-centerSize/2,-centerSize/2,centerSize,centerSize);
+ context.restore();
+}
+const sheet=new Image();sheet.onload=()=>{const ctx=document.querySelector('canvas').getContext('2d');for(let i=0;i<7;i++){drawServeExplosion(ctx,{x:0,y:0},sheet,{x:70+i*140,y:90,scale:1,age:(i+.1)*.35/7});}};sheet.src='../sprites/attacks/ExplosionSheet.png';</script>

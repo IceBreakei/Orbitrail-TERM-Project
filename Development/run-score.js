@@ -16,10 +16,11 @@ export function createRunScore() {
       if (endless) endlessDefeatRecorded = true;
       const result = Object.freeze({ ...scoreFormula({ ...counts, playerLevel: character.level || 1,
         elapsedSeconds, hardcore }), ...counts, character: character.label, stage,
-        mode: endless ? 'endless' : 'stage', elapsedSeconds });
+        playerLevel: character.level || 1, mode: endless ? 'endless' : 'stage', elapsedSeconds });
       results.push(result);
       return result;
     },
+    clearResults(){results.length=0;},
     get results() { return [...results]; },
     get counts() { return {...counts}; }
   };

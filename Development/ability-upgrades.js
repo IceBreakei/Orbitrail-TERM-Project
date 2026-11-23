@@ -1,6 +1,5 @@
-/** Reserved ability/shop definitions only. Not imported into gameplay or purchase UI.
- * Await user directives before implementing purchases, persistence, unlock gates or controls.
- * Existing Development features (including Tuning) remain available as before.
+/** Shop upgrade definitions, displayed in the upgrades browsing menu.
+ * Supports purchasing/unlock is connected; other purchases and effects remain pending.
  */
 export const abilityUpgradeSettings = { enabled:false };
 export const abilityUpgradeCatalog = [

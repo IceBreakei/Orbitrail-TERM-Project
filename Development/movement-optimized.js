@@ -1,3 +1,30 @@
+import { createWakamoBayonetAttack } from './wakamo-bayonet.js';
+import { createWakamoBayonetWeapon } from './game-config.js';
+import { createCheeringBalloonsAttack } from './cheering-balloons.js';
+import { createCheeringBalloonsWeapon } from './game-config.js';
+import { createMaidForceAttack } from './maid-force.js';
+import { createMaidForceWeapon } from './game-config.js';
+import { createTimeToSurfAttack } from './time-to-surf.js';
+import { createTimeToSurfWeapon } from './game-config.js';
+import { createServeAttack } from './serve.js';
+import { createServeWeapon } from './game-config.js';
+import { createOrbitalCompassAttack } from './orbital-compass.js';
+import { createOrbitalCompassWeapon } from './game-config.js';
+import { createMoustacheMedalAttack } from './moustache-medal.js';
+import { createMoustacheMedalWeapon } from './game-config.js';
+import { createStudentHandbookAttack } from './student-handbook.js';
+import { createStudentHandbookWeapon } from './game-config.js';
+import { createThrowingCardsAttack } from './throwing-cards.js';
+import { createThrowingCardsWeapon } from './game-config.js';
+import { createSwipeSkillEffect } from './swipe-skill.js';
+import { createCharacterSkillEffects, updateCharacterSkills, createCharacterSkillAdmin } from './character-skills.js';
+import { createBeanBagBombAttack } from './bean-bag-bomb.js';
+import { createBeanBagBombWeapon } from './game-config.js';
+import { createWaterDousingAttack } from './water-dousing.js';
+import { createWaterDousingWeapon } from './game-config.js';
+import { updateSportsDrink } from './item-catalog.js';
+import { createSupportControls } from './support-items.js';
+import { createTitleMenu } from './title-menu.js';
 import { updateOverclocking } from './overheated-overclocking.js';
 import { unlockStageClearRewards } from './item-catalog.js';
 import { updateChiseDamage } from './chise-plushie.js';
@@ -10,7 +37,7 @@ import { createMolotovAttack } from './molotov-cocktail.js';
 import { createMolotovWeapon } from './game-config.js';
 import { createBadCookingAttack } from './bad-cooking.js';
 import { createBadCookingWeapon } from './game-config.js';
-import { createItemEquipAdmin, equipAdminWeapon } from './loadout-admin.js';
+import { clearAdminLoadout, createItemEquipAdmin, equipAdminWeapon } from './loadout-admin.js';
 import { equippedSkills } from './skill-cast-state.js';
 import { superSynergyRecipes } from './super-synergy-recipes.js';
 import { createDecagrammatonAttack } from './decagrammaton.js';
@@ -107,6 +134,8 @@ document.querySelector('#admin-simulate-account')?.addEventListener('click',even
 const survivalClock = createSurvivalClock();
 const characterSurvivalUnlocks=createCharacterSurvivalUnlocks();
 const runScore = createRunScore();
+const characterSkillEffects = authorized ? createCharacterSkillEffects() : null;
+const swipeSkill = authorized ? createSwipeSkillEffect() : null;
 const campaignSchedule = createCampaignSchedule();
 // Session-only inspection; leaderboard placement and persistence remain deferred.
 window.addEventListener('run-score-calculated', ({detail}) => {
@@ -122,6 +151,17 @@ const princessAttack = authorized ? createPrincessKeyAttack() : null;
 const safetyHelmetEffects=authorized?createSafetyHelmetEffects({getViewport:()=>({x:camera.x,y:camera.y,width:canvas.width,height:canvas.height})}):null;
 const saintPredatorAttack = authorized ? createSaintPredatorAttack() : null;
 const molotovAttack = authorized ? createMolotovAttack() : null;
+const wakamoBayonetAttack = authorized ? createWakamoBayonetAttack() : null;
+const cheeringBalloonsAttack = authorized ? createCheeringBalloonsAttack() : null;
+const maidForceAttack = authorized ? createMaidForceAttack() : null;
+const timeToSurfAttack = authorized ? createTimeToSurfAttack() : null;
+const serveAttack = authorized ? createServeAttack() : null;
+const orbitalCompassAttack = authorized ? createOrbitalCompassAttack() : null;
+const moustacheMedalAttack = authorized ? createMoustacheMedalAttack() : null;
+const studentHandbookAttack = authorized ? createStudentHandbookAttack() : null;
+const throwingCardsAttack = authorized ? createThrowingCardsAttack() : null;
+const beanBagBombAttack = authorized ? createBeanBagBombAttack() : null;
+const waterDousingAttack = authorized ? createWaterDousingAttack() : null;
 const badCookingAttack = authorized ? createBadCookingAttack() : null;
 const luminousAttack = authorized ? createLuminousNovaAttack() : null;
 const luminousSkill = authorized ? createLuminousNovaSkill() : null;
@@ -170,6 +210,7 @@ let stageTransitionDelay = 0;
 let frozenCanvasFrame = null;
 let endlessStartedAt = null; // Active survival time when Stage 4 first completes.
 let pauseMenu;
+let titleMenu;
 let levelUpMenu;
 let crafters;
 let goldenCrafters;
@@ -178,8 +219,9 @@ let gachaFiles;
 let tuningParts;
 let awaitingFileStageAdvance=false;
 /** Share one gameplay pause condition across movement, clocks, transitions and casting. */
-function isGameplayPaused() { return Boolean(pauseMenu?.paused || levelUpMenu?.active || crafters?.active || goldenCrafters?.active || gachaFiles?.active || tuningParts?.active); }
+function isGameplayPaused() { return Boolean(titleMenu?.active || pauseMenu?.paused || levelUpMenu?.active || crafters?.active || goldenCrafters?.active || gachaFiles?.active || tuningParts?.active); }
 let mapAudio;
+let supportControls;
 let hud;
 let playerStatsTools;
 let skillCasting;
@@ -193,8 +235,9 @@ const characters = {
     baseATK: playerSettings.planaBaseATK,
     baseSPD: playerSettings.planaBaseSPD,
     baseCritPercent: playerSettings.planaCritPercent,
+    flat: true, // Plana uses the smallest FLAT grade.
     sizeStat: playerSettings.planaSize, // Flat future weapon stat; does not resize the sprite/hitbox.
-    characterSkills: [], // Future level-up skills are separate from weapons/equipment.
+    characterSkills: [], // Character skills progress separately from weapons/equipment.
 
     maxHp: playerSettings.planaHp, // EDIT starting player HP; session initialization fills to this value.
     pickupRange: playerSettings.planaPickup, // EDIT auto-pickup radius from the sprite center (+10% from 90px).
@@ -380,6 +423,18 @@ function switchMap(targetMap = null) {
   arisAttack?.reset();
   luminousAttack?.reset();
   badCookingAttack?.reset();
+  waterDousingAttack?.reset();
+  swipeSkill?.reset();
+  beanBagBombAttack?.reset();
+  throwingCardsAttack?.reset();
+  studentHandbookAttack?.reset();
+  moustacheMedalAttack?.reset();
+  wakamoBayonetAttack?.reset();
+  cheeringBalloonsAttack?.reset();
+  maidForceAttack?.reset();
+  timeToSurfAttack?.reset();
+  serveAttack?.reset();
+  orbitalCompassAttack?.reset();
   molotovAttack?.reset();
   saintPredatorAttack?.reset();
   safetyHelmetEffects?.reset();
@@ -438,6 +493,18 @@ function resetScene() {
   arisAttack?.reset();
   luminousAttack?.reset();
   badCookingAttack?.reset();
+  waterDousingAttack?.reset();
+  swipeSkill?.reset();
+  beanBagBombAttack?.reset();
+  throwingCardsAttack?.reset();
+  studentHandbookAttack?.reset();
+  moustacheMedalAttack?.reset();
+  wakamoBayonetAttack?.reset();
+  cheeringBalloonsAttack?.reset();
+  maidForceAttack?.reset();
+  timeToSurfAttack?.reset();
+  serveAttack?.reset();
+  orbitalCompassAttack?.reset();
   molotovAttack?.reset();
   saintPredatorAttack?.reset();
   safetyHelmetEffects?.reset();
@@ -737,6 +804,7 @@ function constrainWithoutTeleport(previous, next, minimum, maximum) {
 
 /** Move within canvas bounds, keeping diagonal and cardinal movement equally fast. */
 function updateCharacter(character, delta, direction, chaseTarget) {
+  if(character===characters[selected]&&character.supportState?.dashRemaining>0)direction=character.supportState.dashDirection;
   if (character.attack) {
     character.attack.elapsed += delta * 1000;
     const attack = character.attacks[character.attack.name];
@@ -777,7 +845,7 @@ function updateCharacter(character, delta, direction, chaseTarget) {
     : directionVectors[direction];
   const length = Math.hypot(x, y);
   const baseSpeed = movementSpeed * (character.movementSpeedMultiplier || 1) * statMultiplier(character, 'spdPercent');
-  const step = Math.max(baseSpeed, character.catchupSpeed || 0) * delta * slowdownMultiplier(character);
+  const step = (character===characters[selected]&&character.supportState?.dashRemaining>0?1000:Math.max(baseSpeed, character.catchupSpeed || 0)) * delta * slowdownMultiplier(character);
   const distance = (chaseTarget ? Math.min(step, length) : step) / (length || 1);
   const previousX = character.x;
   const previousY = character.y;
@@ -881,13 +949,17 @@ function drawPose(character, pose, opacity) {
   const scale = (displaySize - spritePadding * 2) / (character.referenceSize || 215);
   const width = crop.width * scale;
   const height = crop.height * scale;
-  const drawY = displaySize / 2 - spritePadding - (crop.footY - crop.y) * scale + enemyBounceOffset(character);
+  const drawY = displaySize / 2 - spritePadding - (crop.footY - crop.y) * scale + (character.flattenedRemaining>0?0:enemyBounceOffset(character));
   const drawX = crop.anchorX === undefined ? -width / 2 : -(crop.anchorX - crop.x) * scale;
   // Match attack hurtboxes to the rendered pose without changing contact-damage hitboxes.
   character.spriteHurtbox=animationSpriteHurtbox(character,getFrameRectangle,spritePadding);
   context.save();
   context.globalAlpha = opacity;
   context.translate(character.x - camera.x, character.y - camera.y + (character.bossVisualOffsetY||0));
+  if(character.flattenedRemaining>0){
+    const feet=displaySize/2-spritePadding;
+    context.translate(0,feet);context.scale(1.12,.32);context.translate(0,-feet);
+  }
   if(character.bossSquash) {
     const feet=drawY+(crop.footY-crop.y)*scale;
     context.translate(0,feet);
@@ -994,11 +1066,12 @@ function animate(time) {
   const delta = previousTime === undefined ? 0 : Math.min((time - previousTime) / 1000, 0.05);
   previousTime = time;
   mapAudio?.update(delta);
+  supportControls?.update(delta,isGameplayPaused());
   const activeCharacter = characters[selected];
   levelUpMenu?.update();
   survivalClock.advance(delta, isGameplayPaused(), !isPlayerDefeated(activeCharacter));
   characterSurvivalUnlocks.update(delta,activeCharacter,{paused:isGameplayPaused(),alive:!isPlayerDefeated(activeCharacter)});
-  if (endlessMode && isPlayerDefeated(activeCharacter)) {
+  if ((endlessMode || activeCharacter.selectedRunMode === 'endless') && isPlayerDefeated(activeCharacter)) {
     const result = runScore.complete({character: activeCharacter, elapsedSeconds:survivalClock.seconds,
       stage:currentMap,endless:true,hardcore:activeCharacter.hardcore === true});
     if (result) window.dispatchEvent(new CustomEvent('run-score-calculated',{detail:result}));
@@ -1043,6 +1116,9 @@ function animate(time) {
     const aimAngle = aiming.getAngle(activeCharacter, camera.x, directionVectors[attackFacing], camera.y);
     updateLifeJacket(activeCharacter,delta);
     updateOverclocking(activeCharacter,delta);
+    updateSportsDrink(activeCharacter,delta);
+    for(const character of Object.values(characters))updateCharacterSkills(character,delta);
+    swipeSkill?.update(delta,activeCharacter);
     updateChiseDamage(activeCharacter,delta);
     safetyHelmetEffects?.update(delta);
     updateTrumpetTuning(delta);
@@ -1055,6 +1131,17 @@ function animate(time) {
     arisAttack?.update(delta, activeCharacter, aimAngle);
     luminousAttack?.update(delta,activeCharacter,aimAngle);
     badCookingAttack?.update(delta,activeCharacter);
+    waterDousingAttack?.update(delta,activeCharacter,aimAngle);
+    throwingCardsAttack?.update(delta,activeCharacter,aimAngle);
+    studentHandbookAttack?.update(delta,activeCharacter,aimAngle);
+    wakamoBayonetAttack?.update(delta,activeCharacter);
+    cheeringBalloonsAttack?.update(delta,activeCharacter,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height});
+    maidForceAttack?.update(delta,activeCharacter,aimAngle);
+    timeToSurfAttack?.update(delta,activeCharacter);
+    serveAttack?.update(delta,activeCharacter,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height});
+    orbitalCompassAttack?.update(delta,activeCharacter,aimAngle);
+    moustacheMedalAttack?.update(delta,activeCharacter,directionVectors[getMovementDirection()||activeCharacter.direction||'down']);
+    beanBagBombAttack?.update(delta,activeCharacter,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height});
     molotovAttack?.update(delta,activeCharacter,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height});
     saintPredatorAttack?.update(delta,activeCharacter,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height});
     princessAttack?.setExMode(Boolean(princessSkill?.casting),Boolean(princessSkill?.sprayActive));
@@ -1123,6 +1210,17 @@ function animate(time) {
   npcTools?.drawBosses(); // Bosses render above other enemies, below the controlled player.
   arisAttack?.draw(context, camera);
   badCookingAttack?.draw(context,camera);
+  waterDousingAttack?.draw(context,camera);
+  beanBagBombAttack?.draw(context,camera);
+  throwingCardsAttack?.draw(context,camera);
+  studentHandbookAttack?.draw(context,camera);
+  moustacheMedalAttack?.draw(context,camera);
+  wakamoBayonetAttack?.draw(context,camera);
+  cheeringBalloonsAttack?.draw(context,camera);
+  maidForceAttack?.draw(context,camera);
+  timeToSurfAttack?.draw(context,camera);
+  serveAttack?.draw(context,camera);
+  orbitalCompassAttack?.draw(context,camera);
   safetyHelmetEffects?.draw(context,camera);
   molotovAttack?.drawThrows(context,camera);
   saintPredatorAttack?.draw(context,camera);
@@ -1132,6 +1230,7 @@ function animate(time) {
   decagrammatonAttack?.draw(context,camera);decagrammatonUltimate?.draw(context,camera);
   luminousSkill?.draw(context,camera);
   drawTuningExplosions(context,camera);
+  swipeSkill?.draw(context,camera);
   planaSkill?.draw(context, camera); // EX umbrella and its trail stay behind the player.
   // Canvas shadows follow the current frame's alpha silhouette, keeping the aura on the sprite.
   context.save();
@@ -1141,6 +1240,7 @@ function animate(time) {
   }
   drawCharacter(activeCharacter); // The player is the highest-priority actor.
   context.restore();
+  supportControls?.draw(context,camera);
   umbrellaAttack?.draw(context, camera);
   context.restore(); // Shake world rendering only; HUD and world positions remain stable.
   survivalDisplay?.draw(context, survivalClock.seconds, canvas.width, canvas.height);
@@ -1236,7 +1336,7 @@ if (authorized) {
   document.querySelector('#spawn-crafter').addEventListener('click',()=>{
     const player=characters[selected];crafters.spawn(player.x+80,player.y);
   });
-  Promise.all([...Object.values(characters), ...Object.values(maps).filter(map => map.source && !map.disabled), ...maps.first.tiles, ...maps.second.tiles, ...maps.third.tiles].map(loadSheet).concat(superSynergy.ready,stunnedReady,frozenReady,artilleryExplosionReady,gachaFiles.ready,goldenCrafters.ready,crafters.ready, molotovAttack.ready, aiming.ready, expPickups.ready, loadEnemyDeathGraphics(), umbrellaAttack.ready, arisAttack.ready,luminousAttack.ready,luminousSkill.ready,princessSkill.ready, planaSkill.ready, loadDamageNumberGraphics()).map(task => window.pageLoading?.track(task) || task))
+  Promise.all([...Object.values(characters), ...Object.values(maps).filter(map => map.source && !map.disabled), ...maps.first.tiles, ...maps.second.tiles, ...maps.third.tiles].map(loadSheet).concat(superSynergy.ready,stunnedReady,frozenReady,artilleryExplosionReady,swipeSkill.ready,gachaFiles.ready,goldenCrafters.ready,crafters.ready, wakamoBayonetAttack.ready, cheeringBalloonsAttack.ready, maidForceAttack.ready, timeToSurfAttack.ready, serveAttack.ready, orbitalCompassAttack.ready, moustacheMedalAttack.ready, studentHandbookAttack.ready, throwingCardsAttack.ready, beanBagBombAttack.ready, molotovAttack.ready, aiming.ready, expPickups.ready, loadEnemyDeathGraphics(), umbrellaAttack.ready, arisAttack.ready,luminousAttack.ready,luminousSkill.ready,princessSkill.ready, planaSkill.ready, loadDamageNumberGraphics()).map(task => window.pageLoading?.track(task) || task))
     .then(() => {
       observeViewport(canvas, () => {
         mapTransition?.cancel();
@@ -1244,10 +1344,11 @@ if (authorized) {
         updateCamera();
       });
       resetScene();
-      setupFullscreenPreview(canvas, releaseControls);
+      setupFullscreenPreview(canvas, releaseControls, {onSimulate:()=>{if(pauseMenu?.paused)document.querySelector('#pause-resume').click();skillCasting?.cancel('pause');titleMenu?.show();}});
       updateAttackControls();
       setupSpriteTester(characters, switchCharacter);
-      mapAudio = createMapAudio(currentMap);
+      mapAudio = createMapAudio(currentMap,{menu:true});
+      supportControls=createSupportControls({getPlayer:()=>characters[selected],isPaused:isGameplayPaused,getDirection:()=>getMovementDirection()||characters[selected].direction||'down',getAngle:()=>aiming.getAngle(characters[selected],camera.x,directionVectors[characters[selected].direction||'down'],camera.y)});
       Object.values(characters).forEach(ensurePlayerStats);
       hud = createHud(getFrameRectangle);
       skillCasting = createSkillCasting({ canvas, aiming,
@@ -1285,6 +1386,17 @@ if (authorized) {
         arisAttack.setAutoattackEnabled(enabled);
         luminousAttack.setAutoattackEnabled(enabled);
         badCookingAttack.setAutoattackEnabled(enabled);
+        waterDousingAttack.setAutoattackEnabled(enabled);
+        beanBagBombAttack.setAutoattackEnabled(enabled);
+        throwingCardsAttack.setAutoattackEnabled(enabled);
+        studentHandbookAttack.setAutoattackEnabled(enabled);
+        moustacheMedalAttack.setAutoattackEnabled(enabled);
+        wakamoBayonetAttack.setAutoattackEnabled(enabled);
+        cheeringBalloonsAttack.setAutoattackEnabled(enabled);
+        maidForceAttack.setAutoattackEnabled(enabled);
+        timeToSurfAttack.setAutoattackEnabled(enabled);
+        serveAttack.setAutoattackEnabled(enabled);
+        orbitalCompassAttack.setAutoattackEnabled(enabled);
         molotovAttack.setAutoattackEnabled(enabled);
         saintPredatorAttack.setAutoattackEnabled(enabled);
         princessAttack.setAutoattackEnabled(enabled);
@@ -1304,23 +1416,31 @@ if (authorized) {
           const weapon=recipe.createWeapon?recipe.createWeapon():{...recipe.result};
           player.attackSlots[index]={...weapon,level:1,isSynergy:true,consumedWeaponIds:[...(weapon.consumedWeaponIds||recipe.ingredients||[])]};
           if(recipe.result.isSuperSynergy)player.equipmentSlots=(player.equipmentSlots||[]).map(item=>item?.id===recipe.itemId?null:item);
-          hud.update(player);
+          hud.update(player);window.saveDevSession?.();
         });
         document.querySelector('#admin-equip-synergies').append(button);
       }
       const ultimateTest=document.createElement('button');ultimateTest.type='button';ultimateTest.textContent='Activate Protocol SUPERNOVA';
       ultimateTest.addEventListener('click',()=>{const player=characters[selected];if(decagrammatonUltimate.cast(player)){const ultimate=equippedSkills(player).find(skill=>skill.id==='decagrammaton-ultimate');if(ultimate){ultimate.skillCooldownDuration=300;ultimate.skillCooldownRemaining=300;}}});
       document.querySelector('#admin-ultimate-tests').append(ultimateTest);
-      for(const [id,createWeapon] of [['saint',createSaintPredatorWeapon],['molotov',createMolotovWeapon],['cooking',createBadCookingWeapon],['luminous',createLuminousNovaWeapon],['aris',createArisWeapon]]){
+      for(const [id,createWeapon] of [['bayonet',createWakamoBayonetWeapon],['balloons',createCheeringBalloonsWeapon],['maid',createMaidForceWeapon],['surf',createTimeToSurfWeapon],['serve',createServeWeapon],['compass',createOrbitalCompassWeapon],['medal',createMoustacheMedalWeapon],['handbook',createStudentHandbookWeapon],['cards',createThrowingCardsWeapon],['bean',createBeanBagBombWeapon],['water',createWaterDousingWeapon],['saint',createSaintPredatorWeapon],['molotov',createMolotovWeapon],['cooking',createBadCookingWeapon],['luminous',createLuminousNovaWeapon],['aris',createArisWeapon]]){
         const button=document.querySelector(`#admin-equip-${id}`);
         button.title='Equip this weapon, or increase its level by one if already equipped (up to MAX).';
         button.addEventListener('click',()=>{
           const player=characters[selected];if(!equipAdminWeapon(player,createWeapon)){status.textContent='No empty weapon slot available.';return;}
-          hud.update(player);
+          hud.update(player);window.saveDevSession?.();
         });
       }
+      document.querySelector('#admin-clear-loadout').addEventListener('click',()=>{
+        skillCasting?.cancel('admin-clear-loadout');
+        clearAdminLoadout(characters[selected]);
+        for(const effect of [umbrellaAttack,arisAttack,luminousAttack,badCookingAttack,waterDousingAttack,beanBagBombAttack,throwingCardsAttack,studentHandbookAttack,moustacheMedalAttack,orbitalCompassAttack,serveAttack,timeToSurfAttack,maidForceAttack,cheeringBalloonsAttack,wakamoBayonetAttack,molotovAttack,saintPredatorAttack,princessAttack,decagrammatonAttack,decagrammatonUltimate,princessSkill,luminousSkill,planaSkill,safetyHelmetEffects])effect?.reset();
+        hud.update(characters[selected]);playerStatsTools?.update();
+        status.textContent='Removed all equipped weapons and items.';window.saveDevSession?.();
+      });
+      createCharacterSkillAdmin({root:document.querySelector('#admin-character-skills'),getPlayer:()=>characters[selected]});
       createItemEquipAdmin({root:document.querySelector('#admin-equip-items'),getPlayer:()=>characters[selected],
-        onChange:player=>{hud.update(player);playerStatsTools?.update();}});
+        onChange:player=>{hud.update(player);playerStatsTools?.update();window.saveDevSession?.();}});
       document.querySelector('#admin-reset-cooldowns').addEventListener('click', () => skillCasting.resetCooldowns());
       for (const button of document.querySelectorAll('[data-admin-skill-slot]')) {
         button.addEventListener('click', () => skillCasting.castSlot(Number(button.dataset.adminSkillSlot)));
@@ -1394,6 +1514,8 @@ if (authorized) {
         getBossTypes: () => Object.keys(characters).filter(type => characters[type].boss) });
       onEnemyDefeat(({ enemy }) => {
         if(enemy.type==='arisu'&&isBossEnemy(enemy))unlockItem('malkuth-hat');
+        if(isBossEnemy(enemy)&&enemy.type==='iroha'&&currentMap==='third')unlockStageBossRewards(3,enemy.type);
+        if(isBossEnemy(enemy)&&enemy.type==='neru'&&currentMap==='fourth')unlockStageBossRewards(4,enemy.type);
         if(!endlessMode&&isBossEnemy(enemy)){
           const objectiveStage={first:1,second:2}[currentMap];
           if(objectiveStage)unlockStageBossRewards(objectiveStage,enemy.type);
@@ -1411,14 +1533,26 @@ if (authorized) {
         advanceStageAfterClear();
       });
       levelUpMenu = createLevelUpMenu({ canvas, getPlayer: () => characters[selected],
-        isPauseMenuOpen: () => Boolean(pauseMenu?.paused || crafters?.active || goldenCrafters?.active || gachaFiles?.active || tuningParts?.active), releaseControls,
+        isPauseMenuOpen: () => Boolean(titleMenu?.active || pauseMenu?.paused || crafters?.active || goldenCrafters?.active || gachaFiles?.active || tuningParts?.active), releaseControls,
         onOpen: () => skillCasting?.cancel('levelup'),
-        onChoose: player => { hud.update(player); playerStatsTools.update(); }
+        onChoose: player => { hud.update(player); playerStatsTools.update();window.saveDevSession?.(); }
       });
-      pauseMenu = createPauseMenu({ canvas, isBlocked: () => Boolean(levelUpMenu?.active || crafters?.active || goldenCrafters?.active || gachaFiles?.active || tuningParts?.active), getPlayer: () => characters[selected], releaseControls,
-        onPause: () => skillCasting?.cancel('pause') });
+      pauseMenu = createPauseMenu({ canvas, isBlocked: () => Boolean(titleMenu?.active || levelUpMenu?.active || crafters?.active || goldenCrafters?.active || gachaFiles?.active || tuningParts?.active), getPlayer: () => characters[selected], releaseControls,
+        onPause: () => skillCasting?.cancel('pause'),onQuit:()=>titleMenu?.show() });
       document.querySelector('#run-seed-status').textContent = `Run seed: ${runSeed} | Started: ${runStartedAt.toLocaleString()}`;
+      // Persist test configuration, not the live run, enemies, timers or action buttons.
+      // Admin preferences persist; run loadouts always start from character defaults.
+      window.getDevRuntimeSettings=()=>({map:currentMap});
+      window.applyDevRuntimeSettings=settings=>{if(settings&&maps[settings.map]&&!maps[settings.map].disabled&&settings.map!==currentMap)switchMap(settings.map);};
       window.restoreDevSession?.();
+      // Refresh the default loadout after restoring admin controls.
+      hud.update(characters[selected]);playerStatsTools?.update();
+      titleMenu = createTitleMenu({canvas,releaseControls,onChooseKit:(id,run)=>{switchCharacter(id);characters[id].selectedRunMode=run?.mode||'endless';characters[id].selectedStageId=run?.stage||'mixed';characters[id].supportItemId=run?.supportItemId||'none';delete characters[id].supportState;},getPlayer:()=>characters[selected],getScores:()=>runScore.results,clearScores:()=>runScore.clearResults(),onActiveChange:active=>mapAudio?.setMenu(active)});
+      document.querySelector('#simulate-game').disabled=false;
+      const instantStart=document.querySelector('#admin-instant-start');
+      const startInstantTest=()=>{if(!instantStart.checked)return;if(pauseMenu?.paused)document.querySelector('#pause-resume').click();titleMenu.startTesting();};
+      instantStart.addEventListener('change',startInstantTest);
+      startInstantTest();
       window.pageLoading?.finish();
       requestAnimationFrame(animate);
     })

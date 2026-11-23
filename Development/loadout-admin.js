@@ -1,5 +1,6 @@
+import { syncRacerPassHealth, syncLifeJacketShield, updateSportsDrink } from './item-catalog.js';
 import { recordWeaponMax } from './weapon-max-order.js';
-import { createMalkuthHat, createRacerPass, createSafetyHelmet, createLifeJacket, createChisePlushie, createOverheatedOverclocking, createSpecialPharmaceuticals } from './item-catalog.js';
+import { createSportsDrink, sportsDrinkDescription, createMalkuthHat, createRacerPass, createSafetyHelmet, createLifeJacket, createChisePlushie, createOverheatedOverclocking, createSpecialPharmaceuticals } from './item-catalog.js';
 /** Repeat equip clicks level owned basic weapons; never awaken or enhance them. */
 export function equipAdminWeapon(player,createWeapon){
   const candidate=createWeapon(),slots=player.attackSlots??=[],owned=slots.find(w=>w?.id===candidate.id);
@@ -23,6 +24,7 @@ export function equipAdminItem(player,item){
     if(!current.isSuper&&!current.awakened){
       const maximum=current.maxLevel??item.maxLevel??3;
       if((current.level||1)<maximum)current.level=(current.level||1)+1;
+      else if(item.id==='sports-drink')slots[index]=createSportsDrink(true);
       else if(item.id==='malkuth-hat')slots[index]=createMalkuthHat(true);
       else if(item.id==='racer-pass')slots[index]=createRacerPass(true);
       else if(item.id==='safety-helmet')slots[index]=createSafetyHelmet(true);
@@ -35,6 +37,7 @@ export function equipAdminItem(player,item){
 export function createItemEquipAdmin({root,getPlayer,onChange=()=>{}}){
   const status=document.createElement('p');status.className='admin-equip-status';status.setAttribute('role','status');
   const options=[
+    {label:"Equip Sports Drink",create:()=>createSportsDrink()},
     {label:"Equip Malkuth's Hat",create:()=>createMalkuthHat()},
     {label:'Equip Racer Pass',create:()=>createRacerPass()},
     {label:'Equip Safety Helmet',create:()=>createSafetyHelmet()},
@@ -54,4 +57,10 @@ export function createItemEquipAdmin({root,getPlayer,onChange=()=>{}}){
   }
   const hint=document.createElement('p');hint.textContent="Malkuth's Hat unlock: defeat Arisu. Racer Pass is unlocked by default. Admin equips bypass locks.";
   root.append(hint,status);
+}
+
+/** Clear the selected test character's complete gear loadout, including its starter. */
+export function clearAdminLoadout(player){
+ player.attackSlots=[];player.equipmentSlots=[];
+ syncRacerPassHealth(player);syncLifeJacketShield(player);updateSportsDrink(player,0);
 }

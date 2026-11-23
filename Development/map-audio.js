@@ -20,7 +20,7 @@ export const secondaryMapTracks = {
 
 
 /** Manage gesture-started looping music, volume, and map-change crossfades. */
-export function createMapAudio(initialMap) {
+export function createMapAudio(initialMap, { menu = false } = {}) {
   const slider = document.querySelector('#music-volume');
   const soundtrackToggle = document.querySelector('#music-soundtrack-toggle');
   const output = document.querySelector('#music-volume-value');
@@ -29,10 +29,12 @@ export function createMapAudio(initialMap) {
   const fadeDuration = 900; // EDIT milliseconds to match the checkerboard ripple.
   const tracks = new Map();
   let mapId = initialMap;
+  let menuActive = menu;
   let secondary = false;
 
   /** Resolve the selected stage within its soundtrack bank. */
   function selectedTrack() {
+    if(menuActive)return {id:'menu:main',file:'main.mp3'};
     const file = (secondary ? secondaryMapTracks : mapTracks)[mapId];
     return { id: `${secondary ? 'secondary' : 'default'}:${mapId}`, file };
   }
@@ -68,7 +70,7 @@ export function createMapAudio(initialMap) {
       audio.loop = true;
       audio.volume = 0;
       audio.src = `../Audio/${selection.file.split('/').map(encodeURIComponent).join('/')}`;
-      track = { audio, gain: 0, from: 0, target: 1, elapsed: 0, volumeScale: trackVolumeScale[mapId] };
+      track = { audio, gain: 0, from: 0, target: 1, elapsed: 0, volumeScale: menuActive ? 1 : trackVolumeScale[mapId] };
       tracks.set(selection.id, track);
       const trackId = selection.id;
       audio.addEventListener('error', () => {
@@ -97,7 +99,7 @@ export function createMapAudio(initialMap) {
   function setMap(id) {
     if (!mapTracks[id] || id === mapId) return;
     mapId = id;
-    selectTrack();
+    if(!menuActive)selectTrack();
   }
 
   /** Advance smooth gains and unload tracks that are no longer in use. */
@@ -120,7 +122,7 @@ export function createMapAudio(initialMap) {
     selectTrack();
   }
   document.addEventListener('pointerdown', unlock, { once: true });
-  document.addEventListener('keydown', unlock, { once: true });
+  window.addEventListener('keydown', unlock, { once: true, capture: true });
 
   slider.addEventListener('input', () => {
     volume = Number(slider.value) / 100;
@@ -134,7 +136,7 @@ export function createMapAudio(initialMap) {
     soundtrackToggle.setAttribute('aria-pressed', String(secondary));
     // This explicit gesture also unlocks playback, preserving the mute/pause setting.
     unlocked = true;
-    selectTrack();
+    if(!menuActive)selectTrack();
   });
   button.addEventListener('click', () => {
     // The first explicit click enables playback; later clicks toggle it.
@@ -159,5 +161,6 @@ export function createMapAudio(initialMap) {
     }
   });
   output.textContent = `${slider.value}%`;
-  return { setMap, update, stopAll };
+  function setMenu(active){if(menuActive===Boolean(active))return;menuActive=Boolean(active);selectTrack();}
+  return { setMap, setMenu, update, stopAll };
 }

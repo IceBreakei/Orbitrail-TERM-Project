@@ -13,13 +13,14 @@ export function loadDamageNumberGraphics() {
   return font.decode();
 }
 
-/** Format normal hits, yellow critical hits, or red supercrit visuals. */
+/** Format normal, yellow/orange critical, and red supercritical visuals. */
 export function damageNumberStyle(amount, player = false, hitType = 'normal') {
   if (hitType === 'miss') return { text: 'MISS', color: '#ffffff', italic: true };
   const text = String(Math.round(amount * 100) / 100);
   if (hitType === 'shield') return { text, color: '#62cfff', italic: false };
   if (player) return { text, color: '#ff5265', italic: false };
   if (hitType === 'supercritical') return { text: `${text}!!!`, color: '#ff5265', italic: true, scale: 1.1 };
+  if (hitType === 'orangecritical') return { text: `${text}!`, color: '#ffad48', italic: true, scale: 1.1 };
   if (hitType === 'critical') return { text: `${text}!`, color: '#ffe15a', italic: true, scale: 1.1 };
   return { text, color: '#ffffff', italic: false };
 }

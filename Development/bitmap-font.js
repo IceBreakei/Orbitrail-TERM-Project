@@ -76,6 +76,7 @@ export function createBitmapText(canvas, { scale = 2, outlineOverlap = 1, spaceW
   image.src = new URL(variant === 'font21' ? '../sprites/font2.1.png' : variant === 'font2' ? '../sprites/font2.png' : variant === 'thin' ? '../sprites/font-thin.png' : '../sprites/font.png', import.meta.url).href;
   return {
     setMaxWidth(value) { maxWidth = value; render(); },
+    setScale(value) { scale = Math.max(.1, Number(value)||1); render(); },
     setText(value) {
       if (text === value) return;
       text = value;

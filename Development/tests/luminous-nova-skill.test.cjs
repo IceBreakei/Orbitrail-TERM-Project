@@ -6,6 +6,7 @@ const run=s=>vm.runInContext(s,c);
 run('var player={label:"Plana",x:0,y:0,level:1,attackSlots:[createLuminousNovaWeapon()],combatStats:{}};var ex=createLuminousNovaSkill({random:()=>.5});ex.cast(player,0)');
 assert.equal(run('rollAttackDamage(player,1,()=>.5).damage'),15);assert(run('rollAttackDamage(player,1,()=>.2).critical'));
 assert.equal(run('player.combatBuffs["luminous-nova-ex"].critPercent'),22.3);
+damageListener({source:run('player'),damage:99999,triggersSkills:false});assert.equal(run('ex.damageDealt'),0);
 damageListener({source:{},damage:99999});assert.equal(run('ex.damageDealt'),0);
 c.owner=run('player');damageListener({source:c.owner,damage:2000});assert.equal(run('ex.damageDealt'),2000);
 run('ex.update(24.99,player)');assert.equal(run('ex.phase'),'aura');

@@ -42,7 +42,6 @@ export function addPlayerExp(character, amount) {
     character.level++;
     character.pendingUpgrades++; // Each gained level gets its own choice, including overflow.
     character.maxExp = experienceForLevel(character.level);
-    character.hp = character.maxHp; // Every level-up fully restores health.
   }
 }
 
@@ -64,8 +63,9 @@ export function changePlayerShield(character, amount) {
 let playerDamageGuard=null;
 export function setPlayerDamageGuard(guard){playerDamageGuard=guard;}
 /** Absorb damage with shield first; spill excess into HP and show one hit number. */
-export function damagePlayer(character, amount) {
+export function damagePlayer(character, amount, {projectile=false,enemyHit=true}={}) {
   ensurePlayerStats(character);
+  if(character.supportState?.invulnerableRemaining>0||(projectile&&character.supportState?.shieldRemaining>0)){character.lastDamageResult={negated:true,healthDamage:0,shieldDamage:0};return false;}
   if (!Number.isFinite(amount) || amount <= 0) return false;
   const damage = Math.round(amount * damageReductionFormula([].concat(character.damageReductionPercent??[],lifeJacketStats(character)?.reduction??0)));
   if(damage<=0)return false;
@@ -78,6 +78,7 @@ export function damagePlayer(character, amount) {
   }
   const taken=applyResolvedPlayerDamage(character,immediate);
   character.lastDamageResult.deferredDamage=deferred;
+  if(enemyHit&&character.lastDamageResult.healthDamage>0&&character.sportsDrinkState)character.sportsDrinkState.crit*=.5;
   return taken||deferred>0;
 }
 
@@ -164,7 +165,7 @@ export function createPlayerStatsTools(getPlayer, onChange) {
       feedback.textContent = '';
       if (action === 'exp') addPlayerExp(character, amount);
       if (action === 'level') addPlayerExp(character, character.maxExp - character.exp);
-      if (action === 'damage' && !damagePlayer(character, amount)) {
+      if (action === 'damage' && !damagePlayer(character, amount,{enemyHit:false})) {
         feedback.textContent = 'HP is already zero.';
       }
       if (action === 'shield-add') changePlayerShield(character, amount);

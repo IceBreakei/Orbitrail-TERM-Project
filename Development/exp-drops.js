@@ -133,6 +133,9 @@ function collectDrop(drop, player) {
   else lootTotals[drop.kind] += drop.value;
 }
 
+/** Cast Net collects only reports and Credits, leaving notes and other pickups intact. */
+export function collectSupportLoot(player){for(const drop of [...drops.values()])if(drop.kind==='exp'||drop.kind==='credits')collectDrop(drop,player);}
+
 /** Burst Yuuka credits throughout a disk, with angular coverage in every direction. */
 export function dropYuukaCredits(enemy, defeated = false, random = Math.random) {
   const count = defeated ? yuukaSettings.deathCredits : yuukaSettings.hitCredits;

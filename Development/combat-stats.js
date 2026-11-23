@@ -1,4 +1,4 @@
-import { itemCritPenalty, itemDamageBonus, overclockingStats, itemSkillDamageMultiplier } from './item-catalog.js';
+import { sportsDrinkCritBonus, itemCritPenalty, itemDamageBonus, overclockingStats, itemSkillDamageMultiplier } from './item-catalog.js';
 import { tuningPerk, startingWeaponProjectileCount, emptyWeaponSlotCount, weaponTuningDamageBonus, stationaryTuningActive } from './tuning-parts.js';
 import { percentBonusFormula, attackDamageFormula, weaponDamageFormula, growthSettings, totalATKFormula, attackStatSettings, totalCritModFormula, bonusDamageTakenFormula, damageBonusFormula, damageReductionFormula, haloDamageFormula, damageModifiersFormula } from './game-config.js';
 import { defaultCombatStats, combatBalance } from './game-config.js';
@@ -27,7 +27,7 @@ export function rollAttackDamage(character, totalWeaponDamage, random = Math.ran
   const stats = ensureCombatStats(character);
   const buffs=Object.values(character.combatBuffs||{}).filter(Boolean);
   const bonusCrit=buffs.reduce((sum,buff)=>sum+(Number(buff.critPercent)||0),0);
-  const critical = forceCritical || random() < Math.max(0, Math.min(100, stats.critPercent + bonusCrit + targetCritBonus - itemCritPenalty(character) + startingWeaponTuning(character,weaponId,'critChancePercent'))) / 100;
+  const critical = forceCritical || random() < Math.max(0, Math.min(100, stats.critPercent + bonusCrit + targetCritBonus + sportsDrinkCritBonus(character) - itemCritPenalty(character) + startingWeaponTuning(character,weaponId,'critChancePercent'))) / 100;
   const combinedModifier = damageModifiersFormula({
     criticalMultiplier: critical ? characterCriticalMultiplier(character, criticalMultiplier, weaponCritDamagePercent + startingWeaponTuning(character,weaponId,'critDamagePercent')) : 1,
     bonusDamageTaken: bonusDamageTakenFormula([].concat(target?.bonusDamageTakenPercent??[],target?.weakRemaining>0?target.weakDefensePercent:0)),
@@ -37,7 +37,7 @@ export function rollAttackDamage(character, totalWeaponDamage, random = Math.ran
     attackModifier: damageMod*(skillAttack?itemSkillDamageMultiplier(character):1) // Attack-specific effects, including EX drawing accuracy.
   });
   return { damage: attackDamageFormula(totalWeaponDamage, totalCharacterATK(character), combinedModifier, random),
-    critical, type: critical ? 'critical' : 'normal' };
+    critical, type: critical ? (characterCriticalMultiplier(character)>=2?'orangecritical':'critical') : 'normal' };
 }
 
 /** Parts affect only the explicitly identified character starting weapon. */
@@ -63,7 +63,7 @@ export function totalWeaponDamage(character, weaponId, base, bonusesPercent = []
 /** Add the accumulated item/skill ATK bonus to the character's independent base ATK. */
 export function totalCharacterATK(character) {
   return totalATKFormula(character.baseATK ?? attackStatSettings.baseATK,
-    [Number(ensureCombatStats(character).atkPercent),overclockingStats(character).atk]);
+    [Number(ensureCombatStats(character).atkPercent),overclockingStats(character).atk,...Object.values(character.combatBuffs||{}).map(buff=>Number(buff?.atkPercent)||0)]);
 }
 
 

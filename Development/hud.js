@@ -1,3 +1,5 @@
+import { createBuffHud } from './buff-hud.js';
+import { supportItems,supportIcon,supportsUnlocked } from './support-items.js';
 import { totalPlayerShield, syncLifeJacketShield, syncRacerPassHealth } from './item-catalog.js';
 import { createBitmapText, glyphRectangle } from './bitmap-font.js';
 import { getLootTotals } from './exp-drops.js';
@@ -38,6 +40,7 @@ function updateCaptionRowSpacing(container, entries) {
 
 /** Arrange HUD values/portrait without introducing combat or experience mechanics. */
 export function createHud(getFrameRectangle) {
+  const buffs=createBuffHud(document.querySelector('#hud-buffs'));
   const exp = document.querySelector('#hud-exp');
   const expFill = document.querySelector('#hud-exp-fill');
   const expEdge = document.querySelector('#hud-exp-edge');
@@ -47,6 +50,8 @@ export function createHud(getFrameRectangle) {
   const shieldEdge = document.querySelector('#hud-shield-edge');
   const hpNumbers = createBitmapText(document.querySelector('#hud-hp-numbers'), { scale: 1 });
   const portrait = document.querySelector('#hud-portrait');
+  const support=document.querySelector('#hud-support'),supportGraphic=support.querySelector('.hud-support-icon'),supportCooldown=support.querySelector('.hud-slot-cooldown');let previousSupport;
+  function updateSupportIcon(character){const item=supportItems.find(item=>item.id===character.supportItemId);support.hidden=!item||item.id==='none'||!supportsUnlocked(character);if(support.hidden)return;if(previousSupport!==item.id){previousSupport=item.id;supportGraphic.innerHTML=supportIcon(item.id);}const remaining=Math.max(0,character.supportState?.cooldowns?.[item.id]||0);supportCooldown.hidden=remaining<=0;supportCooldown.style.setProperty('--cooldown-sweep',`${Math.max(0,Math.min(1,1-remaining/item.cooldown))*360}deg`);support.setAttribute('aria-label',remaining>0?`${item.name}, cooldown ${Math.ceil(remaining)} seconds`:`${item.name}, ready`);}
   const level = createBitmapText(document.querySelector('#hud-level'));
   const creditsText = createBitmapText(document.querySelector('#hud-credits'), { scale: 1.25 });
   const killsText = createBitmapText(document.querySelector('#hud-kills'), { scale: 1.25 });
@@ -170,6 +175,8 @@ export function createHud(getFrameRectangle) {
 
   /** Reflect existing character state; defaults stay full HP and zero EXP for tests. */
   function update(character) {
+    updateSupportIcon(character);
+    buffs.update(character);
     syncRacerPassHealth(character);syncLifeJacketShield(character);
     creditsText.setText(String(getLootTotals().credits));
     killsText.setText(String(getKillCount()));

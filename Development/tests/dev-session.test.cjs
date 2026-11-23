@@ -1,15 +1,25 @@
-﻿const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const source=fs.readFileSync('Development/dev-session.js','utf8');
-const store=new Map();
-function page(){
- const input={id:'disable-autoattack',type:'checkbox',value:'on',checked:false,dispatchEvent(){this.applied=true}};
- const document={querySelectorAll(s){return s.startsWith('.test-toolbar')?[input]:[]},querySelector(){return null},addEventListener(){}};
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');const source=fs.readFileSync('Development/dev-session.js','utf8'),store=new Map();
+function page(path='/Development/movement.html'){
+ const timers=[];const listeners={},windowListeners={};const input={id:'disable-autoattack',type:'checkbox',value:'on',checked:false,dataset:{},dispatchEvent(){this.applied=true}},instant={...input,id:'admin-instant-start'},stat={id:'',name:'',type:'number',value:'0',dataset:{combatStat:'atkPercent'},dispatchEvent(){this.applied=true}},toggle={id:'admin-simulate-account',dataset:{},pressed:'false',getAttribute(){return this.pressed},click(){this.pressed=this.pressed==='true'?'false':'true'}},details={id:'test-details',open:false};let runtime={map:'first',loadouts:{}},appliedRuntime;
+ const document={querySelectorAll(selector){if(selector=== 'details')return [details];if(selector.startsWith('.test-toolbar'))return [input,instant,stat];if(selector.startsWith('[data-character]'))return [toggle];if(selector.startsWith('details.admin-panel'))return [details];return []},querySelector(){return null},getElementById:id=>id==='test-details'?details:null,addEventListener:(type,fn)=>listeners[type]=fn};
  class Socket{constructor(){this.listeners=[]}addEventListener(type,fn){this.listeners.push(fn)}sendReload(data='reload'){this.listeners.forEach(fn=>fn({data}))}}
- const c={location:{pathname:'/Development/movement.html'},Date,Event,document,sessionStorage:{getItem:k=>store.get(k),setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},WebSocket:Socket};c.window=c;vm.runInNewContext(source,c);return {c,input};
+ const c={setTimeout:fn=>timers.push(fn),location:{pathname:path},Event,Promise,document,sessionStorage:{getItem:k=>store.get(k),setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)},WebSocket:Socket,addEventListener:(type,fn)=>windowListeners[type]=fn,getDevRuntimeSettings:()=>({map:runtime.map}),applyDevRuntimeSettings:value=>{appliedRuntime=value;if(value)runtime={...runtime,map:value.map}}};c.window=c;vm.runInNewContext(source,c);return {flush:()=>{while(timers.length)timers.shift()()},c,input,instant,stat,toggle,details,listeners,windowListeners,setRuntime:value=>runtime=value,get appliedRuntime(){return appliedRuntime}};
 }
-let a=page();a.input.checked=true;new a.c.WebSocket().sendReload();
-let b=page();b.c.restoreDevSession();assert.equal(b.input.checked,true);assert(b.input.applied);
-let manual=page();manual.c.restoreDevSession();assert.equal(manual.input.checked,false);assert.equal(store.size,0);
-a=page();a.input.checked=true;new a.c.WebSocket().sendReload(JSON.stringify({type:'full-reload'}));b=page();b.c.restoreDevSession();assert(b.input.checked);
-store.set('orbitrail:dev-settings:/Development/movement.html:code-reload',JSON.stringify(Date.now()-20000));manual=page();manual.c.restoreDevSession();assert.equal(manual.input.checked,false);
-console.log('PASS: Live Server/Vite reloads restore settings; manual refresh and stale signals reset.');
+(async()=>{let a=page();a.c.restoreDevSession();a.input.checked=true;a.instant.checked=true;a.stat.value='35';a.details.open=true;a.setRuntime({map:'second',loadouts:{plana:{attackSlots:[{id:'aris-laser',level:7}]}}});a.listeners.click();a.toggle.click();await Promise.resolve();a.flush();let b=page();b.c.restoreDevSession();assert(b.input.checked);assert(b.instant.checked);assert.equal(b.stat.value,'35');assert(b.stat.applied);assert.equal(b.toggle.pressed,'true');assert(b.details.open);assert.equal(b.appliedRuntime.map,'second');assert.equal(b.appliedRuntime.loadouts,undefined,'Gear is excluded from the saved admin preferences');
+ // Live Server may reload again while assets are still loading. Startup toggles and
+ // pagehide must not replace the last good snapshot with default/partial state.
+ const savedBeforeBoot=store.get('orbitrail:dev-settings:/Development/movement.html');
+ let loading=page();loading.listeners.toggle();await Promise.resolve();loading.flush();loading.windowListeners.pagehide();new loading.c.WebSocket().sendReload();assert.equal(store.get('orbitrail:dev-settings:/Development/movement.html'),savedBeforeBoot);
+ let repeated=page();repeated.c.restoreDevSession();assert(repeated.input.checked);assert(repeated.instant.checked);assert.equal(repeated.stat.value,'35');assert.equal(repeated.appliedRuntime.map,'second');
+ // Repeated restore calls must not replay stale settings over new user choices.
+ repeated.input.checked=false;repeated.c.restoreDevSession();assert.equal(repeated.input.checked,false);
+ let manual=page();manual.c.restoreDevSession();assert(manual.input.checked,'ordinary refresh retains settings');manual.input.checked=false;manual.windowListeners.pagehide();let next=page();next.c.restoreDevSession();assert.equal(next.input.checked,false);assert(next.instant.checked);next.stat.value='77';new next.c.WebSocket().sendReload(JSON.stringify({type:'full-reload'}));let live=page();live.c.restoreDevSession();assert.equal(live.stat.value,'77');let isolated=page('/Development/movement-optimized.html');isolated.c.restoreDevSession();assert.equal(isolated.instant.checked,false);store.clear();let fresh=page();fresh.c.restoreDevSession();assert.equal(fresh.instant.checked,false);console.log('PASS manual/live reload persistence, Skills sidebar/Instant Start, distinct unnamed controls, settled toggles, panels/runtime config, path isolation and new-session defaults');})().catch(error=>{console.error(error);process.exitCode=1});
+
+for(const name of ['movement','movement-optimized']){
+ const js=fs.readFileSync(`Development/${name}.js`,'utf8');const hooks=js.slice(js.indexOf('      window.getDevRuntimeSettings='),js.indexOf('      window.restoreDevSession?.();'));
+ const defaults={attackSlots:[{id:'plana-umbrella',level:1}],equipmentSlots:[],characterSkills:[]},tuning={run:{equipped:[null,null,null]}};
+ const context=vm.createContext({window:{},characters:{plana:defaults},tuningParts:tuning,maps:{first:{},second:{}},currentMap:'first',switchMap:id=>{context.currentMap=id;}});vm.runInContext(hooks,context);
+ context.window.applyDevRuntimeSettings({map:'second',loadouts:{plana:{attackSlots:[{id:'maid-force',level:7}],equipmentSlots:[{id:'life-jacket',level:5}],characterSkills:[{id:'celestia',level:3}]}},tuningEquipped:[{id:'power'}]});
+ assert.equal(defaults.attackSlots.length,1);assert.equal(defaults.attackSlots[0].id,'plana-umbrella');assert.equal(defaults.attackSlots[0].level,1);assert.equal(defaults.equipmentSlots.length,0);assert.equal(defaults.characterSkills.length,0);assert(tuning.run.equipped.every(x=>x===null));assert.equal(context.currentMap,'second');assert.deepEqual(JSON.parse(JSON.stringify(context.window.getDevRuntimeSettings())),{map:'second'});
+}
+console.log('PASS reload ignores legacy saved weapons/items/skills/tuning, keeps character default loadout and restores admin map preference');

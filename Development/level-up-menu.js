@@ -8,6 +8,18 @@ import { getUmbrella } from './weapon-progression.js';
 import { levelUpgradeSettings } from './game-config.js';
 import { rollLevelUpgrades, applyLevelUpgrade } from './level-upgrades.js';
 
+/** Keep all description copy within its fixed card; prefer the original text size. */
+export function fitUpgradeDescription(element,renderer,graphic,preferredScale=1.2){
+ const width=element.clientWidth,height=element.clientHeight;if(!(width>0&&height>0))return;
+ renderer.setScale(preferredScale);renderer.setMaxWidth(width);
+ let scale=preferredScale;
+ while((graphic.height>height+.5||graphic.width>width+.5)&&scale>.25){
+  scale=Math.max(.25,Number((scale-.04).toFixed(2)));renderer.setScale(scale);
+ }
+ // Tiny windows still show the whole description rather than truncating or scrolling it.
+ if(graphic.height>height||graphic.width>width)renderer.setScale(scale*Math.min(height/graphic.height,width/graphic.width));
+}
+
 const statRows = characterStatRows;
 
 /** Pause on pending levels, present four upgrades, and resume after all choices are spent. */
@@ -46,15 +58,19 @@ export function createLevelUpMenu({ canvas, getPlayer, isPauseMenuOpen, releaseC
       const graphic = document.createElement('canvas');
       element.replaceChildren(graphic);
       renderer = createBitmapText(graphic, { variant: 'font2', scale, outlineOverlap: 1,
-        maxWidth: Math.max(100, element.clientWidth || 400), wrap: element.tagName === 'P' });
+        maxWidth: Math.max(1, element.clientWidth || 400), wrap: element.tagName === 'P' });
       textRenderers.set(element, renderer);
 
     }
     if (!observers.has(element)) {
-      const observer = new ResizeObserver(() => renderer.setMaxWidth(Math.max(100, element.clientWidth)));
+      const observer = new ResizeObserver(() => {
+        if(element.classList.contains('level-up-description'))fitUpgradeDescription(element,renderer,element.firstElementChild,scale);
+        else renderer.setMaxWidth(Math.max(1,element.clientWidth));
+      });
       observer.observe(element); observers.set(element, observer);
     }
     renderer.setText(value);
+    if(element.classList.contains('level-up-description'))fitUpgradeDescription(element,renderer,element.firstElementChild,scale);
   }
 
   /** Highlight/focus a choice, supporting mouse and keyboard equally. */
@@ -153,7 +169,7 @@ export function createLevelUpMenu({ canvas, getPlayer, isPauseMenuOpen, releaseC
           -crop.width*scale/2, -crop.height*scale/2, crop.width*scale, crop.height*scale);
       };
       image.src = upgrade.weapon.icon;
-      const description = document.createElement('p');
+      const description = document.createElement('p');description.className='level-up-description';
       body.append(icon, description); button.append(header, body); choicesElement.append(button);
       text(title, upgrade.name, 1.3); text(category, upgrade.category, 1); text(description, upgrade.description, 1.2);
       button.disabled = !choices.length;

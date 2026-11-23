@@ -4,7 +4,7 @@ const player={equipmentSlots:[]},root=node('div');let changes=0;
 const c=vm.createContext({document:{createElement:node},root,getPlayer:()=>player,onChange:()=>changes++});
 for(const name of ['item-catalog','weapon-max-order','loadout-admin'])vm.runInContext(fs.readFileSync(`Development/${name}.js`,'utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ',''),c);
 const run=s=>vm.runInContext(s,c);run('createItemEquipAdmin({root,getPlayer,onChange})');
-const buttons=root.children.filter(n=>n.tag==='button');assert.equal(buttons.length,7);assert(!buttons.some(b=>/ MAX$|Super|Awakened/.test(b.textContent)));assert.equal(run("isItemUnlocked('malkuth-hat')"),false);
+const buttons=root.children.filter(n=>n.tag==='button');assert.equal(buttons.length,8);assert(!buttons.some(b=>/ MAX$|Super|Awakened/.test(b.textContent)));assert.equal(run("isItemUnlocked('malkuth-hat')"),false);
 const hat=buttons.find(b=>b.textContent==="Equip Malkuth's Hat"),racer=buttons.find(b=>b.textContent==='Equip Racer Pass');
 hat.listeners.click();assert.equal(player.equipmentSlots[0].level,1);
 hat.listeners.click();assert.equal(player.equipmentSlots[0].level,2);assert(root.children.some(n=>n.textContent?.includes('LV 2 equipped')));
@@ -41,3 +41,7 @@ const jacket=buttons.find(b=>b.textContent==='Equip Life Jacket');player.equipme
 for(let level=1;level<=5;level++){jacket.listeners.click();assert.equal(player.equipmentSlots[0].level,level);}
 jacket.listeners.click();assert.equal(player.equipmentSlots[0].isSuper,true);assert.equal(player.equipmentSlots.length,1);
 console.log('PASS Life Jacket admin five ranks to Super without shortcut buttons.');
+
+run("var cleared={attackSlots:[{id:'plana-umbrella'},{id:'princess-key'}],equipmentSlots:[createRacerPass(true),createLifeJacket(),createSportsDrink()],maxHp:90,hp:85,racerPassHpApplied:20,lifeJacketState:{remaining:15},sportsDrinkState:{crit:10},sportsDrinkAimOffset:.1,characterSkills:[{id:'celestia'}],tuningParts:{equipped:[{id:'power'}]},supportItemId:'heal-potion'};clearAdminLoadout(cleared)");assert.equal(run('cleared.attackSlots.length'),0);assert.equal(run('cleared.equipmentSlots.length'),0);assert.equal(run('cleared.maxHp'),70);assert.equal(run('cleared.hp'),70);assert.equal(run('cleared.lifeJacketState'),undefined);assert.equal(run('cleared.sportsDrinkState'),undefined);assert.equal(run('cleared.sportsDrinkAimOffset'),0);assert.equal(run('cleared.characterSkills.length'),1);assert.equal(run('cleared.supportItemId'),'heal-potion');assert.equal(run('cleared.tuningParts.equipped.length'),1);
+for(const name of ['movement','movement-optimized']){assert(fs.readFileSync(`Development/${name}.html`,'utf8').includes('id="admin-clear-loadout"'));assert(fs.readFileSync(`Development/${name}.js`,'utf8').includes('clearAdminLoadout(characters[selected])'));}
+console.log('PASS clear-all loadout includes starter/synergy, synchronizes item stats/shield, preserves skills/support/tuning and is wired in both previews');

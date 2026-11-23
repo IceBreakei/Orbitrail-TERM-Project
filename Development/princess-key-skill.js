@@ -42,7 +42,8 @@ export function createPrincessKeySkill({random=Math.random}={}) {
       residues.push({target,cast:state,owner:player,x:body.x,y:body.y,age:0,exploded:false});
     }});
   beam.setAutoattackEnabled(false);
-  const unsubscribe=onEnemyDamage(({source,damage})=>{
+  const unsubscribe=onEnemyDamage(({source,damage,triggersSkills})=>{
+    if(triggersSkills===false)return;
     if(state&&state.elapsed<settings.buffSeconds&&source===state.owner) {
       state.damageDealt+=Math.max(0,damage);
       if(state.beamInProgress)state.beamDamageDealt+=Math.max(0,damage);

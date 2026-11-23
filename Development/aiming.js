@@ -80,7 +80,7 @@ export function createAiming(canvas) {
       // Preserve facing if the cursor is precisely on the character anchor.
       if (dx === 0 && dy === 0) [dx, dy] = vector;
     }
-    return Math.atan2(dy, dx);
+    return Math.atan2(dy, dx)+(character.sportsDrinkAimOffset||0);
   }
 
   /** Draw an upward-native arrow rotated toward facing or the custom cursor. */

@@ -1,5 +1,5 @@
-/** Reserved stat/shop metadata only; not imported into gameplay or purchase UI.
- * Await user directives before adding purchases, persistence or stat effects.
+/** Shop upgrade definitions, displayed in the upgrades browsing menu.
+ * Gameplay effects and purchasing remain disabled pending their implementation.
  */
 export const statUpgradeSettings = { enabled:false };
 export const statUpgradeCatalog = [
