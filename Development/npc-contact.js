@@ -1,3 +1,4 @@
+import {isBossEnemy} from './world-state.js';
 import {weakenedAttackMultiplier} from './weak-tuning.js';
 import { enemyContactDamageFormula } from './game-config.js';
 import { yuukaSettings } from './game-config.js';
@@ -39,7 +40,7 @@ export function updateNpcContact(npc, player, motion, delta, move, survivalSecon
   // Per-enemy attack cooldown is separate from recoil and the player's global I-frames.
   npc.playerHitCooldown = Math.max(0, (npc.playerHitCooldown || 0) - delta);
   const hit = contactGeometry(npc, player, motion);
-  if (hit.touching && !(player.contactIFrames > 0) && !(npc.playerHitCooldown > 0)) {
+  if (hit.touching && !(player.contactIFrames > 0) && !(npc.playerHitCooldown > 0) && (!player.ridingWavesActive||isBossEnemy(npc))) {
     const baseDamage = npc.contactDamage ?? (npc.type === 'mob' ? contactSettings.mobDamage : contactSettings.playerDamage);
     const damage = npc.perTypeStats ? Math.floor(baseDamage * (npc.contactDamageMultiplier ?? 1)) :
       enemyContactDamageFormula(baseDamage, player.level || 1, survivalSeconds, npc.contactDamageMultiplier ?? 1);

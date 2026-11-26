@@ -97,8 +97,8 @@ export function rollLevelUpgrades(player, {all=false}={}) {
   }
   const water=player.attackSlots?.find(w=>w?.id==='water-dousing');
   if(!blocked.has('water-dousing')&&!player.disabledWeaponIds?.includes('water-dousing')){
-    if(!water&&isContentUnlocked('water-dousing')&&(player.attackSlots||[]).filter(Boolean).length<6)choices.push({id:'water-new',name:'Water Dousing LV 1',weapon:createWaterDousingWeapon(),category:'NEW Weapon',description:waterDousingDescriptions[1]});
-    else if(water&&(water.level||1)<7)choices.push({id:'water-level',name:`Water Dousing ${upgradeLevelLabel(water,7)}`,weapon:water,category:'Weapon',description:waterDousingDescriptions[(water.level||1)+1]});
+    if(!water&&isContentUnlocked('water-dousing')&&(player.attackSlots||[]).filter(Boolean).length<6)choices.push({id:'water-new',name:'Splash! LV 1',weapon:createWaterDousingWeapon(),category:'NEW Weapon',description:waterDousingDescriptions[1]});
+    else if(water&&(water.level||1)<7)choices.push({id:'water-level',name:`Splash! ${upgradeLevelLabel(water,7)}`,weapon:water,category:'Weapon',description:waterDousingDescriptions[(water.level||1)+1]});
   }
   const bean=player.attackSlots?.find(w=>w?.id==='bean-bag-bomb');
   if(!blocked.has('bean-bag-bomb')&&!player.disabledWeaponIds?.includes('bean-bag-bomb')){

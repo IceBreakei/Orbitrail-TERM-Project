@@ -41,7 +41,7 @@ export function createPauseMenu({ canvas, getPlayer, releaseControls, onPause = 
   const weaponList=document.createElement('nav');weaponList.className='pause-ex-list';weaponList.setAttribute('aria-label','Weapon EX skills');
   const skillDetail=document.createElement('div');skillDetail.className='pause-ex-detail';
   const weaponButtons=[],skillArticles=[];let selectedSkill=0;
-  const iconSources=['../sprites/attacks/plana umbrella.png','../sprites/attacks/Weapon_Icon_Arisu.png','../sprites/attacks/Weapon_Icon_Kei.png',null,'../sprites/attacks/protocolsupernova.png'];
+  const iconSources=['../sprites/attacks/plana umbrella.png','../sprites/attacks/Weapon_Icon_Arisu.png','../sprites/attacks/Weapon_Icon_Kei.png',null,'../sprites/attacks/protocolsupernova.png','../sprites/attacks/Event 41 - Dakimakura.png','../sprites/attacks/Card Set.png','../sprites/attacks/Arius Student Handbook.png','../sprites/attacks/Event 46 - Swimming Tube.png','../sprites/attacks/Event 06 - Buff 3.png','../sprites/attacks/wakamo-bayonet.png','../sprites/attacks/Event 46 - Surfboard.png','../sprites/attacks/Beach Ball.png','../sprites/attacks/Bean Bag.png','../sprites/attacks/Misaki_UE.png','../sprites/attacks/Cheering Balloons.png','../sprites/attacks/Moustache Medal.png','../sprites/attacks/Bad Cooking.png','../sprites/attacks/Pretty Headband.png'];
   function selectSkill(index){selectedSkill=index;weaponButtons.forEach((button,i)=>{button.classList.toggle('selected',i===index);button.setAttribute('aria-pressed',String(i===index));skillArticles[i].hidden=i!==index;});}
   weaponDividers.forEach((divider,index)=>{
     const heading=divider.querySelector('h2'),name=heading.getAttribute?.('aria-label')||heading.textContent.trim(),article=divider.querySelector('article');
@@ -56,7 +56,7 @@ export function createPauseMenu({ canvas, getPlayer, releaseControls, onPause = 
       const image=new Image();image.onload=()=>{
         const crop=index===0?{x:100,y:228,width:68,height:304}:{x:0,y:0,width:image.naturalWidth,height:image.naturalHeight};
         const angle=(index===0?45:index===4?0:-45)*Math.PI/180,extent=(crop.width+crop.height)/Math.SQRT2,scale=86/extent;
-        const context=icon.getContext('2d');context.save();context.translate(48,48);context.rotate(angle);
+        const context=icon.getContext('2d');context.save();context.translate(48,48);if(index===11)context.scale(-1,1);context.rotate(angle);
         context.drawImage(image,crop.x,crop.y,crop.width,crop.height,-crop.width*scale/2,-crop.height*scale/2,crop.width*scale,crop.height*scale);context.restore();
       };image.src=iconSources[index];
     }
@@ -104,7 +104,7 @@ export function createPauseMenu({ canvas, getPlayer, releaseControls, onPause = 
     const equipped = getPlayer().attackSlots?.some(item => item?.id === 'plana-umbrella');
     setThinText('#pause-skill-equipped', equipped ? 'Equipped' : "Available with Plana's Umbrella");
     setThinText('#pause-skill-effect',
-      `Launches an open umbrella forward, clearing a path by knocking enemies aside and stunning them for ${planaSkillSettings.stunSeconds} seconds.`);
+      `Launches an open umbrella forward, knocking enemies aside and applying Flattened and stun for ${planaSkillSettings.stunSeconds} seconds.`);
 
   }
 

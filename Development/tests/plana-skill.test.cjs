@@ -28,7 +28,7 @@ run('var owner={x:0,y:0,combatStats:{atkPercent:0,critPercent:0}};var skill=crea
 assert.equal(hits.length,0);run('skill.update(.4)');
 assert(hits.some(h=>h.id==='mob'&&h.damage===18));assert(hits.some(h=>h.id==='boss'&&h.damage===18));
 assert(!hits.some(h=>h.id==='outside'||h.id==='behind'));
-assert.equal(enemies.get('mob').stunRemaining,5);assert.equal(enemies.get('boss').stunRemaining,5);
+assert.equal(enemies.get('mob').stunRemaining,5);assert.equal(enemies.get('boss').stunRemaining,5);assert.equal(enemies.get('mob').flattenedRemaining,5);assert.equal(enemies.get('boss').flattenedRemaining,5);
 run('skill.update(.1)');assert.equal(hits.filter(h=>h.id==='mob').length,1);
 context.enemy=enemies.get('mob');context.move=(e,dx,dy)=>{e.x+=dx;e.y+=dy};
 assert(run('updateEnemyControl(enemy,.11,move)'));assert(enemies.get('mob').y>0);
@@ -87,7 +87,7 @@ enemies.set('dodging-midori',{id:'dodging-midori',type:'midori',x:300,y:0,hp:100
 const originalDamage=context.damageEnemy;
 context.damageEnemy=()=>false;
 run('skill.reset();skill.cast(owner,0);skill.update(.5)');
-assert.equal(enemies.get('dodging-midori').stunRemaining,undefined);
+assert.equal(enemies.get('dodging-midori').stunRemaining,undefined);assert.equal(enemies.get('dodging-midori').flattenedRemaining,undefined);
 context.damageEnemy=originalDamage;
 console.log('PASS: dodged projectile applies no stun.');
 

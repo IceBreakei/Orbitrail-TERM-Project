@@ -1,0 +1,20 @@
+
+{
+  "hosting": {
+    "site": "orbitrail",
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      "**/.*",
+      "**/node_modules/**",
+      "AGENTS.md",
+      "FIREBASE_SETUP.md",
+      "chat_log.txt",
+      "Memory Activity Log.txt",
+      "Memory Activity Log.index.json",
+      "firebase-debug.log",
+      "firebase-debug.*.log"
+    ]
+  }
+}

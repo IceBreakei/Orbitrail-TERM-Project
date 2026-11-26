@@ -105,12 +105,14 @@ export function createPlanaUmbrellaSkill() {
           if(landed&&projectile.owner.tuningParts)tryTuningExplosion({player:projectile.owner,projectile,enemy,
             rollDamage:(target,multiplier,options)=>rollUmbrellaDamage(projectile.owner,projectile.baseDamage,Math.random,projectile.damageMultiplier*multiplier,target,{...options,skillAttack:true}),
             onHit:target=>{
+              if(target.hp>0)target.flattenedRemaining=Math.max(target.flattenedRemaining||0,s.stunSeconds);
               const side=(target.x-from.x)*-uy+(target.y-from.y)*ux,sign=Math.sign(side)||1;
               applySkillControl(target,-uy*sign*tunedKnockbackDistance+ux*tunedKnockbackDistance*.25,
                 ux*sign*tunedKnockbackDistance+uy*tunedKnockbackDistance*.25,0,s.knockbackSeconds,{ignoreKnockbackResistance:s.ignoreKnockbackResistance});
             }});
           const living = getEnemy(enemy.id);
           if (living) {
+            living.flattenedRemaining=Math.max(living.flattenedRemaining||0,s.stunSeconds);
             // Push sideways away from the flight lane, with a smaller forward component.
             const side = (enemy.x - from.x) * -uy + (enemy.y - from.y) * ux;
             const sign = Math.abs(side) > .01 ? Math.sign(side) : projectile.hits.size % 2 ? 1 : -1;

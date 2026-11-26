@@ -59,6 +59,7 @@ export function createArisAttack({getWeapon=getArisWeapon,specialHitCooldown=sup
   const ready = image.decode();
   return {
     ready,
+    getAuraSources(){return volleys.map(v=>v.origin).filter(Boolean);},
     reset: clear,
     /** Remove automatic volleys only; an active EX continues updating and dealing damage. */
     setAutoattackEnabled(enabled) { autoattackEnabled=Boolean(enabled); if(!autoattackEnabled) volleys=[]; },

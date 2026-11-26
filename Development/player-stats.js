@@ -65,7 +65,7 @@ export function setPlayerDamageGuard(guard){playerDamageGuard=guard;}
 /** Absorb damage with shield first; spill excess into HP and show one hit number. */
 export function damagePlayer(character, amount, {projectile=false,enemyHit=true}={}) {
   ensurePlayerStats(character);
-  if(character.supportState?.invulnerableRemaining>0||(projectile&&character.supportState?.shieldRemaining>0)){character.lastDamageResult={negated:true,healthDamage:0,shieldDamage:0};return false;}
+  if(character.bayonetChargeActive||character.supportState?.invulnerableRemaining>0||(projectile&&character.supportState?.shieldRemaining>0)){character.lastDamageResult={negated:true,healthDamage:0,shieldDamage:0};return false;}
   if (!Number.isFinite(amount) || amount <= 0) return false;
   const damage = Math.round(amount * damageReductionFormula([].concat(character.damageReductionPercent??[],lifeJacketStats(character)?.reduction??0)));
   if(damage<=0)return false;

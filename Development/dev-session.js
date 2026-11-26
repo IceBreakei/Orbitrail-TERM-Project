@@ -6,7 +6,7 @@
   const saved=read(key);try{sessionStorage.removeItem(marker);}catch{}
   const roots=['.test-toolbar','.admin-panel','.admin-test-sidebar','.playtest-sidebar','#npc-tools','#sprite-tester'];
   const selector=roots.flatMap(root=>['input','select','textarea'].map(tag=>`${root} ${tag}`)).join(', ');
-  const controls=()=>[...document.querySelectorAll(selector)].filter(el=>!['file','password','button','submit','reset','hidden'].includes(el.type)&&el.name!=='npc-selection');
+  const controls=()=>[...document.querySelectorAll(selector)].filter(el=>!['file','password','button','submit','reset','hidden'].includes(el.type)&&el.name!=='npc-selection'&&!['admin-clock-minute','admin-clock-second'].includes(el.id));
   const identity=el=>{if(el.id)return `id:${el.id}`;const scope=el.closest?.('form,fieldset,[id]')?.id||'',data=Object.entries(el.dataset||{}).map(([k,v])=>`${k}=${v}`).join('|');return `control:${scope}:${el.name||data||el.getAttribute?.('aria-label')||controls().indexOf(el)}`;};
   const buttonSelector=['[data-character]',...roots.map(root=>`${root} button[aria-pressed]`)].join(', ');
   const buttons=()=>[...document.querySelectorAll(buttonSelector)].filter(el=>!['enter-fullscreen-preview','pause-game'].includes(el.id));
@@ -36,7 +36,7 @@
         el.value=state.value;if(el.type==='checkbox'||el.type==='radio')el.checked=state.checked;
         el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));
       }
-      // Form handlers can reset runtime values; restore loadouts after those handlers.
+      // Runtime restoration excludes run state; legacy map/clock/loadout snapshots are ignored by the runtime.
       window.applyDevRuntimeSettings?.(saved.runtime);
       for(const panel of saved.panels||[]){const el=panel.id?document.getElementById(panel.id):document.querySelectorAll('details')[panel.index];if(el)el.open=panel.open;}
       const admin=document.querySelector('#admin-panel');if(admin&&(!admin.hidden)!==saved.adminOpen)document.querySelector('#admin-tools').click();

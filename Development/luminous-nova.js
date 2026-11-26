@@ -96,7 +96,7 @@ export function createLuminousNovaAttack({random=Math.random}={}) {
   }
   /** Draw every active pink round using the shared spherical plasma renderer. */
   function draw(context,camera) {const rainbow=Boolean(owner?.tuningParts&&rgbTuningActive(owner));for(const bullet of bullets){bullet.rainbow=rainbow;drawLuminousPlasma(context,camera,bullet,bullet.diameter);}}
-  return {ready:Promise.resolve(),reset,update,draw,
+  return {getAuraSources(){return bullets;},ready:Promise.resolve(),reset,update,draw,
     setSkillFinishing(value){skillFinishing=Boolean(value);},
     setAutoattackEnabled(value){enabled=Boolean(value);if(!enabled)bullets=[];},
     get projectileCount(){return bullets.length;},get shotsFired(){return shots;}};

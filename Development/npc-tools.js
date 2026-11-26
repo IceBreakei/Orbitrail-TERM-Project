@@ -1,3 +1,4 @@
+import {updatePoison} from './poison-status.js';
 import {updateRateUpWindow} from './rate-up-tuning.js';
 import {updateWeakTuning} from './weak-tuning.js';
 import {updateSlowdown} from './slowdown-tuning.js';
@@ -355,6 +356,7 @@ export function createNpcTools({ canvas, characters, camera, getPlayer, getPlaye
       npc.eventMotionAge=(npc.eventMotionAge||0)+time;
       updateKnockbackResistance(npc, time);
       updateSlowdown(npc,time);
+      updatePoison(npc,time);if(npc.hp<=0)continue;
       updateWeakTuning(npc,time);
       updateRateUpWindow(npc,time);
       if (npc.spawnArrivalPending) npc.spawnArrivalGrace = Math.max(0,(npc.spawnArrivalGrace ?? 10)-time);
@@ -363,16 +365,16 @@ export function createNpcTools({ canvas, characters, camera, getPlayer, getPlaye
       advanceDamageFlash(npc, delta);
       if (npc.animationFrames) npc.gifElapsed = (npc.gifElapsed || 0) + delta * 1000 * (npc.animationSpeed || 1);
       const wasFrozen=npc.frozenRemaining>0;
-      if(!wasFrozen)delete npc.frozenPoseElapsed;
+      if(!wasFrozen && !(npc.stunRemaining>0) && !(npc.flattenedRemaining>0))delete npc.frozenPoseElapsed;
       if (time && updateEnemyControl(npc, time, npc.flattenedRemaining>0?()=>true:moveKnockback)) {
-        if(wasFrozen)animateFrozenEnemy(npc,player,time);
+        animateFrozenEnemy(npc,player,time);
         if (updateYuukaPresence(npc, camera, canvas.width, canvas.height, time)) { removeEnemy(npc.id); refresh(); }
         continue; // Stun suppresses movement AI, attacks and both contact checks.
       }
       if(npc.flattenedRemaining>0){
         // Flattened suppresses movement/AI, but retains normal player contact damage.
         if(time)updateNpcContact(npc,player,playerMotion,time,()=>true,getSurvivalSeconds());
-        npc.moving=false;continue;
+        if(time)animateFrozenEnemy(npc,player,time);continue;
       }
       if(time && bossBehaviors.updateNpc(npc,player,time,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height},playerMotion,attacker=>{
         const target={x:player.x+(attacker.chaseOffsetX||0),y:player.y+(attacker.chaseOffsetY||0)};

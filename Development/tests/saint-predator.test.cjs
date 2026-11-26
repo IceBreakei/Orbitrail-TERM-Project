@@ -1,6 +1,6 @@
 const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
 const enemies=new Map(),hits=[];
-const c=vm.createContext({getAllEnemies:()=>[...enemies.values()],getEnemy:id=>enemies.get(id),damageEnemy:(id,damage)=>{hits.push({id,damage});return true},ensureCombatStats:p=>p.combatStats,stationaryWeaponIntervalScale:()=>1,startingWeaponProjectileCount:(p,id,count)=>count,totalWeaponDamage:(p,id,base,bonuses)=>base*bonuses.reduce((a,b)=>a*(1+b/100),1),rollAttackDamage:(p,damage)=>({damage,type:'normal'})});
+const c=vm.createContext({artilleryExplosionDuration:.9,artilleryExplosionReady:Promise.resolve(),drawArtilleryExplosion(){},getAllEnemies:()=>[...enemies.values()],getEnemy:id=>enemies.get(id),damageEnemy:(id,damage)=>{hits.push({id,damage});return true},ensureCombatStats:p=>p.combatStats,stationaryWeaponIntervalScale:()=>1,startingWeaponProjectileCount:(p,id,count)=>count,totalWeaponDamage:(p,id,base,bonuses)=>base*bonuses.reduce((a,b)=>a*(1+b/100),1),rollAttackDamage:(p,damage)=>({damage,type:'normal'})});
 for(const name of ['game-config','combat-hitboxes','enemy-spatial-index','saint-predator'])vm.runInContext(fs.readFileSync(`Development/${name}.js`,'utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ',''),c);
 c.getCombatHitbox=p=>({x:p.x,y:p.y,rx:10,ry:10});c.getEnemyHurtbox=e=>({...e,rx:5,ry:5,shape:'ellipse'});
 const run=s=>vm.runInContext(s,c);

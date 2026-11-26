@@ -77,7 +77,7 @@ export function createPrincessKeyAttack({random=Math.random}={}) {
       remaining-=step;cooldown=Math.max(0,cooldown-step);
     }
   }
-  return {ready:Promise.resolve(),reset,update,
+  return {getAuraSources(){return bullets;},ready:Promise.resolve(),reset,update,
     setExMode(active,shooting) {
       const next=active&&shooting?'beam':'normal';
       if(next===exMode)return;

@@ -10921,3 +10921,319 @@ CHANGES: Added wakamo-bayonet.js, config/progression/catalog, Stage4 Neru persis
 VALIDATION: Focused Bayonet and armory tests pass, including no attacks without target, nearest-range triggering, unlimited swing hits and MAX two hits. Both runtime module graphs link. Full suite running.
 FOLLOW-UP VALIDATION: Full suite exposed an old Phrenapates assertion requiring saved character-skill loadouts. Updated it to assert skills are not persisted, matching the latest explicit reload-reset policy. Phrenapates targeted test passes; full suite rerunning.
 VALIDATION COMPLETE: All130 test files pass; both runtime module graphs link. No browser gameplay playtest performed.
+
+USER: For the Molotov Skill, you have to draw a circle and a fire symbol inside it
+ASSISTANT: I will add the Molotov casting pattern as a circle with a fire symbol inside, using the shared EX-symbol gradient. Molotov EX effect has not been defined, so reference/recognition are prepared while casting remains inactive until its effect is specified.
+CHANGES: Added Molotov reference strokes and local pattern matcher/routing, EX Skills reference entry and icon in both previews, explicit inactive EX flag pending effect definition. No autoattack changes.
+VALIDATION: Molotov pattern, skill-casting, Luminous pattern, Princess/Key pattern and pause tests pass; both runtime module graphs link. Full suite running.
+VALIDATION COMPLETE: All131 test files pass; both runtime module graphs link. No browser gameplay playtest performed.
+
+USER: The skill rapidly throws 8-16 molotives depending on skill level that do double damage, are double the size and last twice as long as well as they toss twice the distance
+ASSISTANT: I will activate Molotov EX: rapid8-16 individual throws based on current weapon level, with doubled damage, size, duration and throw distance. Existing upgrades stack underneath these multipliers. Throws spaced0.08s; normal autoattacks continue.
+CHANGES: Added burst queue/cast method to molotov-cocktail.js, EX settings/count formula, enabled EX on weapon, drawing/admin routing and effect description in both previews. Reused existing projectile/ground visuals and skill-damage calculation. Existing napalm preserved; reset cancels queued throws. Enhanced flat damage retains normal volley split count.
+VALIDATION: New Molotov EX regression passes for counts, stagger, bottle/fire size, damage, lifetime, actual throw displacement, MAX inheritance/split and existing-fire preservation. Both runtime graphs link. Full suite running.
+VALIDATION COMPLETE: All132 test files passed; both runtime module graphs link. No browser gameplay playtest performed.
+
+USER: The EX skills name is going to be ARSON! Also have it target close and middle of the pack enemies when casted. Avoid overlaps as much as possible
+ASSISTANT: I will rename the EX skill to ARSON! and spread its throws across nearby and mid-range enemy groups, favoring less overlap.
+CHANGES: Added EX-only pack-coverage/spacing target selector using enemy centers and nearby candidate offsets, all pending throws plus active fires as reservations, nearest64-target cap and cached coverage. Kept2x maximum range while landing on actual targets. Normal autoattack target selection unchanged. Updated skill reference/recognition/admin names to ARSON!; weapon name remains Molotov Cocktail.
+VALIDATION: Molotov EX/normal/pattern, admin skill and pause tests pass. Tests cover pack center coverage, spread positions, distant target exclusion and no-enemy non-overlapping fallback.
+
+USER: Throwing Cards EX Skill Skilled Throw. Draw boomerang with a arrow pointing into itself in a circle around the boomerrang. Upon using skill throws a single card that upon killing a mob throws itself again and repeats bouncing around killing enemies before timing out and exploding into8 card throws.
+ASSISTANT: I will add Skilled Throw with boomerang/looping-arrow pattern, kill-triggered rethrows and8-card timeout burst. Asked whether to use current weapon damage/upgraded3-4s duration or different values. No answer received during independent pattern work; proceeding with stated provisional current-weapon defaults.
+CHANGES: Extended throwing-cards.js to reuse existing art/spin/afterimages for single EX projectile and radial8-card finisher; redirects only on own non-boss kills without resetting timer. Added reference/matcher/geometry checks, EX library/title/icon, weapon EX flag/name, admin shortcut and recognized-event casting in both previews. Normal autoattacks unchanged.
+VALIDATION: Focused EX and pattern tests pass, including successivekills, nonlethal damage, fixed/upgraded timeout,8-card finish, reset/unequip, missing arrow rejection and routing. Both runtime module graphs link. Full suite running.
+VALIDATION COMPLETE: All134 test files pass; both runtime module graphs link. No browser gameplay playtest performed.
+
+USER: use current weapon damage values and duration x2, duraiton x3. Throw 3 cards
+ASSISTANT: I am reading that as2x current weapon damage,3x current duration and3 initial cards. Each initial card retains its8-card timeout burst.
+CHANGES: Added skilledThrowSettings with initialCount3/damageMultiplier2/durationMultiplier3/finisherCount8. Three main cards use9-12s timeout; each produces8 finishers (24total), damage doubled, enhancement split across3 original projectiles. Updated EX reference description and regression assertions.
+VALIDATION: Skilled Throw EX/pattern, normal Throwing Cards and pause tests pass.
+
+USER: make it a boomerang symbol only
+ASSISTANT: I will change Skilled Throw pattern to just the boomerang, removing surrounding arrow from diagram and recognition.
+CHANGES: Single-outline reference and local matcher, enlarged boomerang-only SVG and hint in both previews. No skill gameplay changes.
+VALIDATION: Skilled Throw pattern/gameplay, Luminous pattern and pause tests pass; boomerang alone accepted, empty/straight-line/unrelated symbols rejected.
+
+USER: change it to be a diagional L shape like this [attached diagonal L-shaped outline reference]
+ASSISTANT: I will match Skilled Throw symbol to the diagonal L-shaped outline and update recognition.
+CHANGES: Replaced previous boomerang outline with traced diagonal-L polygon in reference/matcher and both preview EX diagrams. No skill effect changes.
+VALIDATION: Skilled Throw pattern and gameplay tests pass.
+
+USER: Student Handbook EX skill Strict Rules. Upon casting3rings of books sent out for10seconds, firstnormal, second1.5x size/damage/stuff, third2x. Amount in each ring depends on weapon level.
+ASSISTANT: I will add three ten-second rings using current weapon count per ring, scaled1/1.5/2. Asked drawing pattern while implementing effect/admin testing.
+USER ANSWER: a circle wiht a + sign in it
+ASSISTANT: Strict Rules will use circle with + inside. Added pattern and verified full-duration three rings.
+CHANGES: Extended student-handbook.js with cast/EX timers and tiered ring stats, replacing/suppressing ordinary volley during skill and resuming afterward. EX books retain full10s rather than exhausting normal7hits. Added factoryname/EXflag, recognition/reference/cancellation route, admin map and runtime casting, librarydiagram/description/icon in both previews. Racer and normal enhancement split inherited.
+VALIDATION: New Strict Rules effect/pattern tests plus normal Student Handbook, Luminous pattern and pause tests pass. Both runtime module graphs link. Full suite running.
+VALIDATION COMPLETE: All136 test files passed; both runtime module graphs link. No browser gameplay playtest performed.
+
+USER: i said 3 rings not 2. Also when drawing it it gets mistaken as planas umbrella skill sometimes
+ASSISTANT: I will check ring visibility and prevent circle-plus from selecting Umbrella. Three rings existed but enlarged books could visually merge; widened orbit spacing and kept aligned phase offsets. Added authoritative circle-plus routing rather than AI fallback.
+CHANGES: Strict Rules orbital scales1/1.75/2.5, tier size/damage unchanged; travel speed adjusted to retain angular phase spacing. Recognition supports rough/offset/tilted plus, requires straight crossing axes and circle outline, explicitly blocks Umbrella rescue even when Handbook is cooling down. Reference description corrected to avoid outdated orbit multipliers.
+VALIDATION: Focused Strict Rules/other-pattern/casting tests pass. Browser-rendered MAX18 books visually show3 distinct rings, with actual book art and trails. Full suite running.
+VALIDATION COMPLETE: All136 test files pass. Headless render verified3 visually separate rings atMAX; biased-AI regression confirms Strict Rules cannot be replaced by Umbrella on recognized circle-plus.
+
+USER: increase the rings distance by a bit more
+ASSISTANT: I will move the middle and outer rings a little farther out.
+CHANGES: Strict Rules middle radius157.5 to171px, outer225 to252px, inner90px unchanged. Tier sizes/damage unchanged.
+VALIDATION: Strict Rules regression passes, including Racer-scaled radii.
+
+USER: its mainly rings 2 and 3 being too close to each other
+ASSISTANT: I will move only third ring farther out, leaving rings1/2 unchanged.
+CHANGES: Outer radius252 to288px; middle171px and inner90px unchanged. Ring2/3 gap117px.
+VALIDATION: Strict Rules regression passes.
+
+USER: replace name water dousing with Splash!
+ASSISTANT: I will rename Water Dousing to Splash! throughout visible game text.
+CHANGES: Weapon catalog name, level-up titles and both admin equip labels updated; internal water-dousing ID preserved.
+VALIDATION: Water weapon and armory regressions pass.
+
+USER: For Splash! EX skill draw a water dropplet with arrow pointing up above it. Creates massive spray of water stretching whole screen and piercing all enemies, slowing survivors80% for5seconds.
+ASSISTANT: I will add the droplet/up-arrow pattern and screen-length aimed piercing spray. Reusing current weapon damage; independent slow timer preserves80% effect against weaker slows.
+CHANGES: Extended water-dousing.js with EX cast and larger water-stream render configuration, viewport-reaching cone and independent survivor slow. Added status aging/combination in slowdown-tuning.js, factory EX flag/name, recognizer/reference/cancellation route, admin effect map, library and runtime dispatch in both previews. Normal attack retained.
+VALIDATION: New Splash EX/pattern tests pass: near/far targets pierced, behind/off-screen excluded,80%/5s status and weaker slow independence, dead/immune handling, dense water spray and pattern routing. Both runtime module graphs link. Full suite running.
+VALIDATION COMPLETE: All138 test files pass; both runtime module graphs link. No browser gameplay playtest performed.
+
+USER: The name of the EX skill is Water Fight! Slowed enemies have a dark blue tint over their sprites to indicate so.
+ASSISTANT: I will rename the EX skill to Water Fight! and add a dark-blue tint while enemies are slowed.
+CHANGES: Updated EX skillName/recognition/reference title, preserving weapon name. Added cached dark-blue alpha-mask helper and active-slow tint rule to damage-feedback.js; both shared sprite renderers apply it under hit-flash feedback for normal sheets/GIFs. Active Water Fight and normal slowing statuses tint enemies; expiry/death/player states do not.
+VALIDATION: New slow-tint tests plus Water Fight EX/pattern tests pass, including cache reuse and source-in transparency. Both runtime module graphs link. Full suite running.
+VALIDATION COMPLETE: All139 test files pass; both runtime module graphs link. No browser gameplay playtest performed.
+
+USER: Tell me if planas skill have the flattened status, and if flattened was added. if it was added, flatteneed enemies have sprites squished and compressed vertically down to10% original height temporarily when flattened.
+ASSISTANT: Checked current code: Flattened exists on Swipe!,30%chance for5s. Umbrella EX uses stun/knockback, not Flattened. Changing existing Flattened visual from32% to10% height, foot anchored, with matching hurtbox compression.
+CHANGES: Updated drawPose in both previews and getEnemyHurtbox center/radius/mask scaling from0.32 to0.1. Retained movement/contact behavior and automatic expiry restoration. Added rendering/expiry checks and adjusted synthetic repeated-hit fixture bounds.
+VALIDATION: Swipe/Flattened, animation-hurtbox and Plana umbrella tests pass. Full suite running.
+VALIDATION COMPLETE: All139 test files pass. Existing Flattened status verified and updated to10% sprite height with matching hurtbox, restored upon expiry.
+
+USER: anything hit by umbrella ex is flattened
+ASSISTANT: I will make every surviving umbrella EX hit target Flattened for5seconds using10%-height compression.
+CHANGES: Added guaranteed Flattened to surviving direct Umbrella EX targets and EX explosion on-hit targets; retained existing stun/knockback. Misses do not apply status.
+VALIDATION: Plana EX and Swipe/Flattened regressions pass; both normal mobs and bosses receive5s Flattened, dodged target does not.
+FOLLOW-UP: Updated Umbrella EX description in pause reference to explicitly mention Flattened alongside existing stun/knockback; pause tests pass.
+
+USER: add these status effects to the admin panel,
+ASSISTANT: I will add Flattened and Slowed buttons alongside Freeze/Stun for enemies on screen.
+CHANGES: Added status-effects-admin.js and buttons in both preview Status effects panels. Flatten5s, Slow80%/5s, visible living enemies/bosses only. Shared status display/timers provide10%height and darkblue tint.
+VALIDATION: Admin status, slow tint and Swipe/Flattened tests pass; both runtime graphs link.
+
+USER: animatinos should not pause when under status effects or slowered, they should still play. Change flattened sprite to 20% of original instea dof 10%
+ASSISTANT: I will keep enemy animations playing at normal speed during status effects, while movement remains restricted as intended. I will also change Flattened sprites and their hurtboxes to 20% height.
+CHANGES: Development/npc-tools.js continues visual animation during stun and flatten as well as freeze. frozen-status.js loops attack visuals and advances pose transitions without advancing boss action clocks. Both movement builds and combat-hitboxes.js now use 20% flattened height. Admin description and regression tests updated. NOTES.md and FORMULAS.md appended.
+VALIDATION: 140 test files, 0 failures. No browser gameplay playtest performed.
+ASSISTANT: All 140 test files pass, including checks that status animations advance without advancing boss attack timers.
+
+USER: Orbital Compass EX Skill. To cast, draw a circle with a ring around the circle, or oval on top of the circle like saturn. When cast, the skill launches a larger magnetic needle that will follow the player and bounce off the player to the next target for 5 seconds, and for every enemy it kills it causes plana to throw a normal orbital compass reguardless of attack time or cooldown.
+ASSISTANT: I will add the Saturn-shaped casting pattern and a five-second oversized needle that rebounds between Plana and enemies. Each kill will trigger an extra normal Orbital Compass throw without resetting its regular cooldown.
+ASSISTANT: The effect and casting menu are connected. I am using the current weapon damage and a 2x needle size. The needle returns to Plana after each enemy hit, then rebounds toward the next target; its kills produce one extra normal throw each.
+ASSISTANT: The checks caught a conflict with ARSON! circle-and-flame pattern. I tightened the ring recognition, and both patterns now pass their tests. I am finishing the full regression run.
+CHANGES: Orbital Compass cast/movement/bonus throws, game-config EX metadata, local Saturn pattern recognition and cancellation routing, admin skill mapping, both movement dispatches, both EX libraries and pause icon. Regression tests added for Saturn and concentric ring patterns, wrong pattern rejection, kill bonus, five-second duration, double size, repeated rebounds and moving player pursuit. Documentation appended. Regular compass boomerangs remain unchanged.
+VALIDATION: Both runtime module graphs linked. Initial full run identified one ARSON pattern conflict, corrected and targeted tests passed. No browser gameplay playtest.
+VALIDATION: Final full regression run: 141 test files, 0 failures. Both runtime module graphs linked successfully.
+
+USER: give the ex skill one acceleration and a bit of pierce like the normal one when thrown / returning and so on. Also its skill name is This Direction?
+ASSISTANT: I will give the EX needle acceleration and deceleration on its outward and return trips, let it pierce a few enemies before returning, and rename the skill to This Direction?
+CHANGES: EX flight acceleration/deceleration and up-to-three-hit outward pierce, return-trip damage enabled; skill name updated in metadata, recognizer and both libraries. Tests updated for longer outward pass and added acceleration, pierce and name coverage. Normal compass unchanged.
+ASSISTANT: This Direction? now accelerates on launch, slows before turning, and accelerates back toward Plana. It pierces up to three enemies on an outward pass and can hit enemies on the return trip. The five-second duration and extra throws on kills are unchanged.
+VALIDATION: 141 test files passed, zero failures. Both runtime module graphs linked. No browser gameplay playtest performed.
+`nUSER: only when returned to plana and sent out again it instasntly goes out without delay`nASSISTANT: I will make the needle launch immediately when it returns to Plana, while keeping the initial throw and return acceleration.`nCHANGES: Orbital Compass EX rebound sets instantLaunch; acceleration bypass applies only to the outward rebound. Added frame-step regression checking full-speed first rebound frame.`nVALIDATION: Orbital Compass combat and EX pattern tests pass, including existing initial acceleration test and new instant rebound test.
+
+USER: theres still a delay once reaching plana, it should be a instant touch planas center and back out
+ASSISTANT: I will make the needle reach Planas exact center and rebound immediately, removing the slowdown as it approaches her.
+CHANGES: Removed return approach deceleration and hitbox-edge arrival threshold. Return intersects exact player.x/player.y, spends remaining current substep moving outward at full launch speed. Updated regression for center arrival and immediate full-speed rebound.
+ASSISTANT: The remaining delay came from slowing near Plana and rebounding at her hitbox edge. The needle now touches her exact center and uses the rest of that same update to travel back out, with no pause. The Compass tests pass.
+VALIDATION: Orbital Compass combat and Saturn recognition tests pass. No browser gameplay playtest performed.
+
+USER: increase skilll duration by 2x Also reloads should also reset internal timer and map state
+ASSISTANT: I will double the skill duration to 10 seconds and make reloads reset the internal timer and map state while preserving admin settings.
+CHANGES: Orbital Compass EX lifetime doubled and descriptions updated. Both runtime session hooks now exclude/ignore live map state, including older saved values. Clock inputs excluded from preference capture and restore. Reload persistence tests verify map remains initial, clock fields zero, admin preferences preserved. Compass test verifies still active at five seconds, expired at ten.
+ASSISTANT: This Direction? now lasts 10 seconds. Reloads no longer restore the map or clock inputs, including from older saved sessions. Admin preferences such as Instant Start and testing toggles still persist.
+VALIDATION: 141 test files passed with zero failures; both runtime module graphs linked successfully. No browser gameplay playtest performed.
+
+USER: add a admin toggle under disable autoattacks to disable exp drops
+ASSISTANT: I will add a Disable EXP drops toggle below Disable autoattacks and make it persist with the other admin settings.
+CHANGES: Both preview HTML controls and runtime change handlers added; exp-drops.js exposes setEnemyExpDropsEnabled and skips enemy EXP report generation when disabled. Existing reports/other loot remain unchanged. Added admin-exp-drops regression test.
+VALIDATION: Admin EXP drops, dev-session and support-items tests passed; both runtime module graphs linked. No browser gameplay playtest performed.
+
+USER: instead have the skill needle hit an enemy it throws one, while killing throws 2 instead
+ASSISTANT: I will change This Direction? so each successful hit throws one normal compass, while a killing hit throws two total.
+CHANGES: Accepted EX needle hits launch 1 normal compass on nonlethal hits or 2 on lethal hits. Applies both flight legs; normal bonus projectiles cannot recursively trigger throws. Both EX descriptions updated.
+VALIDATION: Orbital Compass combat and Saturn pattern tests pass, including one-per-hit, two-per-kill, no recursion, instant center rebound and ten-second expiry. No browser gameplay playtest performed.
+
+USER: For wakamos Bayonet, the skill will be Charge! Its cast pattern is 3 arrows pointing upward in a triangle. When cast, the player winds back slightly before dashing in the direction with afterimages behind them at 3x speed foward until they hit a wall / or the charge lasts 5 secondsand anything they hit is dealt 10x damage and pushed aside stunned for 5 seconds. During this charge she cannot take damage.
+ASSISTANT: I will add Charge! with the three-arrow casting pattern, a brief windback, and a 3x speed dash with afterimages. The charge will grant invulnerability, deal 10x Bayonet damage, and push aside and stun enemies for five seconds, ending on a wall or after five seconds.
+CHANGES: New bayonet-charge.js module; both movement runtimes integrate forced motion through existing player collision resolver and pose afterimage rendering. Invulnerability gate in player-stats. Bayonet EX metadata, admin slot mapping, local recognition/loadout/cancellation routing, both EX libraries and icon list updated. Tests added for effect and pattern.
+ASSISTANT: The charge and drawing pattern are connected. I am using a 0.25-second windback before the dash. Wall checks use the players existing collision rules, and each enemy can take one charge hit. The focused tests pass for damage, invulnerability, wall stops, and afterimages.
+VALIDATION: All 144 test files passed, zero failures. Both runtime module graphs linked. No browser gameplay playtest performed.
+
+USER: it does not regonize the upward arro0ws [attached screenshot of three upward arrows in triangle]
+ASSISTANT: I will adjust the recognizer to accept the three-arrow shape in your screenshot, including curved arrowheads and uneven spacing.
+CHANGES: Replaced Charge whole-image similarity threshold with local arrow tip/left-wing/right-wing/shaft geometry plus triangle validation. Added reconstructed screenshot strokes regression and routing test against Umbrella, plus missing-shaft/downward-arrow rejection.
+ASSISTANT: The recognizer was too strict about shaft lengths and overall proportions. It now checks each arrow separately, then verifies their triangular layout. A test drawing based on your screenshot now correctly selects Charge!.
+VALIDATION: Full run initially found one failure in new screenshot fixture; corrected tip selection. All 8 pattern test files now pass, including screenshot reconstruction. Other 143 full-suite test files passed. No browser gameplay playtest performed.
+
+USER: give all EX skill drawings buffer space for imperfections for human rapid drawing on mouse. But never have them be mistaken as other skills which has happened before. create a redundent system that can help prevent that while keeping buffer space
+ASSISTANT: I will make recognition more forgiving of rushed mouse drawings, with extra checks for each skills distinguishing features. If a drawing remains ambiguous, it should ask for a retry rather than cast another skill. I will test rough versions of every pattern against the other skills.
+CHANGES: Shared analyzeSkillDrawing decision used for actual loadout casting and cancellation. Uses bounded length-based samples, jitter allowance, multiple tilt alignments, per-component coverage/extra-ink checks, independent existing geometry evidence, frame-orientation and unexpected-closed-shape checks, global all-symbol ranking and rival margin. Identifies symbol before checking loadout/cooldown so unavailable skills cannot become substitutes. AI cannot override final choice. Raw drawing accuracy retained for existing damage formulas. Eight-entry decision cache bounds repeated work.
+ASSISTANT: The new checks compare each drawing against all known skills, including unequipped skills and those on cooldown. They allow bounded jitter and slight tilt, check for missing components, and reject close matches. AI predictions can no longer override the final skill choice.
+ASSISTANT: The rough-drawing tests caught a case where Water Fights arrow was being rejected despite a good overall match. I adjusted the component tolerance and alignment checks to accept it. I am also checking small closure gaps and ensuring a cooldown never redirects a drawing to another skill.
+ASSISTANT: I found another important edge case: overlapping square patterns can resemble the ultimates square-and-diamond star. I added a separate frame-orientation check to distinguish them and reject mixed symbols. The earlier rough-square example still passes.
+ASSISTANT: The new safety tests pass for 44 clean and imperfect drawings across all 11 skills. They also cover missing components, mixed symbols, misleading AI results, and unavailable or cooling-down skills. I am finishing the full regression run.
+VALIDATION: Final full regression run: 145 test files passed, zero failures. New 44-case recognition safety matrix passes; both runtime module graphs linked. Earlier rough-frame and mixed-symbol conflicts corrected. No browser gameplay playtest performed.
+
+USER: the windback on Charge changes character sprite facing direction briefly during windup, it should not do th at
+ASSISTANT: I will keep the character facing the charge direction during windback, while still moving them slightly backward.
+CHANGES: bayonet-charge.js passes locked cast angle separately from motion angle. Both runtime callbacks use locked angle for sprite direction while chargeMotion retains backward windback displacement. Added regression executing both runtime callbacks for forward facing/backward movement and testing the callback angles from Charge.
+VALIDATION: Bayonet Charge effect/facing tests passed; both runtime module graphs linked. No browser gameplay playtest performed.
+
+USER: dash can be canceled by holding the other direction for movement
+ASSISTANT: I will make holding the opposite movement direction cancel Charge!, returning the player to normal movement and ending its invulnerability.
+CHANGES: Added cancelByMovement comparing normalized input against locked dash heading; opposing movement cancels active dash and invulnerability, preserving cooldown and fading afterimages. Both runtimes check before forced movement, allowing normal input same frame. Both descriptions updated.
+VALIDATION: Charge combat/facing/cancellation tests pass for forward, side, zero, opposite diagonal and vertical input. No browser gameplay playtest performed.
+
+USER: have it so holding the opposite direction slows the charge until it cancels, which takes 2 seconds, if let go, charge accelerates back up
+ASSISTANT: I will make opposite movement brake the charge over two seconds before canceling it. Releasing that input will let the charge accelerate back to full speed.
+CHANGES: Replaced immediate cancellation with opposite-input state and linear two-second braking ramp. Release resets hold and smoothly restores speed. Both runtime bindings and descriptions updated. Windback, five-second charge lifetime, wall stop and existing damage unchanged.
+ASSISTANT: Opposite movement now smoothly slows Charge! and cancels it after a continuous two-second hold. Releasing resets that hold and lets the charge accelerate back toward full speed. Invulnerability remains active until the charge ends.
+VALIDATION: Charge effect/facing/braking tests passed, including half-speed after one second, release acceleration, reset hold, cancellation at two seconds, vertical/diagonal input. Both runtime module graphs linked. No browser gameplay playtest performed.
+
+USER: during charge have her rapidly swing the blade in front resulting in the damage rather then her ramming damage
+ASSISTANT: I will move Charges damage from player contact to rapid blade swings in front of her. The dash, braking, invulnerability, and afterimages will stay in place.
+CHANGES: Added rapid forward blade rendering with original Bayonet sprite and blade afterimages, swept blade collision replaces body collision. Preserves 10x damage, stun/push and dash control. Normal Bayonet autoattack suppressed during charge. Shared Bayonet swing collision helper and enemy spatial index used. Blade image loading integrated in both builds. Regression covers front weapon-only hit, rear body-overlap exclusion, blade drawing and suppression.
+ASSISTANT: Charge! now rapidly sweeps the Bayonet across the area in front of her, and those blade sweeps deal the 10x damage, push, and stun. Normal Bayonet attacks pause during the charge. The tests confirm that a target behind the blade no longer takes ram damage.
+VALIDATION: All 145 test files passed, zero failures; both runtime module graphs linked. No browser gameplay playtest performed.
+
+USER: the sword swing should have a slight blur
+ASSISTANT: I will add a slight motion blur to Charges blade swings.
+CHANGES: Charge blade draw uses subtle blur on main blade and softer blur on blade afterimages, scoped by canvas save/restore.
+VALIDATION: Charge tests pass. No browser visual playtest performed.
+
+USER: extend the bayonet out a little bit so its not inside plana completely, just like the umbrella but not as far out, this includes its normal attach too
+ASSISTANT: I will move the Bayonet slightly forward for both normal attacks and Charge!, and shift its hit detection with the blade.
+CHANGES: Shared 12px aim-direction offset for normal/Charge rendering and collision. Normal attack acquisition includes forward offset; Charge spatial index queries follow shifted blade pivot. Regression verifies forward blade hits and normal draw origin offset/all directions.
+VALIDATION: Normal Bayonet and Charge test files pass. No browser visual playtest performed.
+
+USER: a bit more so the sprite itself is not touching plana
+ASSISTANT: I will move the Bayonet a little farther forward in both normal attacks and Charge!.
+CHANGES: Shared blade offset and normal acquisition offset increased from 12px to 20px. Matching collision remains aligned. Regression expectations updated.
+VALIDATION: Normal Bayonet and Charge test files pass. No browser visual playtest performed.
+
+USER: its swinging fromt he hangle the swing should be from a pivit like the umbrella at the center of planas hitbox
+ASSISTANT: I will move the swing pivot to the center of Planas hitbox, like the umbrella, while keeping the blade extended outward. I will update the hit detection to follow that arc.
+CHANGES: Normal and Charge render transforms now translate to player hitbox center, rotate swing angle, extend blade radially 20px and orient artwork. Collision ray start/end follow rotating radial blade span. Updated Charge spatial query radius. Tests verify both pivots and no central ram hit.
+VALIDATION: Normal Bayonet and Charge test files pass. No browser visual playtest performed.
+
+USER: time to surf icon flip it horizontally Also for the EX skill, its name is Riding Waves Casting icon is to draw a wave pattern What it does is to create a wave underneath the user and pushes the user in the direction they are facing while riding the wave. The wave flattens enemies for 2 secondsand slows them by 50% for 6 seconds. The wave is about the length of 3 planas. The ride lasts for 10 seconds or until the player cancels it by fighting the waves direction like the bayonet charge
+ASSISTANT: I will flip the Time to Surf icon and add Riding Waves with a wave-shaped casting pattern. It will carry the player forward for up to 10 seconds, flatten enemies for two seconds, and slow them by 50% for six seconds. Opposite movement will brake and cancel the ride like Charge!.
+CHANGES: Added riding-waves.js with facing-locked forced movement through normal collision resolution, chosen default 1.5x speed, 10-second duration, player standing pose, three-character-wide foam/gradient wave under feet, once-per-target 2s Flattened and independent 50% 6s slow. Continuous opposite input brakes/cancels in 2s; release resets hold/reaccelerates. No invulnerability/new damage. Charge/ride mutually exclusive. Surf icon flip, EX metadata, admin mapping, both runtimes/reset hooks, library/icon, global recognition and slow tint/aging integrated. Natural one/two/three wave curves in either phase accepted. New effect/pattern tests and expanded 12-skill mixed-pattern regression.
+ASSISTANT: The ride is connected to facing direction and the two-second braking controls. I am using 1.5x movement speed for now, with the wave spanning about three character heights across. I will test its status durations, cancellation, and drawing recognition alongside the other skills.
+ASSISTANT: Riding Waves now accepts one, two, or three wave curves through the same recognition safeguards as the other EX skills. The effect tests pass: Flattened lasts two seconds, the separate 50% slow lasts six seconds, and braking takes a continuous two-second hold. The full regression run is still in progress.
+ASSISTANT: The new mixed-symbol test found a wave drawing being mistaken for the Saturn pattern when both were overlaid. I am tightening that check so mixed wave-and-ring drawings are rejected rather than selecting either skill.
+VALIDATION: Expanded 48-case/12-skill drawing matrix passes after adding open-wave signature checks for compass and closed-shape veto for Riding Waves. Initial full run found this one mixed-symbol conflict; corrected. Effect and one/two/three-wave phase tests pass. Both module graphs link. No browser gameplay playtest performed.
+VALIDATION: Final full regression run: 147 test files passed, zero failures. Expanded 48-case drawing matrix passes. Both runtime module graphs linked. No browser gameplay playtest performed.
+
+USER: put the surfboard underplana, she can only face left or right sprite wise during this skill. She can change where she goes its not a set direction. It can go over obstacles but not out of bounds / playarea walls.
+ASSISTANT: I will put the surfboard under Plana, let movement input steer the ride, and keep her sprite facing only left or right. I will make the ride pass over obstacles while still respecting the play areas outer walls.
+CHANGES: Added surfboard sprite beneath rider, facing-only board mirroring, steering target/current heading with bounded turns and retained opposite-input braking. Ride callback enforces left/right standing poses. Collision branch bypasses props for ride while retaining strip clamps and island shoreline resolver. Image loading integrated into both previews. New tests execute both movement tails/callbacks to verify boundary routing and standing facing; expanded effect tests for steering and board draw.
+ASSISTANT: The surfboard now renders beneath her feet, and the ride can turn with movement input while her sprite stays left- or right-facing. Input against the waves current direction still brakes it; side or diagonal input steers it. I am checking that obstacle bypass cannot bypass map boundaries.
+VALIDATION: Riding Waves effect/steering, new collision/facing, boss bounds and Charge tests pass; both runtime module graphs linked. No browser gameplay playtest performed.
+VALIDATION: Final full regression run: 148 test files passed, zero failures. Both runtime module graphs linked. No browser gameplay playtest performed.
+
+USER: Angle the surf board slighlty up so its as if shes surfing. Also the directional aim of mouse does not aim it when using mouse aim
+ASSISTANT: I will tilt the surfboards nose slightly upward and make mouse aim steer Riding Waves when mouse aiming is enabled.
+CHANGES: Board render rotates 10 degrees nose-up depending on facing. Added setAimAngle; both runtimes update target using camera-aware mouse aim in cursor mode, and initial cast uses mouse angle instead of sprite facing. Mouse target takes priority over keyboard steering while existing opposite-input brake remains.
+VALIDATION: Riding Waves effect/steering/tilt, collision/facing and drawing-aim tests pass; both runtime module graphs linked. No browser visual playtest performed.
+
+USER: make the skill waves more like waves instead of a oval texture with trailing and effects. Also it does damage too
+ASSISTANT: I will redraw the skill wave with a curling crest, foam, wake trails, and splashes. I will also add damage using Time to Surfs current weapon damage and hit interval.
+CHANGES: Replaced oval wave drawing with breaking crest, curled foam, gradient trailing ribbons, animated wake and splash particles. Riding Waves now rolls current weapon damage with skill modifiers and per-target normal wave hit cooldown. Existing statuses apply on first accepted contact only. Both skill descriptions updated. Tests verify damage/cadence and crest rendering.
+ASSISTANT: The oval has been replaced with a breaking crest, animated foam curls, fading wake ribbons, and spray particles. Riding Waves now deals current Time to Surf damage every 0.33 seconds per target, while keeping the flatten and slow effects.
+VALIDATION: Riding Waves effect/damage/render, collision/facing and normal Time to Surf tests pass; both runtime module graphs linked. No browser visual playtest performed.
+
+USER: when surfing you cannot take damage from normal enemies, only projectiles and bosses
+ASSISTANT: I will make Riding Waves block contact damage from normal enemies, while keeping projectiles and boss attacks able to hurt the player.
+CHANGES: Normal enemy contact damage suppressed in npc-contact while riding. Shared boss classification preserves boss contact, projectile/ability paths unchanged. No global invulnerability or blocked-hit I-frames introduced. Both descriptions updated.
+VALIDATION: Riding Waves contact immunity/boss/projectile/exit tests, frozen status, Swipe and boss behavior tests pass; both runtime module graphs linked. No browser gameplay playtest performed.
+
+USER: beach ball EX skill pattern is a circle with X and a + symbol on top of each other. Its called Return This! You serve a larger beach ball thats slightly slowed, but upon expiring, it explodes with a massive explosion that does a X accoss the entire screen with the explosion X thickness as thick as the ball
+ASSISTANT: I will add Return This! with a circle enclosing an overlaid X and +. It will launch a larger, slightly slower beach ball that expires into a screen-spanning X blast, with each arm as thick as the ball.
+CHANGES: Serve attack gains cast method, one aimed double-size/20% slower EX ball with infinite hit budget until normal 3s expiry. Current explosion damage retained; dynamic blast geometry uses viewport extent and ball diameter. Shared explosion renderer accepts explicit arm length/thickness, normal visuals unchanged. Skill metadata/admin/runtime/library/icon added. Global all-symbol recognizer adds Return This with independent centered cross-axis checks to avoid Strict Rules/Umbrella confusion. Pattern/effect tests and expanded 13-skill matrix added.
+ASSISTANT: I am using one ball at twice its normal size and 20% lower speed, with the existing three-second lifetime and explosion damage. Its expiry blast will scale to the current viewport. I am also adding checks to distinguish the eight-spoke symbol from Strict Rules circle-and-plus.
+ASSISTANT: The effect tests pass: the ball lasts until expiry, and the X blast reaches across the viewport with ball-width arms. The drawing tests also distinguish Return This! from Strict Rules and Umbrella, while allowing harmless retracing of its circle and plus.
+VALIDATION: New effect/pattern and 52-case drawing matrix pass. Initial full run flagged an overly strict mixed-symbol assertion: retraced circle/+ plus complete Return This is the same valid eight-spoke symbol, so test corrected to assert Return This. Mixed Umbrella/Return This remains rejected. Both module graphs linked. No browser gameplay playtest performed.
+VALIDATION: Final full regression run: 150 test files passed, zero failures. Supplementary >10-hit expiry-only test passes. Both runtime module graphs linked. No browser gameplay playtest performed.
+
+USER: make the ball last 3 times as long and upon kiling spawn the smaller balls, but the smaller balls that spawn from it, their explosions are either + or X and go accross the whole map instead of a small area
+ASSISTANT: I will extend Return This!s ball lifetime to nine seconds and make its kills spawn normal-sized beach balls. Those spawned balls will explode in either a + or X across the visible play area.
+ASSISTANT: For the spawned balls, I will extend the blast through all active enemies along its + or X, including off-screen enemies on scrolling maps. Each kill by the large ball will spawn one normal-sized ball; those smaller balls will not spawn further balls.
+USER: please continue
+ASSISTANT: The nine-second lifetime and kill-spawn behavior are implemented. I am finishing checks that the smaller balls produce both + and X blasts, reach off-screen targets, and do not create recursive spawns.
+CHANGES: Main EX ball gets 9s lifetime and kill hook for one normal-sized child. Child snapshotted normal speed/lifetime/hit limit, random +/X rotation and full active-world blast extent. Shared draw/damage geometry uses same orientation/thickness. Main screen-wide expiry X and normal Serve behavior retained. Both skill descriptions updated. Regression tests for child size, offscreen arm hits, both rotations, expiry and no recursive spawning.
+ASSISTANT: Both blast shapes pass their checks: the smaller balls hit off-screen targets along their + or X arms, and their explosions use the smaller balls thickness. The large ball now lasts nine seconds, and kills by spawned balls do not produce more balls.
+VALIDATION: Focused Return This/Serve tests passed and both runtime module graphs linked. Full suite pending. No browser gameplay playtest performed.
+VALIDATION: Final full regression run: 150 test files passed, zero failures. Both runtime module graphs linked. No browser gameplay playtest performed.
+
+USER: beambag bomb is called Nuclear Bean Bag To cast it, you draw a mushroom shape Upon casting it, it throws one large bean bag out which blows up with a massive radius that does 5x damage with a shockwave that also ripples out doing 2x damage. All enemies hit will take poison damage over time minimum 1, at 10% of the base damage of the weapon. Poisoned enemies are slightly opaced green. This lasts for 10 seconds
+ASSISTANT: I will add Nuclear Bean Bag as Bean Bag Bombs EX skill, cast with a mushroom drawing. I will use a 5x damage blast, a separate 2x damage expanding shockwave, and 10 seconds of green-tinted poison. Poison will tick once per second for 10% of current weapon base damage, with a minimum of 1 damage.
+CHANGES: Added EX cast/landing burst/shockwave to bean-bag-bomb.js. New poison-status.js central tick/update with refresh/minimum/attribution rules, NPC lifecycle hook before status-control exits. Cached green translucent sprite mask rendering in both builds. EX metadata, admin slot mapping, both runtime dispatches, both EX libraries/icon, mushroom pattern and 14-skill global catalog updated. New effect/pattern/tint tests and expanded safety matrix.
+ASSISTANT: I am using a blast radius three times the normal upgraded bomb radius, followed by a shockwave reaching 1.5 times farther. Poison is tracked as an enemy status, so it can keep ticking after the blast ends, including while the enemy is frozen or stunned.
+ASSISTANT: The focused tests pass for the 5x blast, 2x shockwave, and ten poison ticks, including the minimum-1 rule and paused timing. The green tint is cached and respects sprite transparency. The mushroom pattern also passes its recognition checks; I am finishing the full suite.
+VALIDATION: Focused Nuclear Bean damage/poison, pattern (including single-outline mushroom), poison tint and normal Bean Bag tests pass; both runtime module graphs linked. Full suite pending. No browser gameplay playtest performed.
+VALIDATION: Final full regression run: 153 test files passed, zero failures. Both runtime module graphs linked. No browser gameplay playtest performed.
+
+USER: make the shockwave larger and more defined that its visable and reaches more of the map
+ASSISTANT: I will enlarge Nuclear Bean Bags shockwave and strengthen its glow and outline so it is easier to see as it travels across more of the map.
+CHANGES: Doubled wave radius, extended expansion to 1.2s, stronger wider gradient and layered bright rings, delayed fade until last 20% travel. Both descriptions updated. Damage and poison unchanged.
+VALIDATION: Nuclear Bean Bag damage/radius/visual-ring regressions and normal Bean Bag tests pass. No browser visual playtest performed.
+
+USER: Saint Predator ex skill is called Holy Resonance The pattern is to draw a missile pointing up What it does is fire a barrage of missiles that explode and deal 2x damage in a large radius in the direction you are pointing clearing a path
+ASSISTANT: I will add Holy Resonance with an upward-pointing missile pattern and an aimed missile barrage. Each missile will explode in a large radius for 2x Saint Predators current damage.
+CHANGES: Added 12-missile EX barrage queue to saint-predator.js with 0.08s stagger, narrow aimed spread and impact/visible-edge explosions. Current weapon damage doubled per area blast, no duplicate direct hit; normal autoattack unchanged. Artillery explosion rendering/readiness integrated. EX metadata/admin/runtime/library/icon and all-pattern matcher updated. Upward missile reference plus independent nose/body/fins shape evidence. New effect/pattern tests and expanded 15-skill safety matrix.
+ASSISTANT: I am using 12 staggered missiles in a narrow aimed spread, with 120-pixel explosion radii before size modifiers. The missiles will detonate on impact or at the visible screen edge, so the barrage can clear a path even when nothing is directly in front.
+ASSISTANT: The effect tests pass for the staggered barrage and 2x area damage. The rapid-drawing test caught a rough missile outline being rejected, so I am adding a pointed-nose, body, and fins check rather than loosening recognition for every skill.
+ASSISTANT: The rough missile drawing now passes using its specific shape checks, without changing the tolerance for other skills. Holy Resonance is also connected to admin casting and the EX Skills menu. The corrected full regression run is in progress.
+VALIDATION: Focused effect and pattern tests pass, including rough missile examples; both runtime module graphs linked. Initial full suite found rough-missile rejection, corrected with shape evidence. Final full suite pending. No browser gameplay playtest performed.
+VALIDATION: Final full regression run: 155 test files passed, zero failures. Both runtime module graphs linked. No browser gameplay playtest performed.
+
+USER: make the shape something like this instead [attached cyan tall pointed missile outline with widened rectangular base and small top gap]
+ASSISTANT: I will change Holy Resonances pattern to match your sketch: a tall missile outline with a pointed top, widened base, and a small gap allowed at the tip.
+CHANGES: Updated Holy Resonance reference strokes and both EX library diagrams to broad-base outline. Added screenshot-reconstructed uneven/open-tip regression and reversed-stroke test. Skill effect unchanged.
+ASSISTANT: The pattern diagram now matches the broad-base missile shape. A test outline based on your screenshot passes, including its uneven sides and tip gap, and the 15-skill recognition safety matrix still passes.
+VALIDATION: Screenshot-based Holy Resonance pattern tests and 60-case/15-skill safety matrix pass. No browser visual playtest performed.
+VALIDATION: All 12 pattern test files passed; 60-case/15-skill safety matrix passed. No browser gameplay/visual playtest performed.
+
+USER: Next is cheering balloons. Casting pattern is 3 circles inside each other. It is called "Boundy Bloons". Drop a balloon of various sizes on every enemy on screen, staggered within a 1 second window like raining balloons.
+ASSISTANT: Added the Cheering Balloons EX cast, a shuffled one-second target queue with varied balloon sizes, metadata, admin cast mapping, dispatch in both movement builds, EX library diagram/description and icon. Added functional and drawing tests. Strengthened nested-circle versus diamond/plus recognition. Existing edits preserved.
+VALIDATION: Boundy Bloons functional/pattern tests and 64-case, 16-skill drawing safety matrix passed. Both movement module graphs linked successfully. Full regression result follows.
+VALIDATION FINAL: All 157 test files passed, zero failures. Both movement module graphs passed. Browser visual playtest not performed.
+
+USER: make the balls have multiple colors to the image iv sent you before about their size.
+ASSISTANT: I will give the balloons the blue, green, yellow, orange, and red colors from your earlier size reference.
+CHANGES: Cheering Balloons normal and Boundy Bloons projectiles cycle through five shaded palettes, with matching darker seams and existing highlights. Size, motion and damage unchanged.
+VALIDATION: Cheering Balloons and Boundy Bloons tests passed; rain test checks distinct palette colors.
+
+USER: for mustash medal, the skills name is called "PRST Honars". To cast it, you draw a shield icon. It creates 4 walls on all sides and sends them outward to the edge of the screen, flattening and pushing enemies out of the way lasting 8 seconds.
+ASSISTANT: I will add PRST Honars with a shield drawing pattern. It will send four walls outward around the player, pushing and flattening enemies for an eight-second attack.
+CHANGES: Added cast to moustache-medal.js, four cardinal screen-edge walls with swept rectangular collision, EX damage metadata, flatten/push, eight-second lifetime. Added weapon EX metadata, admin map, both movement dispatches, shield reference diagram and pause icon. Registered shield in global recognition catalog. Preserved normal weapon behavior.
+VALIDATION: Normal Moustache Medal and PRST Honars tests passed. 68 canonical/rough drawing cases across 17 skills passed. Both movement module graphs linked. Full suite result follows.
+VALIDATION FINAL: All 158 test files passed, zero failures. Both movement module graphs passed. No browser visual playtest performed.
+
+USER: bad cooking skill is "You really are bad at cooking". All weapons and their projectiles temporarily gain a damaging aura field like the player miasma. Casting pattern is a knife.
+ASSISTANT: I will add the knife casting pattern and damaging miasma fields around active weapon attacks and projectiles. Asked for duration choices 10/15/20 seconds; provisional 10 seconds used while unanswered.
+CHANGES: Added EX field lifecycle, cached visuals, overlap cooldown and damage to bad-cooking.js; live source accessors across current weapon controllers; both movement integrations; EX metadata, admin mapping, knife drawing reference/geometry checks, EX library entry and icon. Added functional regression test and expanded global pattern matrix.
+
+VALIDATION UPDATE: Aura functional test and existing Bad Cooking test passed; both movement module graphs linked. Full 159-file run passed all except rough knife drawing; tightened knife evidence to use its offset tip and parallel narrow handle, preserving continuous mushroom and wave recognition. Final drawing matrix rerun follows. Browser visual testing not performed.
+VALIDATION FINAL: Resolved rough knife regression. Final 72-case/18-skill safety matrix and all 13 pattern test files passed; all remaining files in 159-file suite passed. Both movement module graphs passed.
+
+USER: make the knife more like a cleaver to make drawing easier [cleaver sketch attached].
+ASSISTANT: I will change it to a broad rectangular cleaver blade with a small handle, matching your sketch, and update the casting reference and recognition.
+CHANGES: Replaced Bad Cooking EX knife reference/evidence with two-box cleaver geometry; both HTML reference diagrams and instructions updated. Added screenshot-style regression including small gap, reversed strokes, missing handle and rival symbols. No combat changes.
+VALIDATION: Screenshot cleaver regression and 72-case/18-skill rough drawing safety matrix passed. Remaining pattern regression result follows.
+VALIDATION FINAL: All 14 pattern test files and 72-case drawing safety matrix passed. Browser visual playtest not performed.
+
+USER: For Maid Force, skill name is "Squeeky Clean". Make the spread 100% for 10 seconds. Casting pattern is a star.
+ASSISTANT: I will add Squeeky Clean with a star casting pattern. It will give Maid Force a guaranteed spread chance for 10 seconds, then restore its normal chance.
+CHANGES: Added ten-second temporary chance override in maid-force.js, affecting existing/new scents and chains without permanent changes. Added cast metadata/admin map, both runtime dispatches, five-pointed star recognition/reference, EX description and icon. Added functional test and updated global safety matrix.
+VALIDATION: Maid Force and Squeeky Clean functional tests pass, both runtime module graphs link, 76-case/19-skill drawing safety matrix passes. Remaining pattern regressions follow. Browser visual playtest not performed.
+VALIDATION FINAL: All 14 pattern regression files passed, alongside Maid Force/Squeeky Clean functional tests and the 76-case drawing safety matrix.

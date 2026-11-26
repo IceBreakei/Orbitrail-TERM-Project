@@ -10,8 +10,8 @@ import { drawArtilleryExplosion, artilleryExplosionDuration, artilleryExplosionR
 export function createOrbitalCompassAttack({random=Math.random}={}){
  const s=orbitalCompassSettings;let owner=null,enabled=true,cooldown=0,time=0,needles=[],explosions=[],shots=0,bursts=0;
  function reset(){owner=null;cooldown=0;time=0;needles=[];explosions=[];shots=0;bursts=0;}
- function fire(player,weapon,aim){
-  const stats=orbitalCompassLevelStats(weapon.level),body=getCombatHitbox(player,false),area=stats.size*weaponSizeMultiplier(player),count=startingWeaponProjectileCount(player,'orbital-compass',stats.count);
+ function fire(player,weapon,aim,single=false){
+  const stats=orbitalCompassLevelStats(weapon.level),body=getCombatHitbox(player,false),area=stats.size*weaponSizeMultiplier(player),count=single?1:startingWeaponProjectileCount(player,'orbital-compass',stats.count);
   const targets=getAllEnemies().map(enemy=>({enemy,body:getEnemyHurtbox(enemy)})).filter(t=>t.enemy.hp>0&&Math.hypot(t.body.x-body.x,t.body.y-body.y)<=s.acquireRange).sort((a,b)=>Math.hypot(a.body.x-body.x,a.body.y-body.y)-Math.hypot(b.body.x-body.x,b.body.y-body.y));
   for(let i=0;i<count;i++){
    const target=targets[i%targets.length]?.body;let angle=target?Math.atan2(target.y-body.y,target.x-body.x):aim+i*Math.PI*2/count;
@@ -19,9 +19,37 @@ export function createOrbitalCompassAttack({random=Math.random}={}){
    needles.push({x:body.x,y:body.y,angle,rotation:angle,age:0,returnLocked:false,area,count,hitsLeft:stats.hitLimit,damageBonuses:stats.damageBonuses,hits:new Map()});shots++;
   }
  }
+ function cast(player,aim=0){
+  const weapon=player.attackSlots?.find(w=>w?.id==='orbital-compass');if(!weapon)return false;
+  if(owner!==player){reset();owner=player;}
+  fire(player,weapon,aim,true);const b=needles[needles.length-1];b.exSkill=true;b.area*=2;b.returning=false;b.legAge=0;b.legHits=0;b.hitsLeft=Infinity;return true;
+ }
+ function beginExLeg(b,returning){b.returning=returning;b.legAge=0;b.legHits=0;b.targetId=null;b.coast=false;b.instantLaunch=!returning;}
+ function steerEx(b,player,dt){
+  const body={x:player.x,y:player.y};b.legAge+=dt;
+  const distance=Math.hypot(body.x-b.x,body.y-b.y);
+  let remainingFraction=1;
+  const returnSpeed=s.speed*s.returnSpeedMultiplier*Math.min(1,b.legAge/.2);
+  if(b.returning&&distance<=returnSpeed*dt){
+   // Touch the exact center, then spend the rest of this step on the rebound.
+   remainingFraction=returnSpeed>0?Math.max(0,1-distance/(returnSpeed*dt)):1;
+   b.x=body.x;b.y=body.y;beginExLeg(b,false);
+  }
+  else if(!b.returning&&(b.legAge>=.65||b.legHits>=3))beginExLeg(b,true);
+  let target=!b.returning&&getEnemy(b.targetId);
+  if(!b.returning&&!b.coast&&!target){
+   let nearest=Infinity;for(const enemy of getAllEnemies()){if(!(enemy.hp>0))continue;const t=getEnemyHurtbox(enemy),d=Math.hypot(t.x-b.x,t.y-b.y);if(d<nearest){nearest=d;target=enemy;}}
+   b.targetId=target?.id;
+  }
+  if(b.returning)b.angle=Math.atan2(body.y-b.y,body.x-b.x);
+  else if(target&&!b.coast){const t=getEnemyHurtbox(target);b.angle=Math.atan2(t.y-b.y,t.x-b.x);}
+  const acceleration=b.instantLaunch?1:Math.min(1,b.legAge/.2);
+  const deceleration=b.returning?1:Math.min(1,Math.max(0,(.65-b.legAge)/.18));
+  return s.speed*(b.returning?s.returnSpeedMultiplier:1)*acceleration*deceleration*remainingFraction;
+ }
  function roll(player,b,target,explosion=false){
   const base=totalWeaponDamage(player,'orbital-compass',s.damage,b.damageBonuses,{projectileCount:b.count,hitCooldownFrames:(explosion?s.explosionHitCooldown:s.hitCooldown)*60});
-  return rollAttackDamage(player,base*(explosion?s.explosionDamage/s.damage:1),random,{target,weaponId:'orbital-compass'});
+  return rollAttackDamage(player,base*(explosion?s.explosionDamage/s.damage:1),random,{target,weaponId:'orbital-compass',skillAttack:Boolean(b.exSkill)});
  }
  function explode(player,b){
   const effect={x:b.x,y:b.y,radius:s.hitRadius*b.area*s.explosionArea,age:0};explosions.push(effect);bursts++;
@@ -40,9 +68,9 @@ export function createOrbitalCompassAttack({random=Math.random}={}){
    const dt=Math.min(left,1/120,enabled&&cooldown>1e-8?cooldown:1/120);left-=dt;time+=dt;cooldown=Math.max(0,cooldown-dt);
    for(let i=explosions.length-1;i>=0;i--){explosions[i].age+=dt;if(explosions[i].age>=artilleryExplosionDuration)explosions.splice(i,1);}
    if(!needles.length)continue;if(!index)index=createEnemySpatialIndex(getAllEnemies(),getEnemyHurtbox);
-   for(let i=needles.length-1;i>=0;i--){const b=needles[i],from={x:b.x,y:b.y};b.age+=dt;if(b.age>s.duration+1e-8){needles.splice(i,1);continue;}
+   for(let i=needles.length-1;i>=0;i--){const b=needles[i],from={x:b.x,y:b.y};b.age+=dt;if(b.age>(b.exSkill?10:s.duration)+1e-8){needles.splice(i,1);continue;}
     let speed;
-    if(b.age<s.returnAfter){
+    if(b.exSkill){speed=steerEx(b,player,dt);}else if(b.age<s.returnAfter){
      // Ease to a complete turnaround before accelerating back.
      speed=s.speed*Math.cos(Math.min(1,b.age/s.returnAfter)*Math.PI/2);
     }else{
@@ -58,10 +86,11 @@ export function createOrbitalCompassAttack({random=Math.random}={}){
     candidates.sort((a,c)=>{const t=getEnemyHurtbox(a),u=getEnemyHurtbox(c);return Math.hypot(t.x-from.x,t.y-from.y)-Math.hypot(u.x-from.x,u.y-from.y);});
     let exploded=false;
     for(const enemy of candidates){if(!getEnemy(enemy.id))continue;b.hits.set(enemy.id,time);const hit=roll(player,b,enemy);
-     if(damageEnemy(enemy.id,hit.damage,player,hit.type,{canMiss:true,weaponId:'orbital-compass'})===false)continue;
+     if(damageEnemy(enemy.id,hit.damage,player,hit.type,{canMiss:true,weaponId:'orbital-compass',skillAttack:Boolean(b.exSkill)})===false)continue;
+     if(b.exSkill){const bonusThrows=enemy.hp<=0||!getEnemy(enemy.id)?2:1;for(let bonus=0;bonus<bonusThrows;bonus++)fire(player,weapon,b.angle,true);b.legHits++;b.coast=true;if(!b.returning&&b.legHits>=3)break;continue;}
      b.hitsLeft--;if(b.hitsLeft<=0){explode(player,b);exploded=true;break;}
     }
-    if(exploded||b.age>=s.duration-1e-8)needles.splice(i,1);
+    if(exploded||b.age>=(b.exSkill?10:s.duration)-1e-8)needles.splice(i,1);
    }
   }
  }
@@ -79,5 +108,5 @@ export function createOrbitalCompassAttack({random=Math.random}={}){
   }
   for(const effect of explosions)drawArtilleryExplosion(context,camera,effect,effect.age);
  }
- return {ready:artilleryExplosionReady,update,draw,reset,setAutoattackEnabled(value){enabled=Boolean(value);},get shotsFired(){return shots;},get projectileCount(){return needles.length;},get explosionCount(){return explosions.length;},get burstsFired(){return bursts;}};
+ return {getAuraSources(){return needles;},ready:artilleryExplosionReady,cast,update,draw,reset,setAutoattackEnabled(value){enabled=Boolean(value);},get shotsFired(){return shots;},get projectileCount(){return needles.length;},get explosionCount(){return explosions.length;},get burstsFired(){return bursts;}};
 }

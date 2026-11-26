@@ -30,3 +30,5 @@ run('p.x=0;p.y=0;a.draw(ctx,{x:0,y:0})');const before=placements.slice();placeme
 run('p.x=180;p.y=-65;a.draw(ctx,{x:0,y:0})');assert.equal(placements.length,before.length);assert(before.length>0);
 for(let i=0;i<before.length;i++){assert(Math.abs(placements[i][0]-before[i][0]-180)<1e-8);assert(Math.abs(placements[i][1]-before[i][1]+65)<1e-8);}
 console.log('PASS active curved water sweep follows player displacement without resetting emission');
+
+assert.equal(run('createWaterDousingWeapon().name'),'Splash!');

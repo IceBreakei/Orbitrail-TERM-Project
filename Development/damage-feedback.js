@@ -37,3 +37,21 @@ export function getWhiteSprite(image) {
   }
   return whiteSprites.get(image);
 }
+
+const slowedSprites=new WeakMap();
+/** Slow overlays tint opaque sprite pixels only; cached per sheet or decoded GIF frame. */
+export function getSlowedSprite(image){
+ if(!slowedSprites.has(image)){
+  const surface=document.createElement('canvas');surface.width=image.naturalWidth;surface.height=image.naturalHeight;
+  const context=surface.getContext('2d');context.drawImage(image,0,0);context.globalCompositeOperation='source-in';context.fillStyle='#173c86';context.fillRect(0,0,surface.width,surface.height);slowedSprites.set(image,surface);
+ }
+ return slowedSprites.get(image);
+}
+export function getSlowTintOpacity(character){
+ if(character.death||character.hp===0||character.isPlayerVisual)return 0;
+ return (character.ridingWaveSlowRemaining>0||(character.splashSlowRemaining>0&&character.splashSlowPercent>0)||(character.slowdownRemaining>0&&character.slowdownPercent>0)) ? .48 : 0;
+}
+
+const poisonedSprites=new WeakMap();
+export function getPoisonedSprite(image){if(!poisonedSprites.has(image)){const surface=document.createElement('canvas');surface.width=image.naturalWidth;surface.height=image.naturalHeight;const context=surface.getContext('2d');context.drawImage(image,0,0);context.globalCompositeOperation='source-in';context.fillStyle='#60bf49';context.fillRect(0,0,surface.width,surface.height);poisonedSprites.set(image,surface);}return poisonedSprites.get(image);}
+export function getPoisonTintOpacity(character){return (character.poisonRemaining>0&&character.hp!==0&&!character.death&&!character.isPlayerVisual) ? .32 : 0;}

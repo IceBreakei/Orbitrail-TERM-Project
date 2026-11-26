@@ -170,7 +170,7 @@ export function createUmbrellaAttack() {
 
   /** Clear a pending swing when the scene is reset. */
   function reset() { owner = null; swing = null; cycle = 0; clock = 0; hitTimes.clear(); }
-  return { ready, update, draw, reset,
+  return { getAuraSources(){if(!swing||!owner)return [];const a=umbrellaSwingAngle(swing.aim,swing.elapsed,swing.duration),r=umbrellaSettings.reach*swing.areaScale*umbrellaSettings.sizeScale*.6;return [{x:owner.x+Math.cos(a)*r,y:owner.y+Math.sin(a)*r}];},ready, update, draw, reset,
     /** Stop the current swing immediately; this toggle does not control EX skills. */
     setAutoattackEnabled(enabled) { autoattackEnabled=Boolean(enabled); if(!autoattackEnabled) reset(); }
   };

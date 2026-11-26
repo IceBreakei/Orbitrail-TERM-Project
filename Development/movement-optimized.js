@@ -1,3 +1,6 @@
+import {createRidingWaves} from './riding-waves.js';
+import {createBayonetCharge} from './bayonet-charge.js';
+import { createAdditionalStatusAdmin } from './status-effects-admin.js';
 import { createWakamoBayonetAttack } from './wakamo-bayonet.js';
 import { createWakamoBayonetWeapon } from './game-config.js';
 import { createCheeringBalloonsAttack } from './cheering-balloons.js';
@@ -84,7 +87,7 @@ import { createSurvivalClock, createSurvivalDisplay } from './survival.js';
 import { obstacleVisibility, eventTriggerSettings } from './game-config.js';
 import { playerSettings, yuukaSettings, specialEnemyAnimationSettings } from './game-config.js';
 import { ensurePlayerStats, createPlayerStatsTools, isPlayerDefeated } from './player-stats.js';
-import { createExpPickups } from './exp-drops.js';
+import { createExpPickups, setEnemyExpDropsEnabled } from './exp-drops.js';
 import { loadEnemyDeathGraphics } from './enemy-death.js';
 import { midoriFrames } from './midori-animation.js';
 import { senseiFrames } from './sensei-animation.js';
@@ -113,7 +116,7 @@ import { canPlaceIslandLoot, islandScale, islandWidth, islandHeight, canStandOnI
 import { tileFiles, drawTileWorld, resolveObstacleMotion, obstaclesIn } from './tile-world.js';
 import { officeTileFiles, drawOfficeWorld, officeObstaclesIn, resolveOfficeMotion, drawOfficeMonumentOcclusion } from './office-world.js';
 import { palaceTileFiles, drawPalaceWorld, palaceObstaclesIn, resolvePalaceMotion, drawPalaceOcclusion } from './palace-world.js';
-import { getDamageFlashOpacity, getWhiteSprite, advanceDamageFlash } from './damage-feedback.js';
+import { getDamageFlashOpacity, getWhiteSprite, advanceDamageFlash, getSlowedSprite, getSlowTintOpacity, getPoisonedSprite, getPoisonTintOpacity } from './damage-feedback.js';
 import { requireAdmin } from './admin-guard.js';
 import { spriteLayouts } from './sprite-layouts.js';
 import { setupSpriteTester } from './sprite-tester.js';
@@ -151,9 +154,11 @@ const princessAttack = authorized ? createPrincessKeyAttack() : null;
 const safetyHelmetEffects=authorized?createSafetyHelmetEffects({getViewport:()=>({x:camera.x,y:camera.y,width:canvas.width,height:canvas.height})}):null;
 const saintPredatorAttack = authorized ? createSaintPredatorAttack() : null;
 const molotovAttack = authorized ? createMolotovAttack() : null;
+const bayonetCharge = authorized ? createBayonetCharge() : null;
 const wakamoBayonetAttack = authorized ? createWakamoBayonetAttack() : null;
 const cheeringBalloonsAttack = authorized ? createCheeringBalloonsAttack() : null;
 const maidForceAttack = authorized ? createMaidForceAttack() : null;
+const ridingWaves = authorized ? createRidingWaves() : null;
 const timeToSurfAttack = authorized ? createTimeToSurfAttack() : null;
 const serveAttack = authorized ? createServeAttack() : null;
 const orbitalCompassAttack = authorized ? createOrbitalCompassAttack() : null;
@@ -429,10 +434,10 @@ function switchMap(targetMap = null) {
   throwingCardsAttack?.reset();
   studentHandbookAttack?.reset();
   moustacheMedalAttack?.reset();
-  wakamoBayonetAttack?.reset();
+  wakamoBayonetAttack?.reset();bayonetCharge?.reset();
   cheeringBalloonsAttack?.reset();
   maidForceAttack?.reset();
-  timeToSurfAttack?.reset();
+  timeToSurfAttack?.reset();ridingWaves?.reset();
   serveAttack?.reset();
   orbitalCompassAttack?.reset();
   molotovAttack?.reset();
@@ -499,10 +504,10 @@ function resetScene() {
   throwingCardsAttack?.reset();
   studentHandbookAttack?.reset();
   moustacheMedalAttack?.reset();
-  wakamoBayonetAttack?.reset();
+  wakamoBayonetAttack?.reset();bayonetCharge?.reset();
   cheeringBalloonsAttack?.reset();
   maidForceAttack?.reset();
-  timeToSurfAttack?.reset();
+  timeToSurfAttack?.reset();ridingWaves?.reset();
   serveAttack?.reset();
   orbitalCompassAttack?.reset();
   molotovAttack?.reset();
@@ -840,12 +845,12 @@ function updateCharacter(character, delta, direction, chaseTarget) {
   }
   character.elapsed += delta * 1000;
   // Chase uses the precise center-to-center vector; facing stays eight-way.
-  const [x, y] = chaseTarget
+  const [x, y] = character.chargeMotion ? [Math.cos(character.chargeMotion.angle),Math.sin(character.chargeMotion.angle)] : chaseTarget
     ? [chaseTarget.x - character.x, chaseTarget.y - character.y]
     : directionVectors[direction];
   const length = Math.hypot(x, y);
   const baseSpeed = movementSpeed * (character.movementSpeedMultiplier || 1) * statMultiplier(character, 'spdPercent');
-  const step = (character===characters[selected]&&character.supportState?.dashRemaining>0?1000:Math.max(baseSpeed, character.catchupSpeed || 0)) * delta * slowdownMultiplier(character);
+  const step = character.chargeMotion ? character.chargeMotion.speed*delta : (character===characters[selected]&&character.supportState?.dashRemaining>0?1000:Math.max(baseSpeed, character.catchupSpeed || 0)) * delta * slowdownMultiplier(character);
   const distance = (chaseTarget ? Math.min(step, length) : step) / (length || 1);
   const previousX = character.x;
   const previousY = character.y;
@@ -856,28 +861,29 @@ function updateCharacter(character, delta, direction, chaseTarget) {
     character.y = chaseTarget.y;
   }
   const isEnemy = character !== characters[selected];
+  const riding = !isEnemy&&character.ridingWavesActive;
   // Boss bodies can cross props, shoreline, and strip edges while pursuing the player.
-  if (isBossEnemy(character)) return;
+  if (isBossEnemy(character)&&!riding) return;
   if (character.harmlessEscaping || character.behavior === 'horde') return; // Escape animations may cross the shoreline/walls to leave view.
   if (currentMap === 'fourth') {
-    const resolved = resolveIslandMotion(character, previousX, previousY, character.x, character.y, maps.fourth, isEnemy);
+    const resolved = resolveIslandMotion(character, previousX, previousY, character.x, character.y, maps.fourth, isEnemy||riding);
     character.x = resolved.x;
     character.y = resolved.y;
     return;
   }
   if (maps[currentMap].axis === 'both') {
-    if (isEnemy) return; // Enemies cross props; the player still collides normally.
+    if (isEnemy||riding) return; // Riding crosses props on this unbounded map.
     const resolved = resolveObstacleMotion(character, previousX, previousY, character.x, character.y);
     character.x = resolved.x;
     character.y = resolved.y;
     return;
   }
-  if (currentMap === 'first' && !isEnemy) {
+  if (currentMap === 'first' && !isEnemy&&!riding) {
     const resolved = resolveOfficeMotion(character, previousX, previousY, character.x, character.y, maps.first, canvas.height);
     character.x = resolved.x;
     character.y = resolved.y;
   }
-  if (currentMap === 'second' && !isEnemy) {
+  if (currentMap === 'second' && !isEnemy&&!riding) {
     const resolved = resolvePalaceMotion(character, previousX, previousY, character.x, character.y, maps.second, canvas.width);
     character.x = resolved.x;
     character.y = resolved.y;
@@ -958,7 +964,7 @@ function drawPose(character, pose, opacity) {
   context.translate(character.x - camera.x, character.y - camera.y + (character.bossVisualOffsetY||0));
   if(character.flattenedRemaining>0){
     const feet=displaySize/2-spritePadding;
-    context.translate(0,feet);context.scale(1.12,.32);context.translate(0,-feet);
+    context.translate(0,feet);context.scale(1.12,.2);context.translate(0,-feet);
   }
   if(character.bossSquash) {
     const feet=drawY+(crop.footY-crop.y)*scale;
@@ -973,6 +979,10 @@ function drawPose(character, pose, opacity) {
   }
   context.drawImage(character.image, crop.x, crop.y, crop.width, crop.height,
     drawX, drawY, width, height);
+  const slowTint=character===characters[selected]?0:getSlowTintOpacity(character);
+  if(slowTint>0){context.globalAlpha=opacity*slowTint;context.drawImage(getSlowedSprite(character.image),crop.x,crop.y,crop.width,crop.height,drawX,drawY,width,height);context.globalAlpha=opacity;}
+  const poisonTint=character===characters[selected]?0:getPoisonTintOpacity(character);
+  if(poisonTint>0){context.globalAlpha=opacity*poisonTint;context.drawImage(getPoisonedSprite(character.image),crop.x,crop.y,crop.width,crop.height,drawX,drawY,width,height);context.globalAlpha=opacity;}
   const flash = character.death
     ? 0.95 * Math.min(1, character.death.elapsed / 0.035)
     : Math.max(character.ultimateWhite||0,getDamageFlashOpacity(character));
@@ -1091,7 +1101,25 @@ function animate(time) {
     if (activeCharacter.animationFrames) activeCharacter.gifElapsed = (activeCharacter.gifElapsed || 0) + delta * 1000 * (activeCharacter.animationSpeed || 1);
     if (activeCharacter.transition) activeCharacter.transition.elapsed += delta * 1000;
     const playerBefore = { x: activeCharacter.x, y: activeCharacter.y };
-    updateCharacter(activeCharacter, delta, direction);
+    bayonetCharge?.setMovementInput(activeCharacter,directionVectors[direction]);
+    const chargeMoved=bayonetCharge?.update(delta,activeCharacter,(angle,speed,dt,facingAngle)=>{
+      const x=activeCharacter.x,y=activeCharacter.y,pose=activeCharacter.attack;
+      activeCharacter.attack=null;activeCharacter.chargeMotion={angle,speed};
+      const names=['up','upRight','right','downRight','down','downLeft','left','upLeft'];
+      updateCharacter(activeCharacter,dt,names[(Math.round((facingAngle+Math.PI/2)/(Math.PI/4))+8)%8]);
+      delete activeCharacter.chargeMotion;activeCharacter.attack=pose;
+      return Math.hypot(activeCharacter.x-x-Math.cos(angle)*speed*dt,activeCharacter.y-y-Math.sin(angle)*speed*dt)>.01;
+    });
+    ridingWaves?.setMovementInput(activeCharacter,directionVectors[direction]);
+    if(aiming.state.cursorAim&&!aiming.state.directionalOverride)ridingWaves?.setAimAngle(activeCharacter,aiming.getAngle(activeCharacter,camera.x,directionVectors[activeCharacter.direction]||directionVectors.down,camera.y));
+    const rideMoved=ridingWaves?.update(delta,activeCharacter,(angle,speed,dt,facingAngle)=>{
+      const pose=activeCharacter.attack;activeCharacter.attack=null;activeCharacter.chargeMotion={angle,speed};
+      const facing=Math.cos(facingAngle)<0?'left':'right';
+      updateCharacter(activeCharacter,dt,facing);
+      activeCharacter.direction=facing;activeCharacter.facing=facing;
+      delete activeCharacter.chargeMotion;activeCharacter.attack=pose;activeCharacter.moving=false; // Stand while riding the wave.
+    });
+    if(!chargeMoved&&!rideMoved)updateCharacter(activeCharacter, delta, direction);
     const playerMotion = { x: activeCharacter.x - playerBefore.x, y: activeCharacter.y - playerBefore.y };
     activeCharacter.stationaryForTuning=Math.hypot(playerMotion.x,playerMotion.y)<1e-6;
     updateCamera(delta);
@@ -1150,6 +1178,7 @@ function animate(time) {
     decagrammatonAttack?.update(delta,activeCharacter,aimAngle,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height});
     decagrammatonUltimate?.update(delta,activeCharacter,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height});
     planaSkill?.update(delta,npcTools?.eraseProjectiles);
+    if(badCookingAttack?.exRemaining>0)badCookingAttack.updateAuras(delta,activeCharacter,[umbrellaAttack,arisAttack,luminousAttack,princessAttack,decagrammatonAttack,waterDousingAttack,beanBagBombAttack,throwingCardsAttack,studentHandbookAttack,moustacheMedalAttack,wakamoBayonetAttack,cheeringBalloonsAttack,maidForceAttack,timeToSurfAttack,serveAttack,orbitalCompassAttack,molotovAttack,saintPredatorAttack].flatMap(attack=>attack?.getAuraSources?.()||[]));
     updateTuningExplosions(delta);
     superSynergy?.update(activeCharacter,playerBefore);
     expPickups?.update(activeCharacter, playerBefore, delta);
@@ -1218,6 +1247,7 @@ function animate(time) {
   wakamoBayonetAttack?.draw(context,camera);
   cheeringBalloonsAttack?.draw(context,camera);
   maidForceAttack?.draw(context,camera);
+  ridingWaves?.draw(context,camera);
   timeToSurfAttack?.draw(context,camera);
   serveAttack?.draw(context,camera);
   orbitalCompassAttack?.draw(context,camera);
@@ -1238,6 +1268,7 @@ function animate(time) {
     context.shadowColor='rgba(255,105,215,.85)';
     context.shadowBlur=12;
   }
+  bayonetCharge?.draw(context,camera,(player,ghost,alpha)=>drawPose({...player,x:ghost.x,y:ghost.y,image:ghost.image,isPlayerVisual:true},ghost.pose,alpha));
   drawCharacter(activeCharacter); // The player is the highest-priority actor.
   context.restore();
   supportControls?.draw(context,camera);
@@ -1312,6 +1343,7 @@ if (authorized) {
   superSynergy=createSuperSynergySystem({canvas,getPlayer:()=>characters[selected]});
   tuningParts=createTuningSystem({canvas,getPlayer:()=>characters[selected],onOpen:()=>{releaseControls();skillCasting?.cancel('pause');},onChange:()=>hud?.update(characters[selected])});
   bindTrumpetVolume(document.querySelector('#music-volume'));
+  createAdditionalStatusAdmin({root:document.querySelector('#frozen-admin'),getEnemies:getAllEnemies,getCamera:()=>camera,getSize:()=>canvas});
   createStunnedAdmin({root:document.querySelector('#frozen-admin'),getEnemies:getAllEnemies,getCamera:()=>camera,getSize:()=>canvas});
   createFrozenAdmin({root:document.querySelector('#frozen-admin'),getEnemies:getAllEnemies,getCamera:()=>camera,getSize:()=>canvas});
   createTuningAdmin({root:document.querySelector('#tuning-admin'),getPlayer:()=>characters[selected],system:tuningParts});
@@ -1336,7 +1368,7 @@ if (authorized) {
   document.querySelector('#spawn-crafter').addEventListener('click',()=>{
     const player=characters[selected];crafters.spawn(player.x+80,player.y);
   });
-  Promise.all([...Object.values(characters), ...Object.values(maps).filter(map => map.source && !map.disabled), ...maps.first.tiles, ...maps.second.tiles, ...maps.third.tiles].map(loadSheet).concat(superSynergy.ready,stunnedReady,frozenReady,artilleryExplosionReady,swipeSkill.ready,gachaFiles.ready,goldenCrafters.ready,crafters.ready, wakamoBayonetAttack.ready, cheeringBalloonsAttack.ready, maidForceAttack.ready, timeToSurfAttack.ready, serveAttack.ready, orbitalCompassAttack.ready, moustacheMedalAttack.ready, studentHandbookAttack.ready, throwingCardsAttack.ready, beanBagBombAttack.ready, molotovAttack.ready, aiming.ready, expPickups.ready, loadEnemyDeathGraphics(), umbrellaAttack.ready, arisAttack.ready,luminousAttack.ready,luminousSkill.ready,princessSkill.ready, planaSkill.ready, loadDamageNumberGraphics()).map(task => window.pageLoading?.track(task) || task))
+  Promise.all([...Object.values(characters), ...Object.values(maps).filter(map => map.source && !map.disabled), ...maps.first.tiles, ...maps.second.tiles, ...maps.third.tiles].map(loadSheet).concat(superSynergy.ready,stunnedReady,frozenReady,artilleryExplosionReady,swipeSkill.ready,gachaFiles.ready,goldenCrafters.ready,crafters.ready, bayonetCharge.ready, wakamoBayonetAttack.ready, cheeringBalloonsAttack.ready, maidForceAttack.ready, ridingWaves.ready, timeToSurfAttack.ready, serveAttack.ready, orbitalCompassAttack.ready, moustacheMedalAttack.ready, studentHandbookAttack.ready, throwingCardsAttack.ready, beanBagBombAttack.ready, molotovAttack.ready, aiming.ready, expPickups.ready, loadEnemyDeathGraphics(), umbrellaAttack.ready, arisAttack.ready,luminousAttack.ready,luminousSkill.ready,princessSkill.ready, planaSkill.ready, loadDamageNumberGraphics()).map(task => window.pageLoading?.track(task) || task))
     .then(() => {
       observeViewport(canvas, () => {
         mapTransition?.cancel();
@@ -1360,6 +1392,20 @@ if (authorized) {
           return aiming.getAngle(player, camera.x, directionVectors[facing] || directionVectors.down, camera.y);
         },
         onRecognized: detail => {
+          if(detail.skillId==='squeeky-clean')maidForceAttack.cast(detail.player);
+          if(detail.skillId==='bad-cooking-ex')badCookingAttack.cast(detail.player);
+          if(detail.skillId==='prst-honars')moustacheMedalAttack.cast(detail.player,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height});
+          if(detail.skillId==='boundy-bloons')cheeringBalloonsAttack.cast(detail.player,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height});
+          if(detail.skillId==='holy-resonance')saintPredatorAttack.cast(detail.player,detail.angle,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height});
+          if(detail.skillId==='nuclear-bean-bag')beanBagBombAttack.cast(detail.player,detail.angle,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height});
+          if(detail.skillId==='return-this')serveAttack.cast(detail.player,detail.angle);
+          if(detail.skillId==='riding-waves'){bayonetCharge.reset();const facing=detail.player.horizontalFacingOnly?detail.player.facing:detail.player.direction;const [x,y]=directionVectors[facing]||directionVectors.down;ridingWaves.cast(detail.player,aiming.state.cursorAim&&!aiming.state.directionalOverride?detail.angle:Math.atan2(y,x));}
+          if(detail.skillId==='bayonet-charge'){ridingWaves.reset();bayonetCharge.cast(detail.player,detail.angle);}
+          if(detail.skillId==='orbital-compass-ex')orbitalCompassAttack.cast(detail.player,detail.angle);
+          if(detail.skillId==='splash-ex')waterDousingAttack.cast(detail.player,detail.angle,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height});
+          if(detail.skillId==='strict-rules')studentHandbookAttack.cast(detail.player,detail.angle);
+          if(detail.skillId==='skilled-throw')throwingCardsAttack.cast(detail.player,detail.angle);
+          if(detail.skillId==='molotov-ex')molotovAttack.cast(detail.player,{x:camera.x,y:camera.y,width:canvas.width,height:canvas.height},detail.damageMultiplier);
           if (detail.skillId === 'plana-umbrella-launch') planaSkill.cast(detail.player, detail.angle, detail.damageMultiplier, () => {
             const player = detail.player;
             const facing = player.horizontalFacingOnly ? player.facing : player.direction;
@@ -1380,6 +1426,7 @@ if (authorized) {
           window.dispatchEvent(new CustomEvent('skill-drawing-recognized' , { detail }));
         }
       });
+      document.querySelector('#disable-exp-drops').addEventListener('change',event=>setEnemyExpDropsEnabled(!event.target.checked));
       document.querySelector('#disable-autoattack').addEventListener('change', event => {
         const enabled=!event.target.checked;
         umbrellaAttack.setAutoattackEnabled(enabled);
@@ -1434,7 +1481,7 @@ if (authorized) {
       document.querySelector('#admin-clear-loadout').addEventListener('click',()=>{
         skillCasting?.cancel('admin-clear-loadout');
         clearAdminLoadout(characters[selected]);
-        for(const effect of [umbrellaAttack,arisAttack,luminousAttack,badCookingAttack,waterDousingAttack,beanBagBombAttack,throwingCardsAttack,studentHandbookAttack,moustacheMedalAttack,orbitalCompassAttack,serveAttack,timeToSurfAttack,maidForceAttack,cheeringBalloonsAttack,wakamoBayonetAttack,molotovAttack,saintPredatorAttack,princessAttack,decagrammatonAttack,decagrammatonUltimate,princessSkill,luminousSkill,planaSkill,safetyHelmetEffects])effect?.reset();
+        for(const effect of [ridingWaves,bayonetCharge,umbrellaAttack,arisAttack,luminousAttack,badCookingAttack,waterDousingAttack,beanBagBombAttack,throwingCardsAttack,studentHandbookAttack,moustacheMedalAttack,orbitalCompassAttack,serveAttack,timeToSurfAttack,maidForceAttack,cheeringBalloonsAttack,wakamoBayonetAttack,molotovAttack,saintPredatorAttack,princessAttack,decagrammatonAttack,decagrammatonUltimate,princessSkill,luminousSkill,planaSkill,safetyHelmetEffects])effect?.reset();
         hud.update(characters[selected]);playerStatsTools?.update();
         status.textContent='Removed all equipped weapons and items.';window.saveDevSession?.();
       });
@@ -1542,8 +1589,8 @@ if (authorized) {
       document.querySelector('#run-seed-status').textContent = `Run seed: ${runSeed} | Started: ${runStartedAt.toLocaleString()}`;
       // Persist test configuration, not the live run, enemies, timers or action buttons.
       // Admin preferences persist; run loadouts always start from character defaults.
-      window.getDevRuntimeSettings=()=>({map:currentMap});
-      window.applyDevRuntimeSettings=settings=>{if(settings&&maps[settings.map]&&!maps[settings.map].disabled&&settings.map!==currentMap)switchMap(settings.map);};
+      window.getDevRuntimeSettings=()=>({});
+      window.applyDevRuntimeSettings=()=>{}; // Reloads always start with a fresh map and internal clock.
       window.restoreDevSession?.();
       // Refresh the default loadout after restoring admin controls.
       hud.update(characters[selected]);playerStatsTools?.update();

@@ -1,0 +1,6 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');const c=vm.createContext({});for(const name of ['game-config','skill-drawing','plana-pattern','skill-accuracy','skill-pattern-recognition'])vm.runInContext(fs.readFileSync('Development/'+name+'.js','utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ',''),c);const run=s=>vm.runInContext(s,c);
+assert(run('recognizeBadCookingPattern(badCookingReferenceStrokes()).valid'));
+c.sketch=[[[30,14],[128,14],[135,55],[50,58],[50,20]],[[140,25],[220,18],[280,20],[274,100],[137,98],[140,25]]].map(s=>s.map(([x,y])=>({x,y})));
+assert(run('recognizeBadCookingPattern(sketch).valid'),'Screenshot cleaver, rounded edges and small handle gap');assert(run('recognizeBadCookingPattern(sketch.map(s=>s.slice().reverse()).reverse()).valid'),'Either stroke order and direction');
+for(const shape of ['prstHonarsReferenceStrokes()','nuclearBeanReferenceStrokes()','princessKeyReferenceStrokes()','holyResonanceReferenceStrokes()','badCookingReferenceStrokes().slice(0,1)'])assert(!run(`recognizeBadCookingPattern(${shape}).valid`),shape);
+console.log('PASS cleaver blade/handle, screenshot outline, stroke order/direction, missing handle and rival symbols');

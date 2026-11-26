@@ -49,8 +49,8 @@ function unflattenedEnemyHurtbox(character) {
 export function getEnemyHurtbox(character){
  const body=unflattenedEnemyHurtbox(character);if(!(character.flattenedRemaining>0))return body;
  const foot=character.y+(character.spriteSize||normalSpriteSize)/2-spriteDisplayPadding+(character.bossVisualOffsetY||0);
- return {...body,x:character.x+(body.x-character.x)*1.12,y:foot+(body.y-foot)*.32,rx:body.rx*1.12,ry:body.ry*.32,
-   maskWidth:body.maskWidth?body.maskWidth*1.12:undefined,maskHeight:body.maskHeight?body.maskHeight*.32:undefined};
+ return {...body,x:character.x+(body.x-character.x)*1.12,y:foot+(body.y-foot)*.2,rx:body.rx*1.12,ry:body.ry*.2,
+   maskWidth:body.maskWidth?body.maskWidth*1.12:undefined,maskHeight:body.maskHeight?body.maskHeight*.2:undefined};
 }
 
 /** Test a segment against sprite rectangles or the existing contact ellipses. */

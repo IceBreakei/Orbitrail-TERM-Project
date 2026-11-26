@@ -33,3 +33,8 @@ c.getEnemyHurtbox=e=>({x:e.x+50,y:e.y-80,rx:10,ry:15});
 run('drawFrozenStatus(context,{x:10,y:20},{x:100,y:200,spriteSize:80,hp:10,frozenRemaining:3})');
 const centered=draws.at(-1);assert.equal(centered[1]+centered[3]/2,90);assert.equal(centered[2]+centered[4]/2,180);assert.equal(centered[4],132);
 console.log('PASS: overlay centers on sprite origin regardless of enemy-specific hurtbox offsets, with10percent larger coverage.');
+run('var stunnedVisual={x:0,y:0,stunRemaining:2,elapsed:0,transition:{elapsed:0},attack:{name:"shoot",elapsed:180},layout:{columnEdges:[0,1,2]},attacks:{shoot:{frameDuration:100}},bossAction:{clip:"shoot",elapsed:.2}};animateFrozenEnemy(stunnedVisual,{x:10,y:0},.1)');
+assert.equal(run('stunnedVisual.attack.elapsed'),80);assert.equal(run('stunnedVisual.transition.elapsed'),100);assert.equal(run('stunnedVisual.bossAction.elapsed'),.2);
+run('var flattenedVisual={x:0,y:0,flattenedRemaining:5,elapsed:0};animateFrozenEnemy(flattenedVisual,{x:0,y:10},.2)');assert.equal(run('flattenedVisual.elapsed'),200);assert.equal(run('flattenedVisual.y'),0);assert.equal(run('flattenedVisual.moving'),true);
+const npcSource=fs.readFileSync('Development/npc-tools.js','utf8');assert(npcSource.includes('if(time)animateFrozenEnemy(npc,player,time);continue;'));assert(!npcSource.includes('if(wasFrozen)animateFrozenEnemy'));
+console.log('PASS stun/flatten visual clocks, looping attack poses and unchanged boss action timers');

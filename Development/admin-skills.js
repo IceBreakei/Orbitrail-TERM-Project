@@ -3,7 +3,7 @@ import { drawingAccuracy } from './skill-accuracy.js';
 import { skillCastSettings } from './game-config.js';
 
 // Developer-only shortcuts. Register future skills here when their effects exist.
-const skillIds = { 'plana-umbrella': 'plana-umbrella-launch', 'aris-laser': 'supernova-beam', 'luminous-nova':'luminous-nova-aura','princess-key':'princess-key-ex','decagrammaton':'princess-key-ex' };
+const skillIds = { 'maid-force':'squeeky-clean','bad-cooking':'bad-cooking-ex','moustache-medal':'prst-honars','cheering-balloons':'boundy-bloons', 'saint-predator':'holy-resonance', 'bean-bag-bomb':'nuclear-bean-bag', 'serve':'return-this', 'time-to-surf':'riding-waves', 'wakamo-bayonet':'bayonet-charge', 'orbital-compass':'orbital-compass-ex', 'water-dousing':'splash-ex', 'student-handbook':'strict-rules', 'throwing-cards':'skilled-throw', 'molotov-cocktail':'molotov-ex', 'plana-umbrella': 'plana-umbrella-launch', 'aris-laser': 'supernova-beam', 'luminous-nova':'luminous-nova-aura','princess-key':'princess-key-ex','decagrammaton':'princess-key-ex' };
 const path = coordinates => coordinates.map(([x, y]) => ({ x, y }));
 export const adminDigitTemplates = {
   1: [path([[30, 20], [50, 0], [50, 100]])],
@@ -30,7 +30,7 @@ export function adminSkillResult(player, slot) {
   const weapon = player.attackSlots?.[slot];
   const skillId = skillIds[weapon?.id];
   return skillId ? { valid: true, adminTest: true, weapon, skillId,
-    label: weapon.name || weapon.id, score: 1, accuracy: skillCastSettings.accuracyAverage,
+    label: weapon.skillName || weapon.name || weapon.id, score: 1, accuracy: skillCastSettings.accuracyAverage,
     damageMultiplier: skillCastSettings.damageAverage, components: [] }
     : { valid: false, reason: `Slot ${slot + 1} has no implemented EX skill.` };
 }

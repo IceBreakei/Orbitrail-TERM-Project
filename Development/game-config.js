@@ -655,7 +655,7 @@ export function neruBodyCenterOffsetY(character) {
 export const badCookingSettings={damage:.9,interval:10,minimumInterval:10,duration:601/60,
   hitCooldown:45/60,area:1.1,baseRadius:140/1.1,maxLevel:7,knockbackSeconds:5/60,knockbackSpeed:60};
 export function createBadCookingWeapon(){return {id:'bad-cooking',name:'Bad Cooking',level:1,maxLevel:7,weight:4,
-  icon:'../sprites/attacks/Bad Cooking.png',attackType:'Melee',ranged:false,attackCount:1,defaultUnlocked:true};}
+  exSkill:true,skillName:'You really are bad at cooking',icon:'../sprites/attacks/Bad Cooking.png',attackType:'Melee',ranged:false,attackCount:1,defaultUnlocked:true};}
 export function badCookingLevelStats(level=1){
   level=Math.max(1,Math.min(7,level));
   return {level,radius:badCookingSettings.baseRadius*badCookingSettings.area*(level>=2?1.15:1)*(level>=4?1.25:1),
@@ -667,8 +667,8 @@ export const badCookingDescriptions={1:'Create an area of miasma around, dealing
   5:'Increase frequency of hits by 20%.',6:'Increase damage by 60%.',7:'Add small knockback on hit.'};
 
 export const molotovSettings={damage:.8,interval:5,hitCooldown:.75,area:.9,baseRadius:100,duration:3,speed:6*60,maxLevel:7};
-export function createMolotovWeapon(){return {id:'molotov-cocktail',name:'Molotov Cocktail',level:1,maxLevel:7,weight:3,
-  attackType:'Multishot',ranged:true,defaultUnlocked:true,icon:'../sprites/attacks/Event 41 - Dakimakura.png'};}
+export function createMolotovWeapon(){return {id:'molotov-cocktail',name:'Molotov Cocktail',skillName:'ARSON!',level:1,maxLevel:7,weight:3,
+  attackType:'Multishot',ranged:true,exSkill:true,defaultUnlocked:true,icon:'../sprites/attacks/Event 41 - Dakimakura.png'};}
 export function molotovLevelStats(level=1){
   level=Math.max(1,Math.min(7,level));
   return {count:1+Number(level>=3)+Number(level>=6)+Number(level>=7),
@@ -690,7 +690,7 @@ export function weaponSizeMultiplier(player){return Math.max(0,1+(racerPassBonus
 export function weaponKnockbackMultiplier(player){return 1+racerPassBonuses(player).size/100;}
 
 export const saintPredatorSettings={damage:1,interval:.5,hitCooldown:.5,duration:1.5,speed:4*60,area:.9,length:22,radius:Math.hypot(22,10)/2,maxLevel:7};
-export function createSaintPredatorWeapon(){return {id:'saint-predator',name:'Saint Predator',level:1,maxLevel:7,weight:2,exSkill:false,
+export function createSaintPredatorWeapon(){return {id:'saint-predator',name:'Saint Predator',level:1,maxLevel:7,weight:2,exSkill:true,skillName:"Holy Resonance",
   attackType:'Multishot',ranged:true,defaultUnlocked:false,unlockObjective:'Defeat the boss in Stage 1',icon:'../sprites/attacks/Misaki_UE.png',iconFlipX:true,iconRotation:45,iconCrop:{x:220,y:10,width:520,height:225}};}
 export function saintPredatorLevelStats(level=1){
  level=Math.max(1,Math.min(7,level));return {count:level>=7?4:level>=3?2:1,
@@ -705,14 +705,14 @@ export const saintPredatorDescriptions={1:'Fires rapid missiles at random target
 export const chisePlushieSettings={tickSeconds:1.5,damagePerTick:1};
 export function chiseDelayConfigured(){return typeof chisePlushieSettings.damagePerTick==='function'||Number(chisePlushieSettings.damagePerTick)>0;}
 
-// Water Dousing: base 90-degree splash; short visuals and MAX movement hold are tunable.
+// Splash!: base 90-degree splash; short visuals and MAX movement hold are tunable.
 export const waterDousingSettings={damage:1.1,interval:2,hitCooldown:.5,area:1.2,baseRadius:120,halfAngle:Math.PI/4,duration:.35,knockbackSeconds:10/60,knockbackSpeed:5*60,rootSeconds:.25,maxLevel:7};
-export function createWaterDousingWeapon(){return {id:'water-dousing',name:'Water Dousing',level:1,maxLevel:7,weight:3,attackType:'Melee',ranged:false,exSkill:false,defaultUnlocked:false,unlockObjective:'Soaking!: Clear any stage in Endless with Sports Drink equipped',icon:'../sprites/attacks/Event 46 - Swimming Tube.png',iconFit:true};}
+export function createWaterDousingWeapon(){return {id:'water-dousing',name:'Splash!',level:1,maxLevel:7,weight:3,attackType:'Melee',ranged:false,exSkill:true,skillName:'Water Fight!',defaultUnlocked:false,unlockObjective:'Soaking!: Clear any stage in Endless with Sports Drink equipped',icon:'../sprites/attacks/Event 46 - Swimming Tube.png',iconFit:true};}
 export function waterDousingLevelStats(level=1){level=Math.max(1,Math.min(7,level));return {level,damageBonuses:[...(level>=2?[20]:[]),...(level>=6?[30]:[])],radius:waterDousingSettings.baseRadius*waterDousingSettings.area*(level>=3?1.3:1)*(level>=7?1.3:1),interval:waterDousingSettings.interval*(level>=5?.8:1),knockbackSpeed:waterDousingSettings.knockbackSpeed*(level>=4?1.6:1),rootSeconds:level>=7?waterDousingSettings.rootSeconds:0};}
 export const waterDousingDescriptions={1:'Create a splash of unknown water in front, knocking targets back.',2:'Increase damage by 20%.',3:'Increase attack area by 30%.',4:'Increase splash knockback speed by 60%.',5:'Reduce time between attacks by 20%.',6:'Increase damage by 30%.',7:'Increase attack area by 30%. Briefly prevent targets from moving after knockback; contact damage remains active.'};
 
 export const beanBagBombSettings={damage:1.7,interval:2,hitCooldown:20/60,area:1.44,baseRadius:80,duration:10.5,speed:7*60,maxLevel:7};
-export function createBeanBagBombWeapon(){return {id:'bean-bag-bomb',name:'Bean Bag Bomb',level:1,maxLevel:7,weight:3,attackType:'Multishot',ranged:true,exSkill:false,defaultUnlocked:true,icon:'../sprites/attacks/Bean Bag.png',iconFit:true,iconCrop:{x:72,y:20,width:171,height:202}};}
+export function createBeanBagBombWeapon(){return {id:'bean-bag-bomb',name:'Bean Bag Bomb',level:1,maxLevel:7,weight:3,attackType:'Multishot',ranged:true,exSkill:true,skillName:"Nuclear Bean Bag",defaultUnlocked:true,icon:'../sprites/attacks/Bean Bag.png',iconFit:true,iconCrop:{x:72,y:20,width:171,height:202}};}
 export function beanBagBombLevelStats(level=1){level=Math.max(1,Math.min(7,level));return {count:level>=7?3:level>=4?2:1,interval:beanBagBombSettings.interval*(level>=5?.8:1),radius:beanBagBombSettings.baseRadius*beanBagBombSettings.area*(level>=2?1.15:1)*(level>=6?1.2:1),damageBonuses:level>=3?[20]:[]};}
 export const beanBagBombDescriptions={1:'A bomb that explodes, dealing damage to all nearby targets.',2:'Increase explosion size by 15%.',3:'Increase damage by 20%.',4:'Throw 2 bombs.',5:'Reduce time between attacks by 20%.',6:'Increase explosion size by 20%.',7:'Throw 3 bombs.'};
 
@@ -736,48 +736,57 @@ export function characterSkillChoices(player){
 export function applyCharacterSkillUpgrade(player,id){const choice=characterSkillChoices(player).find(c=>c.id===id);if(!choice)return false;if(id.endsWith('-level'))choice.weapon.level++;else (player.characterSkills??=[]).push({...choice.weapon});return true;}
 
 export const throwingCardsSettings={damage:1.2,interval:4,hitCooldown:50/60,area:1,duration:3,speed:10*60,spinSpeed:24,trailCount:10,trailInterval:.05,trailDuration:.5,spiralRadiusScale:.9,centerSeekSpeed:180,centerTurnResponse:4,pitch:28,hitRadius:Math.hypot(28,37)/2,width:28,height:37,maxLevel:7};
-export function createThrowingCardsWeapon(){return {id:'throwing-cards',name:'Throwing Cards',level:1,maxLevel:7,weight:3,attackType:'Ranged',ranged:true,exSkill:false,usesCards:true,weaponTags:['card'],defaultUnlocked:true,icon:'../sprites/attacks/Card Set.png',iconFit:true,iconCrop:{x:60,y:19,width:198,height:213}};}
+export function createThrowingCardsWeapon(){return {id:'throwing-cards',name:'Throwing Cards',level:1,maxLevel:7,weight:3,attackType:'Ranged',ranged:true,exSkill:true,skillName:'Skilled Throw',usesCards:true,weaponTags:['card'],defaultUnlocked:true,icon:'../sprites/attacks/Card Set.png',iconFit:true,iconCrop:{x:60,y:19,width:198,height:213}};}
 export function throwingCardsLevelStats(level=1){level=Math.max(1,Math.min(7,level));return {interval:throwingCardsSettings.interval*(level>=3?.8:1),duration:throwingCardsSettings.duration+(level>=5?1:0),hitLimit:level>=5?Infinity:10,size:(level>=2?1.2:1)*(level>=4?1.2:1)*(level>=6?1.5:1),damageBonuses:[...(level>=2?[20]:[]),...(level>=4?[33]:[]),...(level>=7?[50]:[])]};}
 export const throwingCardsDescriptions={1:'Throw a card that spirals outward from the player.',2:'Increase card size by 20% and damage by 20%.',3:'Reduce delay between attacks by 20%.',4:'Increase damage by 33% and card size by 20%.',5:'Remove the hit limit and increase duration by 1 second.',6:'Increase attack size by 50%.',7:'Increase damage by 50%.'};
 
 export const studentHandbookSettings={damage:1.4,interval:6,minimumInterval:5,hitLimit:7,hitCooldown:20/60,area:1,duration:2,speed:3*60,orbitRadius:90,hitRadius:Math.hypot(40,45.6)/2,width:40,height:45.6,emergeSeconds:.35,returnSeconds:.35,trailCount:12,trailInterval:.04,trailDuration:.6,knockbackSeconds:5/60,knockbackSpeed:2*60,maxLevel:7};
-export function createStudentHandbookWeapon(){return {id:'student-handbook',name:'Student Handbook',level:1,maxLevel:7,weight:3,attackType:'Multishot',ranged:true,exSkill:false,defaultUnlocked:true,icon:'../sprites/attacks/Arius Student Handbook.png',iconFit:true,iconCrop:{x:48,y:12,width:200,height:228}};}
+export function createStudentHandbookWeapon(){return {id:'student-handbook',name:'Student Handbook',level:1,maxLevel:7,weight:3,attackType:'Multishot',ranged:true,exSkill:true,skillName:'Strict Rules',defaultUnlocked:true,icon:'../sprites/attacks/Arius Student Handbook.png',iconFit:true,iconCrop:{x:48,y:12,width:200,height:228}};}
 export function studentHandbookLevelStats(level=1){level=Math.max(1,Math.min(7,level));return {count:3+Number(level>=2)+Number(level>=4)+Number(level>=6),duration:2+Number(level>=3),damageBonuses:[...(level>=3?[30]:[]),...(level>=5?[40]:[]),...(level>=7?[40]:[])]};}
 export const studentHandbookDescriptions={1:'Repels targets with orbiting Student Handbooks.',2:'Add 1 additional book.',3:'Increase damage by 30% and duration by 1 second.',4:'Add 1 additional book.',5:'Increase damage by 40%.',6:'Add 1 additional book.',7:'Increase damage by 40%.'};
 
 export const moustacheMedalSettings={damage:1.3,interval:3,hitCooldown:20/60,duration:2,speed:7*60,travelDistance:120,fartherMultiplier:2,width:96,height:26,hitRadius:Math.hypot(96,26)/2,knockbackSeconds:20/60,knockbackSpeed:7*60,maxLevel:7};
 export function flatCharacterWeaponBonus(player){return player.flat===true?1.3:1;}
-export function createMoustacheMedalWeapon(){return {id:'moustache-medal',name:'Moustache Medal',level:1,maxLevel:7,weight:2,attackType:'Ranged',ranged:true,exSkill:false,defaultUnlocked:false,unlockObjective:'Survive 10 minutes as Plana in a single run',icon:'../sprites/attacks/Moustache Medal.png',iconFit:true,iconCrop:{x:62,y:27,width:206,height:201}};}
+export function createMoustacheMedalWeapon(){return {id:'moustache-medal',name:'Moustache Medal',level:1,maxLevel:7,weight:2,attackType:'Ranged',ranged:true,exSkill:true,skillName:"PRST Honars",defaultUnlocked:false,unlockObjective:'Survive 10 minutes as Plana in a single run',icon:'../sprites/attacks/Moustache Medal.png',iconFit:true,iconCrop:{x:62,y:27,width:206,height:201}};}
 export function moustacheMedalLevelStats(level=1,flat=false){level=Math.max(1,Math.min(7,level));return {count:level>=7?3:1,interval:moustacheMedalSettings.interval-(level>=6?.5:0),size:(level>=2?1.3:1)*(flat?1.3:1),distance:moustacheMedalSettings.travelDistance*(level>=4?(moustacheMedalSettings.fartherMultiplier??1):1),damageBonuses:[...(level>=3?[30]:[]),...(level>=5?[50]:[]),...(flat?[30]:[])]};}
 export const moustacheMedalDescriptions={1:'Create a defensive wall that damages and pushes targets behind you. Flat characters gain 30% damage and area.',2:'Increase wall size by 30%.',3:'Increase damage by 30%.',4:'Walls travel twice as far.',5:'Increase damage by 50%.',6:'Reduce the time between attacks by 0.5 seconds.',7:'Shoot additional walls from both sides. No wall fires forward.'};
 
 export const orbitalCompassSettings={damage:1.2,explosionDamage:1.8,interval:4,hitCooldown:.5,explosionHitCooldown:1,area:1,explosionArea:1.5,duration:3,returnAfter:1.1,returnAccelerationSeconds:.5,returnSpeedMultiplier:1.5,speed:8*60,acquireRange:640,length:44,width:10,hitRadius:22,spinSpeed:38,afterimageCount:12,afterimageDuration:.12,maxLevel:7};
-export function createOrbitalCompassWeapon(){return {id:'orbital-compass',name:'Orbital Compass',level:1,maxLevel:7,weight:4,attackType:'Multishot',ranged:true,exSkill:false,defaultUnlocked:true,icon:'../sprites/attacks/Event 06 - Buff 3.png',iconFit:true,iconCrop:{x:57,y:12,width:66,height:154}};}
+export function createOrbitalCompassWeapon(){return {id:'orbital-compass',name:'Orbital Compass',level:1,maxLevel:7,weight:4,attackType:'Multishot',ranged:true,exSkill:true,skillName:"This Direction?",defaultUnlocked:true,icon:'../sprites/attacks/Event 06 - Buff 3.png',iconFit:true,iconCrop:{x:57,y:12,width:66,height:154}};}
 export function orbitalCompassLevelStats(level=1){level=Math.max(1,Math.min(7,level));return {count:1+Number(level>=3)+Number(level>=5)+Number(level>=7),hitLimit:level>=3?13:3,size:level>=4?1.25:1,damageBonuses:[...(level>=2?[20]:[]),...(level>=6?[33]:[])]};}
 export const orbitalCompassDescriptions={1:'Throw a magnetic needle toward a nearby target, then return to the player. It explodes upon reaching its hit limit.',2:'Increase damage by 20%.',3:'Increase hit limit by 10 and throw one additional needle.',4:'Increase needle size by 25%.',5:'Throw one additional needle.',6:'Increase damage by 33%.',7:'Throw one additional needle.'};
 
 export const serveSettings={damage:.9,explosionMultiplier:2,interval:3.5,hitCooldown:20/60,duration:3,speed:5*60,radius:15,blastLength:140,blastWidth:24,blastDuration:.35,maxLevel:7};
-export function createServeWeapon(){return {id:'serve',name:'Serve!',level:1,maxLevel:7,weight:2,attackType:'Multishot',ranged:true,exSkill:false,defaultUnlocked:false,unlockObjective:'Survive 10 minutes as Plana in a single run',icon:'../sprites/attacks/Beach Ball.png',iconFit:true,iconCrop:{x:63,y:36,width:180,height:182}};}
+export function createServeWeapon(){return {id:'serve',name:'Serve!',level:1,maxLevel:7,weight:2,attackType:'Multishot',ranged:true,exSkill:true,skillName:"Return This!",defaultUnlocked:false,unlockObjective:'Survive 10 minutes as Plana in a single run',icon:'../sprites/attacks/Beach Ball.png',iconFit:true,iconCrop:{x:63,y:36,width:180,height:182}};}
 export function serveLevelStats(level=1){level=Math.max(1,Math.min(7,level));return {count:level>=7?4:level>=3?2:1,interval:serveSettings.interval*(level>=5?.85:1),hitLimit:level>=5?Infinity:10,size:level>=6?1.3:1,blastArea:(level>=2?1:.8)*(level>=6?1.3:1),speed:serveSettings.speed*(level>=4?1.3:1),damageBonuses:level>=4?[30]:[]};}
 export const serveDescriptions={1:'Throw a beach ball that bounces around the screen before exploding into an X.',2:'Increase X explosion area from 80% to 100%.',3:'Throw 2 beach balls.',4:'Increase damage and speed by 30%.',5:'Reduce time between attacks by 15% and remove the projectile hit limit.',6:'Increase beach ball and X explosion size by 30%.',7:'Throw 4 beach balls.'};
 
 export const timeToSurfSettings={damage:1.3,interval:200/60,hitCooldown:20/60,duration:2.5,speed:60,width:100,depth:28,travelWidth:28,travelPeriod:1.3,level3SpeedMultiplier:1.3,level3TravelMultiplier:1.3,maxLevel:7};
-export function createTimeToSurfWeapon(){return {id:'time-to-surf',name:'Time to Surf',level:1,maxLevel:7,weight:3,attackType:'Ranged',ranged:true,exSkill:false,defaultUnlocked:false,unlockObjective:'Survive 10 minutes as Plana in a single run',icon:'../sprites/attacks/Event 46 - Surfboard.png',iconFit:true,iconRotation:45,iconCrop:{x:17,y:62,width:605,height:192}};}
+export function createTimeToSurfWeapon(){return {id:'time-to-surf',name:'Time to Surf',level:1,maxLevel:7,weight:3,attackType:'Ranged',ranged:true,exSkill:true,skillName:"Riding Waves",defaultUnlocked:false,unlockObjective:'Survive 10 minutes as Plana in a single run',icon:'../sprites/attacks/Event 46 - Surfboard.png',iconFit:true,iconRotation:45,iconFlipX:true,iconCrop:{x:17,y:62,width:605,height:192}};}
 export function timeToSurfLevelStats(level=1){level=Math.max(1,Math.min(7,level));return {count:2,interval:timeToSurfSettings.interval*(level>=5?.8:1),size:(level>=4?1.25:1)*(level>=6?1.25:1),speed:timeToSurfSettings.speed*(level>=3?timeToSurfSettings.level3SpeedMultiplier:1),travelWidth:timeToSurfSettings.travelWidth*(level>=3?timeToSurfSettings.level3TravelMultiplier:1),damageBonuses:[...(level>=2?[25]:[]),...(level>=7?[50]:[])]};}
 export const timeToSurfDescriptions={1:'Send two seaside waves traveling upward and downward.',2:'Increase damage by 25%.',3:'Increase speed and travel width by 30%.',4:'Increase wave size by 25%.',5:'Reduce time between attacks by 20%.',6:'Increase wave size by 25%.',7:'Increase damage by 50%.'};
 
 export const maidForceSettings={damage:1.44,interval:110/60,hitCooldown:.5,area:1.5,duration:1.5,speed:7*60,radius:6,range:100,maxLevel:7};
-export function createMaidForceWeapon(){return {id:'maid-force',name:'Maid Force',level:1,maxLevel:7,weight:2,attackType:'Multishot',ranged:true,exSkill:false,defaultUnlocked:false,unlockObjective:'Defeat the Stage 3 boss',icon:'../sprites/attacks/Pretty Headband.png',iconFit:true,iconCrop:{x:63,y:13,width:185,height:224}};}
+export function createMaidForceWeapon(){return {id:'maid-force',name:'Maid Force',level:1,maxLevel:7,weight:2,attackType:'Multishot',ranged:true,exSkill:true,skillName:"Squeeky Clean",defaultUnlocked:false,unlockObjective:'Defeat the Stage 3 boss',icon:'../sprites/attacks/Pretty Headband.png',iconFit:true,iconCrop:{x:63,y:13,width:185,height:224}};}
 export function maidForceLevelStats(level=1){level=Math.max(1,Math.min(7,level));return {count:level>=7?3:level>=5?2:1,interval:maidForceSettings.interval*(level>=6?.85:1),range:level>=4?125:100,chance:level>=5?.9:level>=2?.8:.7,spreadMultiplier:level>=7?1.1:1,damageBonuses:level>=3?[30]:[]};}
 export const maidForceDescriptions={1:'Fire a fresh scent in the aimed direction. Hits have a 70% chance to spread toward another target within 100px.',2:'Increase scent chaining chance from 70% to 80%.',3:'Increase damage by 30%.',4:'Increase scent chaining range to 125px.',5:'Fire 2 scents and increase chaining chance to 90%.',6:'Reduce time between attacks by 15%.',7:'Fire 3 scents. Each successful spread increases its base damage by 10%.'};
 
 export const cheeringBalloonsSettings={damage:1.4,interval:2,hitCooldown:.5,duration:3,speed:8*60,range:300,radius:24,fallHeight:240,knockbackSeconds:5/60,maxLevel:7};
-export function createCheeringBalloonsWeapon(){return {id:'cheering-balloons',name:'Cheering Balloons',level:1,maxLevel:7,weight:4,attackType:'Multishot',ranged:true,exSkill:false,defaultUnlocked:false,unlockObjective:'Reach 10 minutes as a flat character with Moustache Medal equipped',icon:'../sprites/attacks/Cheering Balloons.png',iconFit:true,iconCrop:{x:32,y:24,width:244,height:203}};}
+export function createCheeringBalloonsWeapon(){return {id:'cheering-balloons',name:'Cheering Balloons',level:1,maxLevel:7,weight:4,attackType:'Multishot',ranged:true,exSkill:true,skillName:"Boundy Bloons",defaultUnlocked:false,unlockObjective:'Reach 10 minutes as a flat character with Moustache Medal equipped',icon:'../sprites/attacks/Cheering Balloons.png',iconFit:true,iconCrop:{x:32,y:24,width:244,height:203}};}
 export function cheeringBalloonsCharacterStats(player){const grade=Math.max(1,Math.min(5,Math.round((player.sizeStat??.2)*5)));return {grade,area:.6+(grade-1)*.1,knockbackSpeed:(grade+1)*60};}
 export function cheeringBalloonsLevelStats(level=1){level=Math.max(1,Math.min(7,level));return {count:level>=7?4:level>=5?3:level>=3?2:1,interval:cheeringBalloonsSettings.interval*(level>=6?.85:1),knockback:level>=4,damageBonuses:[...(level>=2?[20]:[]),...(level>=7?[30]:[])]};}
 export const cheeringBalloonsDescriptions={1:'Drop a falling balloon on a random on-screen target. It bounces to hit more targets. Size varies with character size grade.',2:'Increase damage by 20%.',3:'Drop 2 balloons.',4:'Add knockback. Strength varies with character size grade.',5:'Drop 3 balloons.',6:'Reduce time between attacks by 15%.',7:'Increase damage by 30% and drop 4 balloons.'};
 
 export const wakamoBayonetSettings={damage:1.6,interval:1.5,hitCooldown:.5,range:60,swingDuration:.18,arc:Math.PI*2/3,comboDelay:.7,knockbackSeconds:5/60,knockbackSpeed:120,maxLevel:7};
-export function createWakamoBayonetWeapon(){return {id:'wakamo-bayonet',name:"Wakamo's Bayonet",level:1,maxLevel:7,weight:3,attackType:'Melee',ranged:false,exSkill:false,defaultUnlocked:false,unlockObjective:'Defeat the Stage 4 final boss',icon:'../sprites/attacks/wakamo-bayonet.png',iconFit:true,iconCrop:{x:8,y:8,width:370,height:392}};}
+export function createWakamoBayonetWeapon(){return {id:'wakamo-bayonet',name:"Wakamo's Bayonet",level:1,maxLevel:7,weight:3,attackType:'Melee',ranged:false,exSkill:true,skillName:"Charge!",defaultUnlocked:false,unlockObjective:'Defeat the Stage 4 final boss',icon:'../sprites/attacks/wakamo-bayonet.png',iconFit:true,iconCrop:{x:8,y:8,width:370,height:392}};}
 export function wakamoBayonetLevelStats(level=1){level=Math.max(1,Math.min(7,level));return {count:level>=7?2:1,interval:wakamoBayonetSettings.interval*(level>=4?.8:1)*(level>=6?.8:1),size:level>=5?1.3:1,knockback:level>=3,damageBonuses:[...(level>=2?[20]:[]),...(level>=5?[30]:[])]};}
 export const wakamoBayonetDescriptions={1:'Swing a small bayonet toward the closest target, only when a target is within range.',2:'Increase damage by 20%.',3:'Add small knockback on hit.',4:'Reduce time between attacks by 20%.',5:'Increase attack area and damage by 30%.',6:'Reduce time between attacks by 20%.',7:'Bayonet swings become a 2-hit combo.'};
+
+export const molotovSkillSettings={minimumThrows:8,maximumThrows:16,throwInterval:.08,damageMultiplier:2,sizeMultiplier:2,durationMultiplier:2,distanceMultiplier:2};
+export function molotovSkillThrowCount(level=1){return Math.round(molotovSkillSettings.minimumThrows+(Math.max(1,Math.min(7,level))-1)/6*(molotovSkillSettings.maximumThrows-molotovSkillSettings.minimumThrows));}
+
+export const skilledThrowSettings={initialCount:3,damageMultiplier:2,durationMultiplier:3,finisherCount:8};
+
+export const strictRulesSettings={duration:10,ringScales:[1,1.5,2],orbitScales:[1,1.9,3.2]};
+
+export const splashSkillSettings={duration:.8,sweepSeconds:.22,dropletCount:90,slowPercent:80,slowSeconds:5};

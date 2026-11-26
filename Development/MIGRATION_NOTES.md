@@ -320,3 +320,29 @@ Validation:113 test files passed; targeted dev-session/title tests passed after 
 Live Server reload race corrected: session snapshot writes are gated until settings restoration completes. Repeated reloads while game assets initialize retain the previous snapshot. Runtime loadouts restore after form controls; repeated restore calls do not replay stale values over user edits.
 
 Latest reload policy: admin preferences persist; weapons/items/character-skill/tuning loadouts reset to fresh defaults on reload. Removed runtime loadout/tuning restoration and ignore legacy gear snapshots. Map preference remains restored. This supersedes earlier notes about preserving equipped gear.
+
+## Boundy Bloons - Cheering Balloons EX
+- Cast pattern: three concentric circles. Available in EX skill reference and admin cast testing.
+- Snapshots all living on-screen enemies at cast time; shuffled drops occur across one second, one balloon per enemy. Sizes vary between 0.75x, 1x, 1.25x and 1.5x normal, retaining current weapon damage, bounce, duration and knockback behavior. EX damage receives skill modifiers.
+- Three-ring recognition is distinct from Orbital Compass's valid two-ring drawing. Round inner loops cannot substitute for Luminous Nova's diamond. Both movement builds are integrated.
+
+## PRST Honars - Moustache Medal EX
+- Shield-outline casting pattern, registered with global drawing safety, EX reference and admin testing in both movement builds.
+- Four broad walls travel in cardinal directions from the cast location to the current screen edges over one second, then remain until the eight-second attack ends.
+- Uses current medal damage, Flat/Racer size/damage bonuses and knockback. Hits flatten targets for eight seconds; rectangular swept wall collisions cover the visible shield width. Normal autoattacks continue.
+
+## You really are bad at cooking - Bad Cooking EX
+- Knife-outline pattern; admin testing, both movement builds and EX library integrated. Provisional duration 10 seconds pending user's duration selection.
+- Active weapon attacks/projectiles gain following miasma fields using current Bad Cooking radius, damage and hit interval. New attacks gain fields during the buff; removed attacks lose them. Overlapping EX fields share a per-enemy cooldown and receive skill damage modifiers. Normal player miasma stays independent.
+- Source accessors added to all current basic projectile/area weapons, umbrella, bayonet, Supernova beam origins, Luminous Nova, Princess and Key and Protocol SUPERNOVA. Effects stop on expiry/reset/unequip and pause with the game.
+- Cached miasma texture reused with eight rising particles per extra field; offscreen painting culled; enemy spatial index handles broadphase. No projectile behavior changed.
+
+## Bad Cooking EX cleaver pattern correction
+- Replaced narrow knife with a broad rectangular cleaver blade and smaller handle on the left, matching the user's sketch. Two strokes can be drawn in either order/direction, with small closure gaps tolerated.
+- Updated both EX reference diagrams and recognition. Missing handle and other existing skill symbols remain rejected; gameplay unchanged.
+
+## Squeeky Clean - Maid Force EX
+- Five-pointed star casting pattern, shared gradient reference diagram, EX metadata and admin cast mapping in both movement builds.
+- Temporarily overrides scent spread chance to 100% for 10 seconds. Applies on hit to existing scents, new shots and descendants; current level's damage, range and scaling remain intact.
+- Timer follows game delta, ends exactly at its substep boundary, resets on owner/weapon reset, and never permanently changes projectile chance values.
+- Validation: normal Maid Force and new Squeeky Clean functional tests passed; both movement module graphs linked; 76 canonical/rough cases across 19 EX skills passed.

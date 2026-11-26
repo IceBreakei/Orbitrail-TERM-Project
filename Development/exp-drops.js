@@ -12,6 +12,8 @@ import { normalSpriteSize, spriteDisplayPadding } from './scene-metrics.js';
 // World-space records survive camera scrolling and map switches for this session.
 const drops = new Map();
 let nextId = 0;
+let enemyExpDropsEnabled = true;
+export function setEnemyExpDropsEnabled(enabled){enemyExpDropsEnabled=Boolean(enabled);}
 let getActivePlayer = () => ({ level: 1 });
 let isLandingClear = () => true;
  // Clearance for rotated report/credit/note artwork.
@@ -256,6 +258,7 @@ export function standardMobExp(player, tier = 0) {
 /** Drop a full-circle boss burst, five elite reports, or one ordinary report. */
 export function dropEnemyExp(enemy, random = Math.random) {
   const reports = [];
+  if(!enemyExpDropsEnabled)return reports;
   if (['yuuka','sensei'].includes(enemy.type)) return reports;
   const boss = enemy.boss === true || (enemy.boss !== false && ['iroha', 'shiroko'].includes(enemy.type));
   // Roll artwork first so its tier bonus does not depend on the resulting EXP.

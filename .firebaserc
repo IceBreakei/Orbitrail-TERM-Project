@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "orbitrail-c6ff3"
+  },
+  "targets": {
+    "orbitrail-c6ff3": {
+      "hosting": {
+        "orbitrail": [
+          "orbitrail"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

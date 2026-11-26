@@ -1,7 +1,8 @@
+import { skilledThrowSettings } from './game-config.js';
 import { throwingCardsSettings, throwingCardsLevelStats, attackTimeFormula, weaponSizeMultiplier } from './game-config.js';
 import { ensureCombatStats, totalWeaponDamage, rollAttackDamage } from './combat-stats.js';
 import { stationaryWeaponIntervalScale } from './tuning-parts.js';
-import { getAllEnemies, getEnemy, damageEnemy } from './world-state.js';
+import { getAllEnemies, getEnemy, damageEnemy, isBossEnemy } from './world-state.js';
 import { getCombatHitbox, getEnemyHurtbox, segmentHitsBody } from './combat-hitboxes.js';
 import { createEnemySpatialIndex } from './enemy-spatial-index.js';
 
@@ -37,11 +38,14 @@ export function createThrowingCardsAttack({random=Math.random}={}){
   }resolve();
  };image.onerror=()=>{image=null;resolve();};image.src=new URL('../sprites/attacks/Card Set.png',import.meta.url).href;});
  function reset(){owner=null;cooldown=0;time=0;cards=[];fadingTrails=[];shots=0;}
- function fire(player,weapon,angle){
-  const stats=throwingCardsLevelStats(weapon.level),body=getCombatHitbox(player,false),orbitScale=weaponSizeMultiplier(player),size=stats.size*orbitScale;
+ function fire(player,weapon,angle,origin=null,exMain=false){
+  const stats=throwingCardsLevelStats(weapon.level),body=origin||getCombatHitbox(player,false),orbitScale=weaponSizeMultiplier(player),size=stats.size*orbitScale;
   const startRadius=(Math.max(body.rx,body.ry)+s.hitRadius*size+3)/orbitScale;
-  cards.push({x:body.x+Math.cos(angle)*startRadius*orbitScale*s.spiralRadiusScale,y:body.y+Math.sin(angle)*startRadius*orbitScale*s.spiralRadiusScale,centerX:body.x,centerY:body.y,centerVx:0,centerVy:0,orbitAngle:angle,angle,age:0,startRadius,orbitScale,size,duration:stats.duration,hitsLeft:stats.hitLimit,damageBonuses:stats.damageBonuses,hits:new Map(),trail:[],trailElapsed:0});shots++;
+  cards.push({splitCount:exMain?skilledThrowSettings.initialCount:(origin?.splitCount??1),exMain,exSkill:exMain||Boolean(origin?.exSkill),x:body.x+Math.cos(angle)*startRadius*orbitScale*s.spiralRadiusScale,y:body.y+Math.sin(angle)*startRadius*orbitScale*s.spiralRadiusScale,centerX:body.x,centerY:body.y,centerVx:0,centerVy:0,orbitAngle:angle,angle,age:0,startRadius,orbitScale,size,duration:stats.duration*(exMain?skilledThrowSettings.durationMultiplier:1),hitsLeft:stats.hitLimit,damageBonuses:stats.damageBonuses,hits:new Map(),trail:[],trailElapsed:0});shots++;
  }
+ function targetAngle(x,y,fallback){const targets=getAllEnemies().filter(e=>e.hp>0&&!isBossEnemy(e)).map(enemy=>({enemy,body:getEnemyHurtbox(enemy)})).sort((a,b)=>Math.hypot(a.body.x-x,a.body.y-y)-Math.hypot(b.body.x-x,b.body.y-y));return targets.length?Math.atan2(targets[0].body.y-y,targets[0].body.x-x):fallback;}
+ function cast(player,angle=0){const weapon=player.attackSlots?.find(w=>w?.id==='throwing-cards');if(!weapon)return false;if(owner!==player){reset();owner=player;}const body=getCombatHitbox(player,false);const targets=getAllEnemies().filter(e=>e.hp>0&&!isBossEnemy(e)).map(e=>getEnemyHurtbox(e)).sort((a,b)=>Math.hypot(a.x-body.x,a.y-body.y)-Math.hypot(b.x-body.x,b.y-body.y));for(let i=0;i<skilledThrowSettings.initialCount;i++){const target=targets[i%targets.length],aim=target?Math.atan2(target.y-body.y,target.x-body.x):angle+(i-(skilledThrowSettings.initialCount-1)/2)*.18;fire(player,weapon,aim,null,true);}return true;}
+ function finish(b,player,weapon){if(!b.exMain)return;for(let i=0;i<skilledThrowSettings.finisherCount;i++)fire(player,weapon,i*Math.PI*2/skilledThrowSettings.finisherCount,{x:b.x,y:b.y,rx:0,ry:0,exSkill:true,splitCount:b.splitCount});}
  function retire(index){const b=cards[index];if(b.trail.length)fadingTrails.push({size:b.size,trail:b.trail});cards.splice(index,1);}
  function ageTrail(trail,delta){for(const ghost of trail)ghost.age+=delta;while(trail.length&&trail[0].age>=s.trailDuration)trail.shift();}
  function update(delta,player,angle=0){
@@ -56,13 +60,15 @@ export function createThrowingCardsAttack({random=Math.random}={}){
    if(!index)index=createEnemySpatialIndex(targets,getEnemyHurtbox);
    for(let i=cards.length-1;i>=0;i--){
     const b=cards[i],from={x:b.x,y:b.y};b.age+=dt;
-    if(b.age>b.duration+1e-8){retire(i);continue;}
+    if(b.age>b.duration+1e-8){finish(b,player,weapon);retire(i);continue;}
+    if(b.exMain){b.x+=Math.cos(b.angle)*s.speed*dt;b.y+=Math.sin(b.angle)*s.speed*dt;}else {
     advanceCardSpiralCenter(b,targets,dt);
     const spiral=throwingCardSpiral(b.age/b.orbitScale,b.startRadius),orbitRadius=spiral.radius*b.orbitScale*s.spiralRadiusScale;
     const radialSpeed=s.spiralRadiusScale*s.speed*s.pitch/Math.hypot(spiral.radius,s.pitch);
     // Tighter turns preserve the existing 600px/s spiral travel rather than slowing the card.
     b.orbitAngle+=Math.sqrt(Math.max(0,s.speed*s.speed-radialSpeed*radialSpeed))/Math.max(1,orbitRadius)*dt;
     b.x=b.centerX+Math.cos(b.orbitAngle)*orbitRadius;b.y=b.centerY+Math.sin(b.orbitAngle)*orbitRadius;
+    }
     ageTrail(b.trail,dt);b.trailElapsed+=dt;
     if(b.trailElapsed>=s.trailInterval-1e-8){b.trailElapsed%=s.trailInterval;b.trail.push({x:b.x,y:b.y,rotation:b.angle+b.age*s.spinSpeed,age:0});if(b.trail.length>s.trailCount)b.trail.shift();}
     const radius=s.hitRadius*b.size;
@@ -73,12 +79,12 @@ export function createThrowingCardsAttack({random=Math.random}={}){
     candidates.sort((a,c)=>{const t=getEnemyHurtbox(a),u=getEnemyHurtbox(c);return Math.hypot(t.x-from.x,t.y-from.y)-Math.hypot(u.x-from.x,u.y-from.y);});
     for(const enemy of candidates){
      if(!getEnemy(enemy.id))continue;
-     const hit=rollAttackDamage(player,totalWeaponDamage(player,'throwing-cards',s.damage,b.damageBonuses,{projectileCount:1,hitCooldownFrames:s.hitCooldown*60}),random,{target:enemy,weaponId:'throwing-cards'});
+     const hit=rollAttackDamage(player,totalWeaponDamage(player,'throwing-cards',s.damage,b.damageBonuses,{projectileCount:b.splitCount,hitCooldownFrames:s.hitCooldown*60}),random,{target:enemy,weaponId:'throwing-cards',skillAttack:b.exSkill,damageMod:b.exSkill?skilledThrowSettings.damageMultiplier:1});
      b.hits.set(enemy.id,time);
      if(damageEnemy(enemy.id,hit.damage,player,hit.type,{canMiss:true,weaponId:'throwing-cards'})===false)continue;
-     b.hitsLeft--;if(b.hitsLeft<=0)break;
+     if(b.exMain){if(enemy.hp<=0&&!isBossEnemy(enemy)){b.angle=targetAngle(b.x,b.y,b.angle);break;}}else {b.hitsLeft--;if(b.hitsLeft<=0)break;}
     }
-    if(b.hitsLeft<=0||b.age>=b.duration-1e-8)retire(i);
+    if((!b.exMain&&b.hitsLeft<=0)||b.age>=b.duration-1e-8){finish(b,player,weapon);retire(i);}
    }
   }
  }
@@ -96,5 +102,5 @@ export function createThrowingCardsAttack({random=Math.random}={}){
   for(const b of fadingTrails)drawTrail(context,camera,b);
   for(const b of cards){drawTrail(context,camera,b);drawPose(context,camera,b,{x:b.x,y:b.y,rotation:b.angle+b.age*s.spinSpeed});}
  }
- return {ready,update,draw,reset,setAutoattackEnabled(value){enabled=Boolean(value);},get shotsFired(){return shots;},get projectileCount(){return cards.length;}};
+ return {getAuraSources(){return cards;},ready,cast,update,draw,reset,setAutoattackEnabled(value){enabled=Boolean(value);},get shotsFired(){return shots;},get projectileCount(){return cards.length;}};
 }

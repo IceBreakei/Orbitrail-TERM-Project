@@ -25,13 +25,18 @@ export function createFrozenAdmin({root,getEnemies,getCamera,getSize}){
   root.querySelector('button').addEventListener('click',()=>{const {width,height}=getSize();const count=freezeVisibleEnemies(getEnemies(),getCamera(),width,height);status.textContent=`Frozen ${count} onscreen enemies for 3 seconds.`;});
 }
 
-/** Visual pursuit continues while the control layer holds world movement/attacks. */
+/** Visual pursuit continues at normal speed during freeze, stun or flattening. */
 export function animateFrozenEnemy(enemy,player,delta){
   const dx=player.x-enemy.x,dy=player.y-enemy.y;
   const directions=['up','upRight','right','downRight','down','downLeft','left','upLeft'];
   if(dx||dy)enemy.direction=directions[(Math.round(Math.atan2(dx,-dy)/(Math.PI/4))+8)%8];
   if(dx)enemy.facing=dx>0?'right':'left';
   enemy.moving=true;enemy.elapsed=(enemy.elapsed||0)+delta*1000;
-  if(enemy.attack)enemy.attack.elapsed=(enemy.attack.elapsed||0)+delta*1000;
+  if(enemy.transition)enemy.transition.elapsed=(enemy.transition.elapsed||0)+delta*1000;
+  if(enemy.attack){
+    const duration=(enemy.layout?.columnEdges.length-1)*(enemy.attacks?.[enemy.attack.name]?.frameDuration||0);
+    const elapsed=(enemy.attack.elapsed||0)+delta*1000;
+    enemy.attack.elapsed=duration>0?elapsed%duration:elapsed;
+  }
   if(enemy.bossAction?.clip)enemy.frozenPoseElapsed=(enemy.frozenPoseElapsed??(enemy.bossAction.elapsed||0)*1000)+delta*1000;
 }

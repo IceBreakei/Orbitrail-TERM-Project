@@ -84,7 +84,7 @@ export function createDecagrammatonAttack({random=Math.random}={}) {
       }
     }
   }
-  return {ready:Promise.resolve(),update,reset,draw(context,camera){for(const b of bullets)drawLuminousPlasma(context,camera,b,b.diameter,decagrammatonSettings[b.color].duration);},
+  return {getAuraSources(){return bullets;},ready:Promise.resolve(),update,reset,draw(context,camera){for(const b of bullets)drawLuminousPlasma(context,camera,b,b.diameter,decagrammatonSettings[b.color].duration);},
     setExMode(active,shooting){exSpray=Boolean(active&&shooting);},
     setAutoattackEnabled(value){enabled=Boolean(value);},get projectileCount(){return bullets.length;},get shotsFired(){return shots;}};
 }

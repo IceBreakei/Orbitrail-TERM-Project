@@ -31,5 +31,5 @@ export function createTimeToSurfAttack({random=Math.random}={}){
    context.strokeStyle='rgba(228,255,255,.9)';context.lineWidth=2*w.size;context.beginPath();context.moveTo(-width*.46,-depth*.03);context.bezierCurveTo(-width*.22,-depth*.65,width*.2,-depth*.55,width*.46,-depth*.03);context.stroke();
    context.fillStyle='rgba(235,255,255,.75)';for(let i=0;i<7;i++){const x=(i/6-.5)*width*.84,y=-depth*(.12+.2*Math.sin(i*.8+w.age*5));context.beginPath();context.arc(x,y,(1.2+.5*Math.sin(i+w.age*4))*w.size,0,Math.PI*2);context.fill();}context.restore();}
  }
- return {ready:Promise.resolve(),update,draw,reset,setAutoattackEnabled(value){enabled=Boolean(value);},get shotsFired(){return shots;},get projectileCount(){return waves.length;}};
+ return {getAuraSources(){return waves;},ready:Promise.resolve(),update,draw,reset,setAutoattackEnabled(value){enabled=Boolean(value);},get shotsFired(){return shots;},get projectileCount(){return waves.length;}};
 }

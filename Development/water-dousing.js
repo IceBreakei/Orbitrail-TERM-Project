@@ -1,3 +1,4 @@
+import { splashSkillSettings } from './game-config.js';
 import { waterDousingSettings, waterDousingLevelStats, weaponSizeMultiplier, weaponKnockbackMultiplier, attackTimeFormula } from './game-config.js';
 import { ensureCombatStats, totalWeaponDamage, rollAttackDamage } from './combat-stats.js';
 import { stationaryWeaponIntervalScale } from './tuning-parts.js';
@@ -20,9 +21,9 @@ export function waterConeHits(body,x,y,angle,radius,halfAngle=waterDousingSettin
 export const waterStreamSettings={sweepSeconds:.18,dropletCount:30};
 /** Sequential release makes a curved stream: older water is farther from the swing. */
 export function waterStreamDroplets(splash){
- const drops=[],sweep=waterStreamSettings.sweepSeconds,travel=waterDousingSettings.duration;
- for(let i=0;i<waterStreamSettings.dropletCount;i++){
-  const release=i/(waterStreamSettings.dropletCount-1),age=splash.age-release*sweep;
+ const drops=[],sweep=splash.sweepSeconds??waterStreamSettings.sweepSeconds,travel=splash.duration??waterDousingSettings.duration,count=splash.dropletCount??waterStreamSettings.dropletCount;
+ for(let i=0;i<count;i++){
+  const release=i/(count-1),age=splash.age-release*sweep;
   if(age<0||age>=travel)continue;
   const angle=splash.angle-waterDousingSettings.halfAngle+release*waterDousingSettings.halfAngle*2;
   const progress=age/travel,origin=Math.min(14,splash.radius*.09),distance=origin+(splash.radius-origin)*progress;
@@ -51,13 +52,24 @@ export function createWaterDousingAttack({random=Math.random}={}){
    if(stats.rootSeconds){target.waterRootDelay=motion?s.knockbackSeconds:0;target.waterRootRemaining=stats.rootSeconds;}
   }
  }
+ function cast(player,angle=0,viewport=null){
+  const weapon=player.attackSlots?.find(w=>w?.id==='water-dousing');if(!weapon)return false;
+  if(owner!==player){reset();owner=player;}const body=getCombatHitbox(player,false),stats=waterDousingLevelStats(weapon.level),view=viewport||{x:body.x-640,y:body.y-360,width:1280,height:720};
+  const radius=Math.max(...[view.x,view.x+view.width].flatMap(x=>[view.y,view.y+view.height].map(y=>Math.hypot(x-body.x,y-body.y))))*1.05;
+  splashes.push({x:body.x,y:body.y,angle,radius,age:0,duration:splashSkillSettings.duration,sweepSeconds:splashSkillSettings.sweepSeconds,dropletCount:splashSkillSettings.dropletCount,exSkill:true});shots++;
+  for(const enemy of getAllEnemies()){const target=getEnemyHurtbox(enemy);if(target.x+target.rx<view.x||target.x-target.rx>view.x+view.width||target.y+target.ry<view.y||target.y-target.ry>view.y+view.height||!waterConeHits(target,body.x,body.y,angle,radius))continue;
+   const base=totalWeaponDamage(player,'water-dousing',s.damage,stats.damageBonuses,{projectileCount:1,hitCooldownFrames:s.hitCooldown*60}),hit=rollAttackDamage(player,base,random,{target:enemy,weaponId:'water-dousing',skillAttack:true});
+   if(damageEnemy(enemy.id,hit.damage,player,hit.type,{canMiss:true,weaponId:'water-dousing'})===false)continue;
+   const survivor=getEnemy(enemy.id);if(survivor&&survivor.hp>0){survivor.splashSlowRemaining=Math.max(survivor.splashSlowRemaining||0,splashSkillSettings.slowSeconds);survivor.splashSlowPercent=splashSkillSettings.slowPercent;}
+  }return true;
+ }
  function update(delta,player,angle=0){
   const weapon=player.attackSlots?.find(w=>w?.id==='water-dousing');if(!weapon){reset();return;}
   if(owner!==player){reset();owner=player;}if(!(delta>0))return;
   let left=delta;while(left>1e-8){
    if(enabled&&cooldown<=1e-8){fire(player,weapon,angle);cooldown=attackTimeFormula(waterDousingLevelStats(weapon.level).interval*(player.tuningParts?stationaryWeaponIntervalScale(player):1),ensureCombatStats(player).hastePercent);}
    const step=Math.min(left,1/60,enabled&&cooldown>1e-8?cooldown:1/60);time+=step;cooldown=Math.max(0,cooldown-step);left-=step;
-   for(let i=splashes.length-1;i>=0;i--){splashes[i].age+=step;if(splashes[i].age>=s.duration+waterStreamSettings.sweepSeconds)splashes.splice(i,1);}
+   for(let i=splashes.length-1;i>=0;i--){splashes[i].age+=step;if(splashes[i].age>=(splashes[i].duration??s.duration)+(splashes[i].sweepSeconds??waterStreamSettings.sweepSeconds))splashes.splice(i,1);}
   }
  }
  function draw(context,camera){
@@ -84,5 +96,5 @@ export function createWaterDousingAttack({random=Math.random}={}){
    context.restore();
   }
  }
- return {ready:Promise.resolve(),update,draw,reset,setAutoattackEnabled(value){enabled=Boolean(value);},get shotsFired(){return shots;}};
+ return {getAuraSources(){if(!owner)return [];const b=getCombatHitbox(owner,false);return splashes.flatMap(splash=>waterStreamDroplets({...splash,x:b.x,y:b.y}));},ready:Promise.resolve(),cast,update,draw,reset,setAutoattackEnabled(value){enabled=Boolean(value);},get shotsFired(){return shots;}};
 }
