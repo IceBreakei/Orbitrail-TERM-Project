@@ -30,6 +30,7 @@ export function configureItemUnlocks(storage,uid,{developer=false}={}) {
   itemUnlockStore=uid?storage:null;itemUnlockKey=uid?`orbitrail.items.${uid}`:null;unlockedItems.clear();
   try {for(const id of JSON.parse(itemUnlockStore?.getItem(itemUnlockKey)||'[]'))unlockedItems.add(id);} catch {}
 }
+export function refreshAccountUnlocks(ids){unlockedItems.clear();for(const id of ids)unlockedItems.add(id);}
 export function unlockItem(id){unlockContent(id);}
 export function isItemUnlocked(id){return isContentUnlocked(id);}
 /** Unlocks are permanent eligibility; future Customize selections separately filter rewards. */
@@ -60,7 +61,7 @@ function malkuthUpgradeChoices(player) {
   const slots=player.equipmentSlots||[],hat=slots.find(item=>item?.id==='malkuth-hat');
   if(hat){if(hat.awakened||hat.level>=3)return [];
     return [{id:'malkuth-level',name:`Malkuth's Hat LV ${hat.level||1} -> ${(hat.level||1)+1===3?'MAX':`LV ${(hat.level||1)+1}`}`,weapon:hat,category:'Item',description:malkuthDescription({...hat,level:(hat.level||1)+1})}];}
-  if(!isItemUnlocked('malkuth-hat')||slots.filter(Boolean).length>=6)return [];
+  if(!isItemUnlocked('malkuth-hat')||slots.filter(Boolean).length>=(player.maxItemSlots??6))return [];
   const item=createMalkuthHat();return [{id:'malkuth-new',name:"Malkuth's Hat LV 1",weapon:item,category:'NEW Item',description:malkuthDescription(item)}];
 }
 export function createRacerPass(superItem=false){return {id:'racer-pass',name:'Racer Pass',icon:'../sprites/items/Racer Pass.png',iconFit:true,iconCrop:{x:43,y:12,width:214,height:220},level:1,maxLevel:superItem?1:3,
@@ -74,7 +75,7 @@ export function safetyHelmetStats(player){const item=player.equipmentSlots?.find
  if(!item)return {chance:0,super:false};const superItem=Boolean(item.isSuper||item.awakened);
  return {chance:superItem ? .4 : [.15,.2,.25,.3,.35][Math.min(4,Math.max(0,(item.level||1)-1))],super:superItem};}
 export function safetyHelmetDescription(item){const stats=safetyHelmetStats({equipmentSlots:[item]});
- return `${Math.round(stats.chance*100)}% chance to negate 1 hit${stats.super?' and heal 10% Max HP':''}, and create a shockwave that knocks back all targets.`;}
+ return `${Math.round(stats.chance*100)}% chance to negate 1 hit${stats.super?' and heal 10% Max HP':''}, and create a shockwave that knocks back nearby targets within 140px.`;}
 export function createLifeJacket(superItem=false){return {id:'life-jacket',name:'Life Jacket',icon:'../sprites/items/Life Jacket.png',
  iconFit:true,iconCrop:{x:42,y:13,width:212,height:219},level:1,maxLevel:superItem?1:5,isSuper:superItem,awakened:superItem,itemType:'Utility',weight:3,defaultUnlocked:true};}
 export function lifeJacketStats(player){const item=player.equipmentSlots?.find(i=>i?.id==='life-jacket');if(!item)return null;
@@ -114,7 +115,7 @@ export function itemUpgradeChoices(player){
   if(['chise-plushie','overheated-overclocking','special-pharmaceuticals'].includes(id)&&!item&&!isContentUnlocked(id))continue;
   if(item&&!item.isSuper&&!item.awakened&&(item.level||1)<max)choices.push({id:`${prefix}-level`,name:`${item.name} LV ${item.level||1} -> ${(item.level||1)+1===max?'MAX':`LV ${(item.level||1)+1}`}`,
     weapon:item,category:'Item',description:describe({...item,level:(item.level||1)+1})});
-  else if(!item&&slots.filter(Boolean).length<6){const weapon=create();choices.push({id:`${prefix}-new`,name:`${weapon.name} LV 1`,weapon,category:'NEW Item',description:describe(weapon)});}
+  else if(!item&&slots.filter(Boolean).length<(player.maxItemSlots??6)){const weapon=create();choices.push({id:`${prefix}-new`,name:`${weapon.name} LV 1`,weapon,category:'NEW Item',description:describe(weapon)});}
  }
  return choices;
 }

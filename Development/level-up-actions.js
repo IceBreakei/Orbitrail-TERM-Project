@@ -2,7 +2,7 @@ import { isContentUnlocked } from './item-catalog.js';
 const limits={reroll:10,eliminate:10,hold:5};
 export function levelActionUses(player,action){
   const purchased=Math.max(0,Math.min(limits[action],Math.trunc(Number(player.abilityUpgradeRanks?.[action])||0)));
-  const granted=isContentUnlocked('developer-level-actions')?limits[action]:purchased;
+  const granted=!player.shopUnlocks&&isContentUnlocked('developer-level-actions')?limits[action]:purchased;
   return Math.max(0,granted-(player.levelActionSpent?.[action]||0));
 }
 export function spendLevelAction(player,action){

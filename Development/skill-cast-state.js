@@ -76,7 +76,7 @@ export function createSkillCastState(onSubmit = () => {}) {
         else weapon = result.weapon;
       }
       // Unknown/ambiguous/failed recognition is free; never penalize a guessed weapon.
-      if (valid) setSkillCooldown(weapon, weapon.successCooldown??skillCastSettings.successCooldown);
+      if (valid) setSkillCooldown(weapon, (weapon.successCooldown??skillCastSettings.successCooldown)*(owner.shopCooldownMultiplier??1));
       if (valid) {
         weapon.lastSkillDrawing = { label: result.label, score: result.score, skillId: result.skillId, components: result.components,
           accuracy: result.accuracy, damageMultiplier: result.damageMultiplier, clipPredictions: result.clipPredictions };

@@ -1,0 +1,13 @@
+{
+  "name": "orbitrail-account-backend",
+  "private": true,
+  "version": "1.0.0",
+  "main": "index.cjs",
+  "engines": {
+    "node": "22"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0",
+    "firebase-functions": "^6.0.0"
+  }
+}

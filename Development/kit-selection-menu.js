@@ -9,7 +9,7 @@ export const selectableKits=[
 ];
 /** Continuous running preview; menus pause gameplay, not this independent animation. */
 export function kitPreviewFrame(elapsed){return Math.floor(Math.max(0,elapsed)*7)%5;}
-export function preparationSlotState(player,type){const support=type==='support',unlocked=support?Boolean(player.abilityUpgradeRanks?.supports||isContentUnlocked('supports')):Boolean(player.studentHaloUnlocked||isContentUnlocked('student-halo'));return {unlocked,name:support?'Support Item':'Student Halo',value:unlocked?(support?'No Support':'None'):'Locked',description:unlocked?(support?'No Support Item equipped.':'No Student Halos have been added yet.'):(support?'Unlock Supports to use this slot.':'Unlock Student Halos to use this slot.')};}
+export function preparationSlotState(player,type){const support=type==='support',unlocked=support?supportsUnlocked(player):Boolean(player.studentHaloUnlocked||isContentUnlocked('student-halo'));return {unlocked,name:support?'Support Item':'Student Halo',value:unlocked?(support?'No Support':'None'):'Locked',description:unlocked?(support?'No Support Item equipped.':'No Student Halos have been added yet.'):(support?'Unlock Supports to use this slot.':'Unlock Student Halos to use this slot.')};}
 export function createKitSelectionMenu({panel,onChoose,onBack,getPlayer=()=>({})}){
  const preparation=panel.querySelector('.kit-preparation-options'),goButton=panel.querySelector('[data-preparation-go]');let preparationType='support',supportIndex=0;
  const modeOptions=panel.querySelector('.kit-mode-options'),stageOptions=panel.querySelector('.kit-stage-options'),endlessButton=panel.querySelector('[data-select-endless]'),mixedButton=panel.querySelector('[data-select-mixed]');

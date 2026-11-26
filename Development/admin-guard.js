@@ -4,6 +4,7 @@ import { isGuestSession } from '../guest-session.js';
 
 /** Reveal development content only after Firebase confirms the admin session. */
 export async function requireAdmin() {
+  if(document.documentElement?.dataset.runtime==='live')return (await import('./game-access.js')).requireGameAccess();
   const content = document.querySelector('#development-content');
   if (isGuestSession()) {
     content.hidden = true;
@@ -20,7 +21,7 @@ export async function requireAdmin() {
         content.hidden = !allowed;
 
         if (!allowed) {
-          window.location.replace(user ? '../project.html' : '../index.html');
+          window.location.replace('../index.html?admin=1');
         }
 
         resolve(allowed);

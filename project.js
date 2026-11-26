@@ -9,6 +9,7 @@ async function requireSignIn() {
   // Guests can enter the empty workspace without Firebase, and never see admin controls.
   if (isGuestSession()) {
     developmentLink.hidden = true;
+    window.location.replace('Game/movement.html');
     return;
   }
   try {
@@ -18,7 +19,7 @@ async function requireSignIn() {
       developmentLink.hidden = isGuestSession() || !isAdmin(user);
       if (!user) {
         window.location.replace('index.html');
-      }
+      } else window.location.replace('Game/movement.html');
     }, () => {
       developmentLink.hidden = true;
       window.location.replace('index.html');

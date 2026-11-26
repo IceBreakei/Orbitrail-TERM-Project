@@ -1,3 +1,8 @@
+import {updateShopEffects} from './shop-effects.js';
+import {initializeProgress,bindAccountProgress} from './progress-runtime.js';
+import {setupGameWindow} from './game-window.js';
+import {isAdmin,hasAllContent} from '../admin-access.js';
+import {isGuestSession} from '../guest-session.js';
 import {createRidingWaves} from './riding-waves.js';
 import {createBayonetCharge} from './bayonet-charge.js';
 import { createAdditionalStatusAdmin } from './status-effects-admin.js';
@@ -125,7 +130,8 @@ import { createNpcTools } from './npc-tools.js';
 import { createMapTransition } from './map-transition.js';
 
 const authorized = await requireAdmin();
-if(authorized){try {const {auth}=await getFirebaseAuth();configureItemUnlocks(localStorage,auth.currentUser?.uid,{developer:authorized});}catch {configureItemUnlocks(null,null);}}
+let developerAccount=false,developmentLogin=false;
+let accountSave=null;if(authorized){accountSave=await initializeProgress();if(!isGuestSession()){const {auth}=await getFirebaseAuth();developerAccount=isAdmin(auth.currentUser);developmentLogin=hasAllContent(auth.currentUser)&&!developerAccount;}}
 document.querySelector('#admin-simulate-account')?.addEventListener('click',event=>{
   setUnlockSimulation(!isUnlockSimulation());
   event.currentTarget.setAttribute('aria-pressed',String(isUnlockSimulation()));
@@ -223,8 +229,9 @@ let superSynergy;
 let gachaFiles;
 let tuningParts;
 let awaitingFileStageAdvance=false;
+let gameDetached=false;
 /** Share one gameplay pause condition across movement, clocks, transitions and casting. */
-function isGameplayPaused() { return Boolean(titleMenu?.active || pauseMenu?.paused || levelUpMenu?.active || crafters?.active || goldenCrafters?.active || gachaFiles?.active || tuningParts?.active); }
+function isGameplayPaused() { return Boolean(gameDetached || titleMenu?.active || pauseMenu?.paused || levelUpMenu?.active || crafters?.active || goldenCrafters?.active || gachaFiles?.active || tuningParts?.active); }
 let mapAudio;
 let supportControls;
 let hud;
@@ -382,7 +389,7 @@ for(const [id,base,label] of [
   ['megaArius3','arius3','Mega Arius 3'],['megaPedrozilla','pedrozilla','Mega Pedrozilla']
 ]) characters[id]={...createMegaMob(characters[base]),label};
 for(const [id,label,source,frames] of [
-  ['arisu','Arisu Boss','../sprites/enemies/bosses/arisu boss/arisu normal.gif',arisuFrames],
+  ['arisu','Arisu Boss','../sprites/enemies/bosses/arisu boss/arisu normal updated.gif',arisuFrames],
   ['neru','Neru Boss','../sprites/enemies/bosses/neru/A1-transparent-clean-outline.gif',neruFrames]
 ]) characters[id]={label,boss:true,source,gifFrames:frames,spriteSize:bossSpriteSize*(id==='arisu'?arisuBossSizeMultiplier:1),referenceSize:200,
   contactRecoveryDelay:false,horizontalFacingOnly:true,defaultDirection:'left',facing:'left',
@@ -1093,6 +1100,7 @@ function animate(time) {
     if (pendingStageTransition && stageTransitionDelay<=1e-8 && !mapTransition?.active && switchMap(pendingStageTransition)) {
       pendingStageTransition = null;
     }
+    updateShopEffects(activeCharacter,delta);
     skillCasting?.update(delta);
     updateDamageNumbers(delta);
     playerStatsTools?.update();
@@ -1370,6 +1378,7 @@ if (authorized) {
   });
   Promise.all([...Object.values(characters), ...Object.values(maps).filter(map => map.source && !map.disabled), ...maps.first.tiles, ...maps.second.tiles, ...maps.third.tiles].map(loadSheet).concat(superSynergy.ready,stunnedReady,frozenReady,artilleryExplosionReady,swipeSkill.ready,gachaFiles.ready,goldenCrafters.ready,crafters.ready, bayonetCharge.ready, wakamoBayonetAttack.ready, cheeringBalloonsAttack.ready, maidForceAttack.ready, ridingWaves.ready, timeToSurfAttack.ready, serveAttack.ready, orbitalCompassAttack.ready, moustacheMedalAttack.ready, studentHandbookAttack.ready, throwingCardsAttack.ready, beanBagBombAttack.ready, molotovAttack.ready, aiming.ready, expPickups.ready, loadEnemyDeathGraphics(), umbrellaAttack.ready, arisAttack.ready,luminousAttack.ready,luminousSkill.ready,princessSkill.ready, planaSkill.ready, loadDamageNumberGraphics()).map(task => window.pageLoading?.track(task) || task))
     .then(() => {
+      setupGameWindow({releaseControls,developer:developerAccount,developmentLogin,onDetachedChange:detached=>{gameDetached=detached;mapAudio?.setSuspended(detached);}});
       observeViewport(canvas, () => {
         mapTransition?.cancel();
         // Resize the view, never entity coordinates, sprite sizes, or map 3/4 scale.
@@ -1593,6 +1602,7 @@ if (authorized) {
       window.applyDevRuntimeSettings=()=>{}; // Reloads always start with a fresh map and internal clock.
       window.restoreDevSession?.();
       // Refresh the default loadout after restoring admin controls.
+      if(accountSave)bindAccountProgress(accountSave,{players:Object.values(characters),runScore,getPlayer:()=>characters[selected]});
       hud.update(characters[selected]);playerStatsTools?.update();
       titleMenu = createTitleMenu({canvas,releaseControls,onChooseKit:(id,run)=>{switchCharacter(id);characters[id].selectedRunMode=run?.mode||'endless';characters[id].selectedStageId=run?.stage||'mixed';characters[id].supportItemId=run?.supportItemId||'none';delete characters[id].supportState;},getPlayer:()=>characters[selected],getScores:()=>runScore.results,clearScores:()=>runScore.clearResults(),onActiveChange:active=>mapAudio?.setMenu(active)});
       document.querySelector('#simulate-game').disabled=false;
@@ -1603,5 +1613,5 @@ if (authorized) {
       window.pageLoading?.finish();
       requestAnimationFrame(animate);
     })
-    .catch(error => { status.textContent = error.message; window.pageLoading?.fail('Unable to load game assets. Please reload to try again.'); });
+    .catch(error => { console.error('Game startup failed:',error);status.textContent=error.message;window.pageLoading?.fail(`Unable to start game: ${String(error.message||error).slice(0,200)}. Please reload to try again.`); });
 }

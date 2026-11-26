@@ -83,6 +83,9 @@ export function updateDropScatter(drop, delta) {
   return true;
 }
 
+let lootSaveChanged=()=>{};
+export function configureLootPersistence({initial,onChange=()=>{}}={}){if(initial){lootTotals.credits=Math.max(0,Math.trunc(initial.credits||0));lootTotals.secretTechNotes=Math.max(0,Math.trunc(initial.secretTechNotes||0));}lootSaveChanged=onChange;}
+function persistLoot(){lootSaveChanged({...lootTotals});}
 /** Read a snapshot of collected session inventory, including spendable awakening notes. */
 export function getLootTotals() {
   return { ...lootTotals };
@@ -91,19 +94,19 @@ export function getLootTotals() {
 /** Award File Credits once when its opening completes. */
 export function gainCredits(amount) {
   if(!Number.isFinite(amount)||amount<0)return false;
-  lootTotals.credits+=Math.floor(amount);return true;
+  lootTotals.credits+=Math.floor(amount);persistLoot();return true;
 }
 
 /** Spend run Credits atomically; rejected purchases never modify the balance. */
 export function spendCredits(amount) {
   if(!Number.isInteger(amount)||amount<0||lootTotals.credits<amount)return false;
-  lootTotals.credits-=amount;return true;
+  lootTotals.credits-=amount;persistLoot();return true;
 }
 
 /** Spend collected notes atomically; failed awakenings never consume currency. */
 export function spendSecretTechNotes(amount) {
   if (!Number.isInteger(amount) || amount <= 0 || lootTotals.secretTechNotes < amount) return false;
-  lootTotals.secretTechNotes -= amount;
+  lootTotals.secretTechNotes -= amount;persistLoot();
   return true;
 }
 
@@ -132,7 +135,7 @@ export function spawnTestDrop(kind, value, x, y) {
 function collectDrop(drop, player) {
   drops.delete(drop.id);
   if (drop.kind === 'exp') addPlayerExp(player, drop.value);
-  else lootTotals[drop.kind] += drop.value;
+  else {lootTotals[drop.kind] += drop.kind==='credits'?Math.floor(drop.value*(1+(player.moneyUpBonus||0)/100)*(player.stageCoinMultiplier??1)):drop.value;persistLoot();}
 }
 
 /** Cast Net collects only reports and Credits, leaving notes and other pickups intact. */
@@ -314,7 +317,7 @@ export function createExpPickups(getPlayer, options = {}) {
           for (const drop of drops.values()) collectDrop(drop, player);
         } else if (action === 'reset') {
           lootTotals.credits = 0;
-          lootTotals.secretTechNotes = 0;
+          lootTotals.secretTechNotes = 0;persistLoot();
         } else {
           const amount = Number(tools.querySelector('[name="loot-value"]').value);
           spawnTestDrop(action, Math.min(1000000, amount), player.x + 80,

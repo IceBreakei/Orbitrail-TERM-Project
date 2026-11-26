@@ -80,3 +80,4 @@ run('player.equipmentSlots=[];player.pendingUpgrades=1');assert(run("applyLevelU
 for(let level=2;level<=5;level++){run('player.pendingUpgrades=1');assert(run("applyLevelUpgrade(player,'jacket-level')"));assert.equal(run('player.equipmentSlots[0].level'),level);}
 assert(!run("rollLevelUpgrades(player,{all:true}).some(c=>c.id==='jacket-level')"));
 console.log('PASS Life Jacket level-up acquisition and five-level cap.');
+run("player.attackSlots=[];player.disabledWeaponIds=['aris-laser','luminous-nova','bad-cooking']");assert(!run("rollLevelUpgrades(player,{all:true}).some(c=>['aris-laser','luminous-nova','bad-cooking'].includes(c.weapon?.id))"));run('player.disabledWeaponIds=[]');assert(run("rollLevelUpgrades(player,{all:true}).some(c=>c.weapon?.id==='luminous-nova')"));console.log('PASS disabled weapons including Supernova and Luminous Nova excluded, re-enabled weapons return');

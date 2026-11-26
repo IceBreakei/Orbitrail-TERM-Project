@@ -29,6 +29,7 @@ export function ensurePlayerStats(character) {
   character.shield = Math.max(0, Math.min(character.maxHp, character.shield ?? 0));
   character.invincible ??= developmentSettings.invincible;
   ensureCombatStats(character);
+  if(character.hardcore){character.maxHp=1;character.hp=Math.min(character.hp,1);}
   return character;
 }
 
@@ -36,7 +37,7 @@ export function ensurePlayerStats(character) {
 export function addPlayerExp(character, amount) {
   ensurePlayerStats(character);
   if (!Number.isFinite(amount) || amount <= 0) return;
-  character.exp += Math.min(1000000, Math.floor(amount));
+  character.exp += Math.min(1000000, Math.floor(amount*(character.shopExpMultiplier??1)));
   while (character.exp >= character.maxExp) {
     character.exp -= character.maxExp;
     character.level++;
@@ -67,7 +68,7 @@ export function damagePlayer(character, amount, {projectile=false,enemyHit=true}
   ensurePlayerStats(character);
   if(character.bayonetChargeActive||character.supportState?.invulnerableRemaining>0||(projectile&&character.supportState?.shieldRemaining>0)){character.lastDamageResult={negated:true,healthDamage:0,shieldDamage:0};return false;}
   if (!Number.isFinite(amount) || amount <= 0) return false;
-  const damage = Math.round(amount * damageReductionFormula([].concat(character.damageReductionPercent??[],lifeJacketStats(character)?.reduction??0)));
+  const damage = Math.round(amount * damageReductionFormula([].concat(character.damageReductionPercent??[],lifeJacketStats(character)?.reduction??0,character.shopDefensePercent||0)));
   if(damage<=0)return false;
   if(playerDamageGuard?.(character,damage)){character.lastDamageResult={negated:true,healthDamage:0,shieldDamage:0};showDamageNumber(character,0,true,'miss');return false;}
   const initialFraction=chiseDelayConfigured()?chiseImmediateFraction(character):1;

@@ -1,0 +1,20 @@
+rules_version = '2';
+// accountSaves/{Firebase UID}: schemaVersion=1; flags are 0/1 values under stable IDs;
+// ranks are 0..10; wallet holds Credits/notes; preferences hold bounded UI values;
+// scores contains at most 100 client-owned run summaries; updatedAt is server time.
+service cloud.firestore {
+ match /databases/{database}/documents {
+  function owns(uid){return request.auth != null && request.auth.uid == uid;}
+  function validWallet(w){return w is map && w.keys().hasOnly(['credits','secretTechNotes']) && w.keys().hasAll(['credits','secretTechNotes']) && w.credits is int && w.credits>=0 && w.credits<=2000000000 && w.secretTechNotes is int && w.secretTechNotes>=0 && w.secretTechNotes<=2000000000;}
+  function validPreferences(p){return p is map && p.keys().hasOnly(['musicVolume','soundtrackSecondary','showScoreNames','useScoreUsername','scoreUsername']) && p.keys().hasAll(['musicVolume','soundtrackSecondary','showScoreNames','useScoreUsername','scoreUsername']) && p.musicVolume is int && p.musicVolume>=0 && p.musicVolume<=100 && p.soundtrackSecondary in [0,1] && p.showScoreNames in [0,1] && p.useScoreUsername in [0,1] && p.scoreUsername is string && p.scoreUsername.size()<=40;}
+  function validSave(d){return d.keys().hasOnly(['schemaVersion','flags','ranks','wallet','preferences','scores','updatedAt']) && d.keys().hasAll(['schemaVersion','flags','ranks','wallet','preferences','scores','updatedAt']) && d.schemaVersion==1 && d.flags is map && d.flags.size()<=300 && d.flags.values().hasOnly([0,1]) && d.ranks is map && d.ranks.size()<=100 && d.ranks.values().hasOnly([0,1,2,3,4,5,6,7,8,9,10]) && validWallet(d.wallet) && validPreferences(d.preferences) && d.scores is list && d.scores.size()<=100 && d.updatedAt==request.time;}
+  function recentLogin(){return request.auth!=null && request.auth.token.auth_time is int && request.time.toMillis() / 1000 - request.auth.token.auth_time >= 0 && request.time.toMillis() / 1000 - request.auth.token.auth_time < 300;}
+  match /accountSaves/{uid} {
+   allow get: if owns(uid);
+   allow list: if false;
+   allow delete: if owns(uid) && recentLogin();
+   allow create,update: if owns(uid) && validSave(request.resource.data);
+  }
+  match /{document=**}{allow read,write: if false;}
+ }
+}

@@ -8,3 +8,10 @@
 - Before ending project work, refresh the archive with `python tools/update_memory_activity_log.py`. The optional `--final-response` records the exact prepared final answer before it is sent. A subsequent refresh also picks up that answer from its original session record.
 - Preserve verbatim visible messages, recorded patches and code-writing commands. Do not substitute summaries for recoverable content, fabricate missing intermediate code, or claim source-truncated output is complete.
 - Do not include private reasoning or system/developer messages in the archive. Its generator filters those record types.
+
+# Release version policy
+
+- Every released update must advance the Alpha version. Group related small changes into one patch release; rebuilds/retries of the same release keep the version.
+- Version source: Development/release-version.json. Major: milestone-scale updates (for example completing all basic weapons). Minor: significant content/features/new weapons. Patch: grouped fixes, balance and small changes.
+- Normally roll 10 accumulated patches into the next minor version (X.Y.9 -> X.(Y+1).0). Use judgment for milestone-based major/minor advancement; major/minor bumps reset lower components. User allows roughly 10-15 patches, with 10 the default.
+- Update the release notes with the version/reason. Do not infer major milestones from the number of minor releases alone.

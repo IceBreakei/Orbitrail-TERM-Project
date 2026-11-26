@@ -1,0 +1,39 @@
+import { getFirebaseAuth } from '../firebase-client.js';
+import { isAdmin } from '../admin-access.js';
+import { isGuestSession } from '../guest-session.js';
+
+/** Reveal development content only after Firebase confirms the admin session. */
+export async function requireAdmin() {
+  if(document.documentElement?.dataset.runtime==='live')return (await import('./game-access.js')).requireGameAccess();
+  const content = document.querySelector('#development-content');
+  if (isGuestSession()) {
+    content.hidden = true;
+    window.location.replace('../project.html');
+    return false;
+  }
+
+  try {
+    const { auth, sdk } = await getFirebaseAuth();
+
+    return await new Promise(resolve => {
+      sdk.onAuthStateChanged(auth, user => {
+        const allowed = isAdmin(user);
+        content.hidden = !allowed;
+
+        if (!allowed) {
+          window.location.replace('../index.html?admin=1');
+        }
+
+        resolve(allowed);
+      }, () => {
+        content.hidden = true;
+        window.location.replace('../index.html');
+        resolve(false);
+      });
+    });
+  } catch {
+    content.hidden = true;
+    window.location.replace('../index.html');
+    return false;
+  }
+}

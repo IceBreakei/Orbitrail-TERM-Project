@@ -84,13 +84,14 @@ export function createTuningSystem({canvas,getPlayer:getCharacter,onOpen=()=>{},
     button(actions,'Sell',()=>{run.excluded.add(selling.id);gainCredits(sale);if(selling===found)found=null;else run.equipped[selected]=null;updateHud();onChange();render();},!selling||sale===null);
     const finishButton=button(diagram,'Finish',finish);finishButton.className='tuning-finish';
   }
-  function open(part=null){if(active)return;found=part;inspectFound=Boolean(part);const empty=run.equipped.findIndex(slot=>!slot);if(part&&empty>=0)selected=empty;active=true;onOpen();render();root.hidden=false;root.querySelector('button')?.focus({preventScroll:true});}
+  function open(part=null){if(active||getPlayer().shopUnlocks?.tuning===false)return;found=part;inspectFound=Boolean(part);const empty=run.equipped.findIndex(slot=>!slot);if(part&&empty>=0)selected=empty;active=true;onOpen();render();root.hidden=false;root.querySelector('button')?.focus({preventScroll:true});}
   root.addEventListener('contextmenu',e=>e.preventDefault());root.addEventListener('pointerdown',e=>{if(e.button===2){e.preventDefault();e.stopPropagation();finish();}});
   root.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();finish();}});
   return {run,get active(){return active;},open,spawn,
-    roll(enemy,random=Math.random){const part=rollTuningPart(run,enemy,random,tuningPartCatalog.filter(part=>!drops.some(drop=>drop.part.id===part.id)),rateUpDropChance(enemy));return part?spawn(enemy.x,enemy.y,part):false;},
+    roll(enemy,random=Math.random){if(getPlayer().shopUnlocks?.tuning===false)return false;const part=rollTuningPart(run,enemy,random,tuningPartCatalog.filter(part=>!drops.some(drop=>drop.part.id===part.id)),rateUpDropChance(enemy));return part?spawn(enemy.x,enemy.y,part):false;},
     clear(){drops.length=0;reentry.clear();},
     update(player,previous=player,delta=0){
+      if(player.shopUnlocks?.tuning===false){player.tuningParts=null;return;}
       player.tuningParts=run;if(active)return;
       const body=getCombatHitbox(player,false),from=getCombatHitbox({...player,x:previous.x,y:previous.y},false);
       for(let i=0;i<drops.length;i++){

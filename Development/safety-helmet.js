@@ -1,3 +1,4 @@
+import {badCookingLevelStats} from './game-config.js';
 import { safetyHelmetStats } from './item-catalog.js';
 import { setPlayerDamageGuard } from './player-stats.js';
 import { getAllEnemies } from './world-state.js';
@@ -9,14 +10,12 @@ export function createSafetyHelmetEffects({random=Math.random,getViewport=()=>nu
  let waves=[];
  function guard(player){const stats=safetyHelmetStats(player);if(!stats.chance||random()>=stats.chance)return false;
   if(stats.super)player.hp=Math.min(player.maxHp,player.hp+Math.floor(player.maxHp*.1));
-  const body=getCombatHitbox(player,false),duration=10/60,distance=10*60*duration;
+  const body=getCombatHitbox(player,false),duration=10/60,distance=10*60*duration,radius=badCookingLevelStats(1).radius;
   for(const enemy of getAllEnemies()){
-   const target=getCombatHitbox(enemy,true),dx=target.x-body.x,dy=target.y-body.y,length=Math.hypot(dx,dy);
+   const target=getCombatHitbox(enemy,true),dx=target.x-body.x,dy=target.y-body.y,length=Math.hypot(dx,dy);if(length>radius+Math.max(target.rx,target.ry))continue;
    const effect=beginKnockback(enemy,(length?dx/length:1)*distance,(length?dy/length:0)*distance,duration);
    if(effect){enemy.skillKnockback=effect;enemy.contactReaction=null;}
   }
-  const view=getViewport()||{x:body.x-640,y:body.y-360,width:1280,height:720};
-  const radius=Math.max(...[[view.x,view.y],[view.x+view.width,view.y],[view.x,view.y+view.height],[view.x+view.width,view.y+view.height]].map(([x,y])=>Math.hypot(x-body.x,y-body.y)));
   waves.push({x:body.x,y:body.y,age:0,radius});if(waves.length>32)waves.shift();return true;
  }
  setPlayerDamageGuard(guard);

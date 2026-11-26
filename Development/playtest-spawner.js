@@ -213,6 +213,8 @@ export function createPlaytestSpawner({ canvas, camera, getStage, spawnEnemy, sl
     const sides = runningRouter.rank([preferred, ...ranked.filter(side => side !== preferred)], playerMotion);
     if (!sides.length) return;
     const attemptsPerSide = Math.ceil(playtestSpawnSettings.placementAttempts / sides.length);
+    for(let extra=0;extra<=Math.max(0,Math.min(5,player.customerServiceSpawns||0));extra++){
+    if(slotsRemaining()<=0)break;
     for (let attempt = 0; attempt < playtestSpawnSettings.placementAttempts; attempt++) {
       const side = sides[Math.min(sides.length - 1, Math.floor(attempt / attemptsPerSide))];
       const point = offscreenSpawnPoint(stage, camera, canvas.width, canvas.height, Math.random, side);
@@ -223,6 +225,7 @@ export function createPlaytestSpawner({ canvas, camera, getStage, spawnEnemy, sl
         updateControls('Staggered arrivals');
         break;
       }
+    }
     }
   }
   updateControls();

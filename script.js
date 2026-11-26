@@ -1,3 +1,6 @@
+import {isAdmin} from './admin-access.js';
+import {signInWithIdentifier} from './username-login.js';
+import {usernameServiceEnabled} from './account-service-config.js';
 import { getFirebaseAuth } from './firebase-client.js';
 import { startGuestSession, endGuestSession } from './guest-session.js';
 
@@ -9,12 +12,15 @@ const submit = form.querySelector('[type="submit"]');
 const guestButton = document.querySelector('#continue-as-guest');
 const guestDialog = document.querySelector('#guest-confirmation');
 let registering = false;
+const adminLoginRequested=typeof URLSearchParams==='function'&&new URLSearchParams(window.location.search||'').get('admin')==='1';
 
 
 /** Switch between login and registration, updating fields and button labels. */
 function toggleAuthMode() {
   registering = !registering;
   document.querySelector('#name-field').hidden = !registering;
+  document.querySelector('#email').type=registering?'email':'text';
+  document.querySelector('label[for="email"]').textContent=registering?'Email address':'Email or username';
   document.querySelector('#name').required = registering;
   document.querySelector('#password-hint').hidden = !registering;
   password.minLength = registering ? 8 : 1;
@@ -65,6 +71,8 @@ function getAuthErrorMessage(error) {
     'auth/user-disabled': 'This account has been disabled.',
     'auth/operation-not-allowed': 'Email/password sign-in must be enabled in Firebase Console.',
     'auth/invalid-api-key': 'Firebase configuration is invalid. Check firebase-config.js.',
+    'app/admin-required': 'Development requires your primary developer account. Please sign in with that account.',
+    'app/username-unavailable': 'Username sign-in is not available yet. Please use your email address.',
     'app/missing-config': 'Add your Firebase web configuration to firebase-config.js first.'
   };
 
@@ -109,12 +117,13 @@ async function handleAuthSubmit(event) {
         console.warn('Account created; display name could not be saved.');
       }
     } else {
-      await sdk.signInWithEmailAndPassword(auth, email, password.value);
+      await signInWithIdentifier(email,password.value);
     }
 
     password.value = '';
+    if(adminLoginRequested&&!isAdmin(auth.currentUser))throw Object.assign(Error('Primary developer login required'),{code:'app/admin-required'});
     endGuestSession();
-    window.location.assign('project.html');
+    window.location.assign(adminLoginRequested?'Development/index.html':'project.html');
   } catch (error) {
     message.textContent = getAuthErrorMessage(error);
   } finally {
@@ -153,3 +162,7 @@ guestDialog.addEventListener('pointerdown', event => {
   guestDialog.close('cancel');
 });
 guestDialog.addEventListener('contextmenu', event => event.preventDefault());
+
+if(usernameServiceEnabled){document.querySelector('#email').type='text';document.querySelector('label[for="email"]').textContent='Email or username';}
+
+if(adminLoginRequested){document.querySelector('#form-title').textContent='Developer sign-in';document.querySelector('#form-description').textContent='Sign in with your main developer account to open Development.';document.querySelector('#switch-mode').hidden=true;document.querySelector('#switch-prompt').hidden=true;guestButton.hidden=true;}

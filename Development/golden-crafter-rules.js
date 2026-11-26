@@ -10,6 +10,7 @@ function maximumLevel(weapon) {
 
 /** Only compatible, equipped MAX pairs can cause a Golden Crafter drop or fusion choice. */
 export function goldenCrafterChoices(player,recipes=synergyRecipes) {
+  if(player.synnergyBan)return [];
   const slots=player.attackSlots||[],choices=[];
   for(const recipe of recipes) {
     if(!recipe.id||!recipe.result?.id||recipe.ingredients?.length!==2||slots.some(w=>w?.id===recipe.result.id))continue;

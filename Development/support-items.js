@@ -10,7 +10,7 @@ export const supportItems=[
  {id:'quick-dash',name:'Quick Dash',description:'Dashes forward in moving direction, and gains invincibility for 1 second.',cooldown:10},
  {id:'cast-net',name:'Cast Net',description:'Cast a net in front, pulling targets together and collect all EXP and Credits.',cooldown:15}
 ];
-export function supportsUnlocked(player){return Boolean(player.abilityUpgradeRanks?.supports||isContentUnlocked('supports'));}
+export function supportsUnlocked(player){return player.shopUnlocks?player.shopUnlocks.supports:Boolean(player.abilityUpgradeRanks?.supports||isContentUnlocked('supports'));}
 export function supportIcon(id){const shape={none:'<circle cx="24" cy="24" r="17"/><path stroke="#ff607c" stroke-width="4" d="m12 36 24-24"/>','projectile-shield':'<path fill="#58caf555" d="m24 5 17 6-3 20-14 12-14-12-3-20Z"/><path d="M24 12v22"/>','heal-potion':'<path fill="#71d8aa77" d="M18 4h12v12l9 12v14H9V28l9-12Z"/><path d="M24 24v12m-6-6h12M16 4h16"/>','quick-dash':'<path fill="#6cdcff" d="m26 4-17 23h14l-5 17 23-28H27Z"/>','cast-net':'<path d="m8 7 33 31-4 5L4 12Zm-1 4 28-5 8 30M12 10l-1 13m9-15-2 23m10-25-3 32M7 18l31-6M12 25l28-5m-20 13 22-5"/>'}[id]||'';return `<svg viewBox="0 0 48 48" fill="none" stroke="#ddfaff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${shape}</svg>`;}
 export function supportState(player){return player.supportState??={cooldowns:{},shieldRemaining:0,invulnerableRemaining:0,dashRemaining:0,effectRemaining:0};}
 export function activateSupport(player,{direction=player.direction||'down',angle=0,enemies=getAllEnemies(),collectLoot=collectSupportLoot}={}){

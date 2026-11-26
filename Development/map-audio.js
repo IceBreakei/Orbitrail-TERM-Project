@@ -42,6 +42,7 @@ export function createMapAudio(initialMap, { menu = false } = {}) {
   let enabled = true;
   let unlocked = false;
   let disposed = false;
+  let suspended=false;
   let blocked = false;
 
   /** Stop, rewind, and release the media source once its fade has finished. */
@@ -60,7 +61,7 @@ export function createMapAudio(initialMap, { menu = false } = {}) {
       track.target = 0;
       track.elapsed = 0;
     }
-    if (!unlocked || !enabled || disposed) return;
+    if (!unlocked || !enabled || disposed || suspended) return;
     const selection = selectedTrack();
     if (!selection.file) return;
     let track = tracks.get(selection.id);
@@ -104,6 +105,7 @@ export function createMapAudio(initialMap, { menu = false } = {}) {
 
   /** Advance smooth gains and unload tracks that are no longer in use. */
   function update(delta) {
+    if(suspended)return;
     for (const [id, track] of tracks) {
       track.elapsed += delta * 1000;
       const t = Math.min(1, track.elapsed / fadeDuration);
@@ -162,5 +164,6 @@ export function createMapAudio(initialMap, { menu = false } = {}) {
   });
   output.textContent = `${slider.value}%`;
   function setMenu(active){if(menuActive===Boolean(active))return;menuActive=Boolean(active);selectTrack();}
-  return { setMap, setMenu, update, stopAll };
+  function setSuspended(value){suspended=Boolean(value);for(const track of tracks.values()){if(suspended)track.audio.pause();else if(enabled&&track.target>0)track.audio.play().catch(()=>{});}}
+  return { setMap, setMenu, update, stopAll, setSuspended };
 }

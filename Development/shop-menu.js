@@ -10,7 +10,7 @@ export function createShopMenu({root,onBack,getPlayer=()=>({})}){
  function updateCredits(){const amount=String(getLootTotals().credits);creditText.setText(amount);creditNode.setAttribute('aria-label',`${amount} Credits`);}
  const back=panel.querySelector('[data-shop-back]');
  const options=panel.querySelector('.shop-options');
- const upgrades=createUpgradeMenu({panel:panel.querySelector('.shop-upgrades'),onBalanceChange:updateCredits,onBack:()=>{options.hidden=false;panel.querySelector('[data-shop-upgrades]').focus();}});
+ const upgrades=createUpgradeMenu({getPlayer,panel:panel.querySelector('.shop-upgrades'),onBalanceChange:updateCredits,onBack:()=>{options.hidden=false;panel.querySelector('[data-shop-upgrades]').focus();}});
  panel.querySelector('[data-shop-upgrades]').addEventListener('click',()=>{options.hidden=true;upgrades.open();});
  const armory=createArmoryMenu({getPlayer,panel:panel.querySelector('.shop-armory'),onBack:()=>{options.hidden=false;panel.querySelector('[data-shop-armory]').focus();}});
  panel.querySelector('[data-shop-armory]').addEventListener('click',()=>{options.hidden=true;armory.open();});

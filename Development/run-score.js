@@ -4,8 +4,9 @@ import { scoreFormula } from './game-config.js';
 export function createRunScore() {
   let counts = { enemyDefeated: 0, miniBossDefeated: 0, bossDefeated: 0 };
   let endlessDefeatRecorded = false;
-  const results = [];
+  const results = [];let saveResults=()=>{};
   return {
+    configurePersistence(saved=[],onChange=()=>{}){results.splice(0,results.length,...saved.slice(-100));saveResults=onChange;},
     recordDefeat(enemy) {
       counts.enemyDefeated++;
       if (enemy.miniBoss) counts.miniBossDefeated++;
@@ -15,12 +16,12 @@ export function createRunScore() {
       if (endless && endlessDefeatRecorded) return null;
       if (endless) endlessDefeatRecorded = true;
       const result = Object.freeze({ ...scoreFormula({ ...counts, playerLevel: character.level || 1,
-        elapsedSeconds, hardcore }), ...counts, character: character.label, stage,
+        elapsedSeconds, hardcore:hardcore||character.hardcore }), ...counts, character: character.label, stage,
         playerLevel: character.level || 1, mode: endless ? 'endless' : 'stage', elapsedSeconds });
-      results.push(result);
+      results.push(result);if(results.length>100)results.shift();saveResults([...results]);
       return result;
     },
-    clearResults(){results.length=0;},
+    clearResults(){results.length=0;saveResults([]);},
     get results() { return [...results]; },
     get counts() { return {...counts}; }
   };

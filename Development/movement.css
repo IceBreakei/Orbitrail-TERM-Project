@@ -1255,3 +1255,18 @@ canvas[data-bitmap-text] { background:transparent!important; border:0!important;
 .level-up-actions button{min-height:34px;padding:4px;}
 .level-up-help{flex:none;margin-top:6px;}
 @media(max-width:850px){.level-up-choice{padding:4px 8px;}#level-up-choices{gap:6px;}.level-up-choice-body{gap:8px;}.level-up-choice-body .level-up-weapon-icon{width:min(36px,100%);}}
+
+/* Alpha live shell: game-only layout, with a small window-control strip. */
+.game-only #development-content > :not(.playtest-layout),
+.game-only .playtest-layout > :not(.simulated-screen),
+.game-only .fullscreen-exit{display:none!important}
+.live-game-tools{position:fixed;inset:0 0 auto;min-height:40px;display:flex;align-items:center;justify-content:flex-end;gap:14px;padding:5px 12px;z-index:1010;background:#0c2940;color:#d7f8ff;font:600 13px system-ui}
+.live-game-tools button{padding:5px 12px;background:#16587e;border:1px solid #70dbff;color:white;border-radius:4px;cursor:pointer}
+.live-game-tools [role=status]{font-size:12px}
+.live-game.fullscreen-preview .simulated-screen{top:calc(50% + 20px);width:min(1280px,100vw,calc((100dvh - 48px)*16/9))}
+
+.live-game-tools a{color:#aeeaff;text-decoration:none}
+
+/* Luminous academy grid and diagonal panels fill the space around the arena. */
+body.game-only::before{background:linear-gradient(125deg,transparent 28%,#58cfff12 28%,#58cfff12 39%,transparent 39%,transparent 74%,#8ae6ff12 74%),repeating-linear-gradient(0deg,transparent 0 47px,#6edcff0c 48px 49px),repeating-linear-gradient(90deg,transparent 0 47px,#6edcff0c 48px 49px),radial-gradient(ellipse at 12% 12%,#146389 0%,transparent 55%),radial-gradient(ellipse at 90% 85%,#194e86,transparent 65%),#071f38}
+.game-detached-cover{position:fixed;inset:0;z-index:2147483646;background:#020407;color:#e6f8ff;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:24px;font:16px system-ui}.game-detached-cover h1{color:#9be7ff;font-size:32px;margin:0 0 12px}.game-detached-cover p{max-width:560px;line-height:1.6}.game-detached-cover button{background:#0b314a;border:1px solid #7ddfff;color:white;padding:10px 20px;cursor:pointer}

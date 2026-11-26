@@ -37,8 +37,8 @@
               <input id="name" name="name" autocomplete="name" placeholder="Your Sensei name" maxlength="100">
             </div>
             <div>
-              <label for="email">Email address</label>
-              <input id="email" name="email" type="email" autocomplete="username" placeholder="you@example.com" required maxlength="254">
+              <label for="email">Email or username</label>
+              <input id="email" name="email" type="text" autocomplete="username" placeholder="Email or username" required maxlength="254">
             </div>
             <div>
               <label for="password">Password</label>
@@ -66,7 +66,7 @@
     </main>
     <dialog id="guest-confirmation" aria-labelledby="guest-title" aria-describedby="guest-warning">
       <h2 id="guest-title">Continue as guest?</h2>
-      <p id="guest-warning">Your upgrades, progress, and other game data will not be saved. Do you wish to proceed?</p>
+      <p id="guest-warning">Guest progress is saved only in this browser tab, not to an account. Closing the tab clears the guest save. Do you wish to proceed?</p>
       <form method="dialog" class="guest-dialog-actions">
         <button type="submit" value="cancel" autofocus>Cancel</button>
         <button type="submit" value="continue">Continue as guest</button>

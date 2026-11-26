@@ -65,7 +65,7 @@ export function rollLevelUpgrades(player, {all=false}={}) {
   const blocked=new Set((player.attackSlots||[]).filter(Boolean).flatMap(item=>
     item.consumedWeaponIds||(item.id==='princess-key'?['aris-laser','luminous-nova']:[])));
   const weapon = getArisWeapon(player);
-  if (!blocked.has('aris-laser') && !weapon && isContentUnlocked('aris-laser') && (player.attackSlots || []).filter(Boolean).length < 6) choices.push({
+  if (!blocked.has('aris-laser') && !weapon && isContentUnlocked('aris-laser') && (player.attackSlots || []).filter(Boolean).length < (player.maxWeaponSlots??6)) choices.push({
     id: 'aris-new', name: "Supernova LV 1", weapon: createArisWeapon(), category: 'NEW Weapon',
     description: 'Shoot a powerful piercing laser beam every 3 seconds.'
   });
@@ -74,7 +74,7 @@ export function rollLevelUpgrades(player, {all=false}={}) {
     description: arisDescriptions[(weapon.level || 1) + 1]
   });
   const luminous=getLuminousNova(player);
-  if(!blocked.has('luminous-nova')&&!luminous&&(player.attackSlots||[]).filter(Boolean).length<6)choices.push({
+  if(!blocked.has('luminous-nova')&&!luminous&&(player.attackSlots||[]).filter(Boolean).length<(player.maxWeaponSlots??6))choices.push({
     id:'luminous-new',name:'Luminous Nova LV 1',weapon:createLuminousNovaWeapon(),category:'NEW Weapon',
     description:'Fire a fast, piercing pink plasma round at a random target.'});
   else if(!blocked.has('luminous-nova')&&luminous&&(luminous.level||1)<luminousNovaSettings.maxLevel)choices.push({
@@ -82,77 +82,77 @@ export function rollLevelUpgrades(player, {all=false}={}) {
     description:luminousDescriptions[(luminous.level||1)+1]});
   const cooking=player.attackSlots?.find(w=>w?.id==='bad-cooking');
   if(!blocked.has('bad-cooking')&&!player.disabledWeaponIds?.includes('bad-cooking')){
-    if(!cooking&&(player.attackSlots||[]).filter(Boolean).length<6)choices.push({id:'cooking-new',name:'Bad Cooking LV 1',weapon:createBadCookingWeapon(),category:'NEW Weapon',description:badCookingDescriptions[1]});
+    if(!cooking&&(player.attackSlots||[]).filter(Boolean).length<(player.maxWeaponSlots??6))choices.push({id:'cooking-new',name:'Bad Cooking LV 1',weapon:createBadCookingWeapon(),category:'NEW Weapon',description:badCookingDescriptions[1]});
     else if(cooking&&(cooking.level||1)<7)choices.push({id:'cooking-level',name:`Bad Cooking ${upgradeLevelLabel(cooking,7)}`,weapon:cooking,category:'Weapon',description:badCookingDescriptions[(cooking.level||1)+1]});
   }
   const molotov=player.attackSlots?.find(w=>w?.id==='molotov-cocktail');
   if(!blocked.has('molotov-cocktail')&&!player.disabledWeaponIds?.includes('molotov-cocktail')){
-    if(!molotov&&(player.attackSlots||[]).filter(Boolean).length<6)choices.push({id:'molotov-new',name:'Molotov Cocktail LV 1',weapon:createMolotovWeapon(),category:'NEW Weapon',description:molotovDescriptions[1]});
+    if(!molotov&&(player.attackSlots||[]).filter(Boolean).length<(player.maxWeaponSlots??6))choices.push({id:'molotov-new',name:'Molotov Cocktail LV 1',weapon:createMolotovWeapon(),category:'NEW Weapon',description:molotovDescriptions[1]});
     else if(molotov&&(molotov.level||1)<7)choices.push({id:'molotov-level',name:`Molotov Cocktail ${upgradeLevelLabel(molotov,7)}`,weapon:molotov,category:'Weapon',description:molotovDescriptions[(molotov.level||1)+1]});
   }
   const saint=player.attackSlots?.find(w=>w?.id==='saint-predator');
   if(!blocked.has('saint-predator')&&!player.disabledWeaponIds?.includes('saint-predator')){
-    if(!saint&&isContentUnlocked('saint-predator')&&(player.attackSlots||[]).filter(Boolean).length<6)choices.push({id:'saint-new',name:'Saint Predator LV 1',weapon:createSaintPredatorWeapon(),category:'NEW Weapon',description:saintPredatorDescriptions[1]});
+    if(!saint&&isContentUnlocked('saint-predator')&&(player.attackSlots||[]).filter(Boolean).length<(player.maxWeaponSlots??6))choices.push({id:'saint-new',name:'Saint Predator LV 1',weapon:createSaintPredatorWeapon(),category:'NEW Weapon',description:saintPredatorDescriptions[1]});
     else if(saint&&(saint.level||1)<7)choices.push({id:'saint-level',name:`Saint Predator ${upgradeLevelLabel(saint,7)}`,weapon:saint,category:'Weapon',description:saintPredatorDescriptions[(saint.level||1)+1]});
   }
   const water=player.attackSlots?.find(w=>w?.id==='water-dousing');
   if(!blocked.has('water-dousing')&&!player.disabledWeaponIds?.includes('water-dousing')){
-    if(!water&&isContentUnlocked('water-dousing')&&(player.attackSlots||[]).filter(Boolean).length<6)choices.push({id:'water-new',name:'Splash! LV 1',weapon:createWaterDousingWeapon(),category:'NEW Weapon',description:waterDousingDescriptions[1]});
+    if(!water&&isContentUnlocked('water-dousing')&&(player.attackSlots||[]).filter(Boolean).length<(player.maxWeaponSlots??6))choices.push({id:'water-new',name:'Splash! LV 1',weapon:createWaterDousingWeapon(),category:'NEW Weapon',description:waterDousingDescriptions[1]});
     else if(water&&(water.level||1)<7)choices.push({id:'water-level',name:`Splash! ${upgradeLevelLabel(water,7)}`,weapon:water,category:'Weapon',description:waterDousingDescriptions[(water.level||1)+1]});
   }
   const bean=player.attackSlots?.find(w=>w?.id==='bean-bag-bomb');
   if(!blocked.has('bean-bag-bomb')&&!player.disabledWeaponIds?.includes('bean-bag-bomb')){
-    if(!bean&&(player.attackSlots||[]).filter(Boolean).length<6)choices.push({id:'bean-new',name:'Bean Bag Bomb LV 1',weapon:createBeanBagBombWeapon(),category:'NEW Weapon',description:beanBagBombDescriptions[1]});
+    if(!bean&&(player.attackSlots||[]).filter(Boolean).length<(player.maxWeaponSlots??6))choices.push({id:'bean-new',name:'Bean Bag Bomb LV 1',weapon:createBeanBagBombWeapon(),category:'NEW Weapon',description:beanBagBombDescriptions[1]});
     else if(bean&&(bean.level||1)<7)choices.push({id:'bean-level',name:`Bean Bag Bomb ${upgradeLevelLabel(bean,7)}`,weapon:bean,category:'Weapon',description:beanBagBombDescriptions[(bean.level||1)+1]});
   }
   const cards=player.attackSlots?.find(w=>w?.id==='throwing-cards');
   if(!blocked.has('throwing-cards')&&!player.disabledWeaponIds?.includes('throwing-cards')){
-    if(!cards&&(player.attackSlots||[]).filter(Boolean).length<6)choices.push({id:'cards-new',name:'Throwing Cards LV 1',weapon:createThrowingCardsWeapon(),category:'NEW Weapon',description:throwingCardsDescriptions[1]});
+    if(!cards&&(player.attackSlots||[]).filter(Boolean).length<(player.maxWeaponSlots??6))choices.push({id:'cards-new',name:'Throwing Cards LV 1',weapon:createThrowingCardsWeapon(),category:'NEW Weapon',description:throwingCardsDescriptions[1]});
     else if(cards&&(cards.level||1)<7)choices.push({id:'cards-level',name:`Throwing Cards ${upgradeLevelLabel(cards,7)}`,weapon:cards,category:'Weapon',description:throwingCardsDescriptions[(cards.level||1)+1]});
   }
   const handbook=player.attackSlots?.find(w=>w?.id==='student-handbook');
   if(!blocked.has('student-handbook')&&!player.disabledWeaponIds?.includes('student-handbook')){
-    if(!handbook&&(player.attackSlots||[]).filter(Boolean).length<6)choices.push({id:'handbook-new',name:'Student Handbook LV 1',weapon:createStudentHandbookWeapon(),category:'NEW Weapon',description:studentHandbookDescriptions[1]});
+    if(!handbook&&(player.attackSlots||[]).filter(Boolean).length<(player.maxWeaponSlots??6))choices.push({id:'handbook-new',name:'Student Handbook LV 1',weapon:createStudentHandbookWeapon(),category:'NEW Weapon',description:studentHandbookDescriptions[1]});
     else if(handbook&&(handbook.level||1)<7)choices.push({id:'handbook-level',name:`Student Handbook ${upgradeLevelLabel(handbook,7)}`,weapon:handbook,category:'Weapon',description:studentHandbookDescriptions[(handbook.level||1)+1]});
   }
   const medal=player.attackSlots?.find(w=>w?.id==='moustache-medal');
   if(!blocked.has('moustache-medal')&&!player.disabledWeaponIds?.includes('moustache-medal')){
-    if(!medal&&isContentUnlocked('moustache-medal')&&(player.attackSlots||[]).filter(Boolean).length<6)choices.push({id:'medal-new',name:'Moustache Medal LV 1',weapon:createMoustacheMedalWeapon(),category:'NEW Weapon',description:moustacheMedalDescriptions[1]});
+    if(!medal&&isContentUnlocked('moustache-medal')&&(player.attackSlots||[]).filter(Boolean).length<(player.maxWeaponSlots??6))choices.push({id:'medal-new',name:'Moustache Medal LV 1',weapon:createMoustacheMedalWeapon(),category:'NEW Weapon',description:moustacheMedalDescriptions[1]});
     else if(medal&&(medal.level||1)<7)choices.push({id:'medal-level',name:`Moustache Medal ${upgradeLevelLabel(medal,7)}`,weapon:medal,category:'Weapon',description:moustacheMedalDescriptions[(medal.level||1)+1]});
   }
   const compass=player.attackSlots?.find(w=>w?.id==='orbital-compass');
   if(!blocked.has('orbital-compass')&&!player.disabledWeaponIds?.includes('orbital-compass')){
-    if(!compass&&(player.attackSlots||[]).filter(Boolean).length<6)choices.push({id:'compass-new',name:'Orbital Compass LV 1',weapon:createOrbitalCompassWeapon(),category:'NEW Weapon',description:orbitalCompassDescriptions[1]});
+    if(!compass&&(player.attackSlots||[]).filter(Boolean).length<(player.maxWeaponSlots??6))choices.push({id:'compass-new',name:'Orbital Compass LV 1',weapon:createOrbitalCompassWeapon(),category:'NEW Weapon',description:orbitalCompassDescriptions[1]});
     else if(compass&&(compass.level||1)<7)choices.push({id:'compass-level',name:`Orbital Compass ${upgradeLevelLabel(compass,7)}`,weapon:compass,category:'Weapon',description:orbitalCompassDescriptions[(compass.level||1)+1]});
   }
   const serve=player.attackSlots?.find(w=>w?.id==='serve');
   if(!blocked.has('serve')&&!player.disabledWeaponIds?.includes('serve')){
-    if(!serve&&isContentUnlocked('serve')&&(player.attackSlots||[]).filter(Boolean).length<6)choices.push({id:'serve-new',name:'Serve! LV 1',weapon:createServeWeapon(),category:'NEW Weapon',description:serveDescriptions[1]});
+    if(!serve&&isContentUnlocked('serve')&&(player.attackSlots||[]).filter(Boolean).length<(player.maxWeaponSlots??6))choices.push({id:'serve-new',name:'Serve! LV 1',weapon:createServeWeapon(),category:'NEW Weapon',description:serveDescriptions[1]});
     else if(serve&&(serve.level||1)<7)choices.push({id:'serve-level',name:`Serve! ${upgradeLevelLabel(serve,7)}`,weapon:serve,category:'Weapon',description:serveDescriptions[(serve.level||1)+1]});
   }
   const surf=player.attackSlots?.find(w=>w?.id==='time-to-surf');
   if(!blocked.has('time-to-surf')&&!player.disabledWeaponIds?.includes('time-to-surf')){
-    if(!surf&&isContentUnlocked('time-to-surf')&&(player.attackSlots||[]).filter(Boolean).length<6)choices.push({id:'surf-new',name:'Time to Surf LV 1',weapon:createTimeToSurfWeapon(),category:'NEW Weapon',description:timeToSurfDescriptions[1]});
+    if(!surf&&isContentUnlocked('time-to-surf')&&(player.attackSlots||[]).filter(Boolean).length<(player.maxWeaponSlots??6))choices.push({id:'surf-new',name:'Time to Surf LV 1',weapon:createTimeToSurfWeapon(),category:'NEW Weapon',description:timeToSurfDescriptions[1]});
     else if(surf&&(surf.level||1)<7)choices.push({id:'surf-level',name:`Time to Surf ${upgradeLevelLabel(surf,7)}`,weapon:surf,category:'Weapon',description:timeToSurfDescriptions[(surf.level||1)+1]});
   }
   const maid=player.attackSlots?.find(w=>w?.id==='maid-force');
   if(!blocked.has('maid-force')&&!player.disabledWeaponIds?.includes('maid-force')){
-    if(!maid&&isContentUnlocked('maid-force')&&(player.attackSlots||[]).filter(Boolean).length<6)choices.push({id:'maid-new',name:'Maid Force LV 1',weapon:createMaidForceWeapon(),category:'NEW Weapon',description:maidForceDescriptions[1]});
+    if(!maid&&isContentUnlocked('maid-force')&&(player.attackSlots||[]).filter(Boolean).length<(player.maxWeaponSlots??6))choices.push({id:'maid-new',name:'Maid Force LV 1',weapon:createMaidForceWeapon(),category:'NEW Weapon',description:maidForceDescriptions[1]});
     else if(maid&&(maid.level||1)<7)choices.push({id:'maid-level',name:`Maid Force ${upgradeLevelLabel(maid,7)}`,weapon:maid,category:'Weapon',description:maidForceDescriptions[(maid.level||1)+1]});
   }
   const balloons=player.attackSlots?.find(w=>w?.id==='cheering-balloons');
   if(!blocked.has('cheering-balloons')&&!player.disabledWeaponIds?.includes('cheering-balloons')){
-    if(!balloons&&isContentUnlocked('cheering-balloons')&&(player.attackSlots||[]).filter(Boolean).length<6)choices.push({id:'balloons-new',name:'Cheering Balloons LV 1',weapon:createCheeringBalloonsWeapon(),category:'NEW Weapon',description:cheeringBalloonsDescriptions[1]});
+    if(!balloons&&isContentUnlocked('cheering-balloons')&&(player.attackSlots||[]).filter(Boolean).length<(player.maxWeaponSlots??6))choices.push({id:'balloons-new',name:'Cheering Balloons LV 1',weapon:createCheeringBalloonsWeapon(),category:'NEW Weapon',description:cheeringBalloonsDescriptions[1]});
     else if(balloons&&(balloons.level||1)<7)choices.push({id:'balloons-level',name:`Cheering Balloons ${upgradeLevelLabel(balloons,7)}`,weapon:balloons,category:'Weapon',description:cheeringBalloonsDescriptions[(balloons.level||1)+1]});
   }
   const bayonet=player.attackSlots?.find(w=>w?.id==='wakamo-bayonet');
   if(!blocked.has('wakamo-bayonet')&&!player.disabledWeaponIds?.includes('wakamo-bayonet')){
-    if(!bayonet&&isContentUnlocked('wakamo-bayonet')&&(player.attackSlots||[]).filter(Boolean).length<6)choices.push({id:'bayonet-new',name:"Wakamo's Bayonet LV 1",weapon:createWakamoBayonetWeapon(),category:'NEW Weapon',description:wakamoBayonetDescriptions[1]});
+    if(!bayonet&&isContentUnlocked('wakamo-bayonet')&&(player.attackSlots||[]).filter(Boolean).length<(player.maxWeaponSlots??6))choices.push({id:'bayonet-new',name:"Wakamo's Bayonet LV 1",weapon:createWakamoBayonetWeapon(),category:'NEW Weapon',description:wakamoBayonetDescriptions[1]});
     else if(bayonet&&(bayonet.level||1)<7)choices.push({id:'bayonet-level',name:`Wakamo's Bayonet ${upgradeLevelLabel(bayonet,7)}`,weapon:bayonet,category:'Weapon',description:wakamoBayonetDescriptions[(bayonet.level||1)+1]});
   }
   // Synergies improve only through Crafter enhancements, never level-up choices.
   choices.push(...itemUpgradeChoices(player));
-  return choices.filter(choice=>!choice.weapon?.isSynergy&&!player.eliminatedUpgradeIds?.includes(choice.weapon?.id||choice.id)).slice(0, all?Infinity:levelUpgradeSettings.choices);
+  return choices.filter(choice=>!(choice.weapon&&player.disabledWeaponIds?.includes(choice.weapon.id))&&!choice.weapon?.isSynergy&&!player.eliminatedUpgradeIds?.includes(choice.weapon?.id||choice.id)).slice(0, all?Infinity:levelUpgradeSettings.choices);
 }
 
 /** Advance one weapon level; awakening is available only through a Crafter. */

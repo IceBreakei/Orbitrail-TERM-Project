@@ -346,3 +346,63 @@ Latest reload policy: admin preferences persist; weapons/items/character-skill/t
 - Temporarily overrides scent spread chance to 100% for 10 seconds. Applies on hit to existing scents, new shots and descendants; current level's damage, range and scaling remain intact.
 - Timer follows game delta, ends exactly at its substep boundary, resets on owner/weapon reset, and never permanently changes projectile chance values.
 - Validation: normal Maid Force and new Squeeky Clean functional tests passed; both movement module graphs linked; 76 canonical/rough cases across 19 EX skills passed.
+
+## Alpha 1.0.0 live release
+- Published current Development gameplay as Alpha 1.0.0 at https://orbitrail.web.app (Firebase site orbitrail, project orbitrail-c6ff3, Hosting version 1bf227b12eac0abf).
+- tools/build_live.py creates public/ from explicitly included login/runtime files and assets. Game/ contains the production runtime; Development/ keeps the admin-only development entry. Hosting now serves public/ and runs the builder before deployment, excluding activity archives, tests and tooling.
+- Login/guest entry routes through project.html's manual loading screen to Game/movement.html. Game content stays hidden until session access and tracked assets are ready; full viewport presentation is applied before initial canvas measurement, and the loader then fades out to the home menu.
+- Live defaults: random seed/spawns, invincibility off, no dev-session preference restoration. Developer content-unlock bypass still checks the actual admin UID; guest unlock storage remains transient.
+- Added Pop out game to the live header and Development toolbar. It opens a same-origin resizable window with inherited tab auth/guest state and a fresh game session, not a transfer of an active run. Blocked pop-ups show a message. Developer-only live header link opens the admin lab.
+- Verification: 163 test files passed; four development/release module graphs linked; static asset references had zero missing files or case mismatches. Live HTTP checks returned 200, runtime SHA256 matched release.json, and transcript/test URLs returned 404. Browser automation host was unavailable, so visual login/pop-out testing was not performed.
+
+## Alpha 1.0.0 loading failure correction
+- User reported the public game stopping at 95% with the generic asset-loading error. The release builder copied only top-level Development runtime files and omitted Development/generated/, causing startup boss/effect PNG loads to reject. Earlier static checks covered imports/HTML but missed string-based animation manifest sources.
+- Builder now recursively includes generated animation assets in both Game and Development output, and validates string-based runtime asset references before deployment. It checks 3,648 references, including 3,380 generated PNG references; all pass. The unused legacy font21 sheet is explicitly excluded from this active-asset audit (no current UI uses it).
+- Regenerated missing font-thin.png with the existing project font script; corrected legacy Arisu GIF metadata path to the present updated GIF filename. Startup catch now reports the actual error/asset in the loading screen and logs the error.
+- Alpha build/access/pop-out tests and font regression pass. Deployment and live PNG checks follow.
+
+## Pop-out handoff, surround and Account menu
+- Main page now becomes an opaque black notification screen after successfully opening a pop-out. Its arena is inert, gameplay is paused and music is suspended without rewinding. A focus-window button is available; blocked pop-ups leave the original page usable.
+- Pop-out windows omit the Pop out game button. Main window polls for closure and also checks on focus, removes the blackout and resumes its existing game/music automatically. This restores the parent's existing session, not a transfer of the separate popup run.
+- Added cyan/blue academy grid, radial lighting and diagonal panels in the surrounding space outside the game.
+- Added Account immediately right of Credits, with bitmap labels/details, guest status or current Firebase display name/email, Back and Sign out. Existing account authentication is reused; no credentials/settings changed.
+- Both movement builds include the detached pause state. Added handoff/account tests and music suspend/resume regression; deployment follows after full checks.
+
+## Account and guest saves (Firestore)
+- Connected to the user-created `(default)` STANDARD / FIRESTORE_NATIVE database in `nam7` (US multi-region). Earlier Montréal preference was not applied because the user's subsequently created database is already in nam7; the existing database was preserved.
+- Each signed-in account uses `accountSaves/{Firebase UID}`. Guests never read/write Firestore and keep a separate `orbitrail.save.v1.guest` session-storage envelope; account caches use `orbitrail.save.v1.{UID}`. Guest Account action says Sign in. Guest data is not silently merged into an existing account. Login warning now explains tab-only guest persistence.
+- Stable registry: Development/save-schema.js contains 86 permanent content IDs and 32 upgrade IDs. Display-name changes never change IDs (e.g. decagrammaton remains the internal Protocol SUPERNOVA ID). Flags are integer 0/1; ranks are integer 0..10. Example fields:
+  flags["unlock:weapon:aris-laser"] = 1
+  flags["disabled:item:life-jacket"] = 0
+  flags["unlock:achievement:soaking"] = 1
+  ranks["upgrade:supports"] = 1
+- Saved: content/achievement unlocks, disabled equipment flags, upgrade ranks, Credits/Secret Tech Notes, audio/leaderboard preferences and up to 100 run summaries. Existing per-UID local unlock arrays migrate once without deleting the old copy. Developer unlock bypass stays virtual, not mass-written to cloud saves. Unimplemented upgrades remain unimplemented; this adds their stable storage IDs.
+- Run level, current weapon/item loadout, HP, map and internal timer still start fresh on reload. Dev testing controls retain their separate existing session-store mechanism.
+- Session cache updates immediately; coalesced field patches save to Firestore with bounded waits/retry backoff. Pending patches survive refresh and overlay stale remote values; per-document realtime updates synchronize account progress across parent/pop-out windows. Cloud failures remain visible in Account while session-first play stays usable.
+- firestore.rules restrict get/create/update to the authenticated UID, prohibit listing/deletion/guest access and validate fields/value bounds. These are prototype rules tested against Firebase's emulator; client-owned progress is not authoritative anti-cheat.
+- Tests: save-store/runtime hooks, guest/account separation, guest Sign in, offline recovery, stable IDs, cloud patch/restore, first-login full profile and negative rule cases. Existing 168 test files passed; release asset checks and module graphs passed. Deployment follows.
+
+Safety Helmet range correction: ripple visual and knockback now stop within the 140px base Bad Cooking radius instead of expanding to viewport corners / pushing distant targets. Negation chances, knockback strength/duration, Super heal and animation timing unchanged. Updated description and regression covers distant-target rejection and bounded visual radius.
+
+## Account editing and prepared username sign-in
+- User requested username sign-in and editing username/display name/password/deleting accounts from Account. Read-only Cloud Billing check confirmed billingEnabled=false. User explicitly chose to keep Spark and prepare the username backend only; billing and auth providers were not changed.
+- Live-compatible Account editor adds display-name updates, password change with current-password reauthentication and matching new passwords, password reset email, and irreversible account deletion requiring current password plus exact DELETE confirmation. Password inputs are cleared after actions/closing and never saved to progress/storage/logs.
+- Spark deletion pauses cloud save writes, deletes only the authenticated user's saved progress, then deletes the Firebase Auth account and clears that UID's cache/legacy unlock entry. The UI reports partial failures and permits retry; it does not automatically delete an account via development tooling.
+- firestore.rules now permits deleting only the owner's save when auth_time is within the last five minutes. Reads/updates remain owner-only; other collections remain denied. Official emulator verifies stale-session and cross-account deletion denied, fresh owner deletion allowed.
+- account-service-config.js keeps usernameServiceEnabled=false. Email sign-in remains live; disabled username editor explains availability. Username sign-in helper and unique-username form are wired for future activation, not advertised as functioning on Spark.
+- Prepared locally in functions/: callable usernameLogin, claimUsername, getAccountProfile, deleteAccount and retryable Auth-deletion cleanup. Username mapping is private/server-only; Firebase verifies the password before a custom token is returned. Case-insensitive usernames have 3-24 letters/numbers/underscores; display names remain separate. Existing users will sign in with email once to claim a unique username after backend deployment. Functions README lists future explicit Blaze/deployment/IAM prerequisites. No Functions source configured/deployed and no billing change made.
+- Validation: 170 test files passed, emulator account/save rules tests passed, prepared backend core tests and actual Firebase export loading passed. Both movement and login module graphs linked. Asset validation/release checks passed. No browser visual test claimed. Deploying only Hosting and Firestore rules.
+
+Secondary developer login: Nora is a real Firebase password-authenticated account with a fixed alias. Content unlock entitlement is separate from the primary-only Development guard. Nora's Development button opens the primary developer sign-in page. General username backend remains disabled on Spark. The internal alias has no recovery inbox; current-password changes remain available.
+
+Armoury fix: unlocked basic weapons/items now toggle their disabled list on click when Customize is unlocked (including developer virtual unlocks). Hover remains inspection-only; red slash reflects disabled state. Shared level-up filter now respects disabled Supernova/Luminous Nova too. Account persistence continues through disabled equipment flags.
+
+Armoury persistence correction: single click remains the action in both directions. Equipment changes now dispatch an immediate save event; polling snapshots equipment/ranks before writes to avoid save subscriptions restoring stale disabled lists.
+
+Settings fix: home volume binds to .title-settings range/output, with filled track synced to the main audio control. New accounts default to 100%; saved volume remains authoritative. Home/pause share account-owned Shift-back and tab-pause toggles, stored under setting:shift-back and setting:pause-on-tab-leave (0/1 flags). Defaults enabled; returning to tab requires manual resume. Existing Firestore flag rules already accept these stable IDs; no rules deployment needed.
+
+Achievements hub labels: Fandoms renamed Club Goals; Fan Letters renamed Monotexts. Placeholder destinations unchanged.
+
+Shop purchasing: removed Supports-only purchase restriction. All catalog entries now use current saved ranks for next cost, cap, pips and SOLD. Buy spends Credits; Refund reverses the last rank at its original price; Refund All reverses recorded ranks. shop-upgrade-change persists ranks and corresponding unlock flags immediately. This connects shop transactions; remaining unimplemented gameplay effects are still pending.
+
+Alpha 1.0.1: grouped account login, armoury, settings and shop fixes. Automatic release policy recorded in AGENTS.md; Development/release-version.json is the authoritative version used for build page titles and release manifest. Major for milestones, minor for significant content, patch for grouped small fixes; default rollover at 10 patches.

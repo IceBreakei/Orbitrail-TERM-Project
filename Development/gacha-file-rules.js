@@ -28,19 +28,19 @@ export function acceptFileProduct(player,product) {
     owned.level=(owned.level||1)+1;if(product.kind!=='item')recordWeaponMax(player,owned);return true;
   }
   const index=slots.findIndex(item=>!item);
-  if(index<0&&slots.filter(Boolean).length>=6)return false;
+  if(index<0&&slots.filter(Boolean).length>=(product.kind==='item'?(player.maxItemSlots??6):(player.maxWeaponSlots??6)))return false;
   const item={...product.weapon};if(index>=0)slots[index]=item;else slots.push(item);return true;
 }
 
 /** Generate products using a shadow inventory so triple rewards cannot overfill or overlevel it. */
 export function rollFileRewards(player,{random=Math.random,forceType,getOptions=rollLevelUpgrades,superItems=superFileItems}={}) {
   const roll=random();let type=forceType||(roll<fileSettings.superChance?'super':roll<fileSettings.superChance+fileSettings.tripleChance?'triple':'normal');
-  const supers=superItems.filter(item=>{
+  const supers=(player.supersBan?[]:superItems).filter(item=>{
     if(!isItemRewardEnabled(player,item.id))return false;
     const owned=player.equipmentSlots?.find(owned=>owned?.id===item.id);
     if(item.id==='malkuth-hat'&&!isItemUnlocked(item.id)&&!owned)return false;
     if(item.defaultUnlocked===false&&!isContentUnlocked(item.id)&&!owned)return false;
-    return owned?!owned.isSuper&&!owned.awakened:(player.equipmentSlots||[]).filter(Boolean).length<6;
+    return owned?!owned.isSuper&&!owned.awakened:(player.equipmentSlots||[]).filter(Boolean).length<(player.maxItemSlots??6);
   });
   if(type==='super'&&!supers.length)type='normal';
   const result={type,products:[],credits:fileCredits(type,random,player.moneyUpBonus||0,player.stageCoinMultiplier??1)};
@@ -50,7 +50,7 @@ export function rollFileRewards(player,{random=Math.random,forceType,getOptions=
     result.products.push({kind:'item',weapon:{...item,level:1},name:item.name,super:true,description});return result;
   }
   const shadow={...player,attackSlots:(player.attackSlots||[]).map(w=>w?{...w}:null),equipmentSlots:(player.equipmentSlots||[]).map(w=>w?{...w}:null)};
-  const free={weapon:6-shadow.attackSlots.filter(Boolean).length,item:6-shadow.equipmentSlots.filter(Boolean).length};
+  const free={weapon:(player.maxWeaponSlots??6)-shadow.attackSlots.filter(Boolean).length,item:(player.maxItemSlots??6)-shadow.equipmentSlots.filter(Boolean).length};
   for(let index=0;index<(type==='triple'?3:1);index++) {
     const maxed=[...shadow.attackSlots,...shadow.equipmentSlots].filter(w=>w&&(w.isSynergy||(w.level||1)>=(w.maxLevel||7))).length;
     // Editable saturation behavior: each MAX slot adds 5 percentage points toward the 100-Credit substitution.

@@ -97,6 +97,7 @@ export function createSkillCasting({ canvas, aiming, getPlayer, getCharacters, i
     if (state.phase !== 'idle') { cancel('right'); return; }
     const player = getPlayer();
     adminNumbersForCast = numberMode();
+    if(player.shopUnlocks?.['special-attack']===false&&!adminNumbersForCast){setStatus('Unlock Special Attack in the shop to cast EX skills.');return;}
     const weapon = adminNumbersForCast ? equippedSkills(player)[0] : readySkill(player);
     if (!weapon || !state.begin(player, weapon, adminNumbersForCast)) {
       const skills = equippedSkills(player);

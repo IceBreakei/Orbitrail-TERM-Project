@@ -1,0 +1,1 @@
+{"private":true,"name":"orbitrail-save-rules-tests","version":"1.0.0","dependencies":{"@firebase/rules-unit-testing":"^6.0.0","firebase":"^13.4.0"}}

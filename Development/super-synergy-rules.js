@@ -34,7 +34,7 @@ function validItem(item,id){
     (item.isSuper===true||item.super===true||item.superItem===true||(Number.isFinite(item.maxLevel)&&(item.level||1)>=item.maxLevel));
 }
 export function superSynergyChoices(player,state=superSynergyRun,recipes=superSynergyRecipes){
-  if(state.crafted||state.hammer!=='held')return [];
+  if(player.synnergyBan||state.crafted||state.hammer!=='held')return [];
   const choices=[];for(const recipe of recipes){
     if(!recipe.id||!recipe.result?.id||player.attackSlots?.some(w=>w?.id===recipe.result.id))continue;
     for(let a=0;a<Math.min(6,player.attackSlots?.length||0);a++){

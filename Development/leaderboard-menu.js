@@ -3,7 +3,7 @@ const stages=[['first','Stage 1'],['second','Stage 2'],['third','Stage 3'],['fou
 export function leaderboardRows(scores,character,stage){return scores.filter(row=>String(row.character).toLowerCase()===character.toLowerCase()&&(stage==='endless'?row.mode==='endless':row.mode==='stage'&&row.stage===stage)).slice().sort((a,b)=>b.finalScore-a.finalScore);}
 export function createLeaderboardMenu({panel,onBack,getScores=()=>[],getPlayer=()=>({}),clearScores=()=>{}}){
  const grid=panel.querySelector('.leaderboard-grid'),portrait=panel.querySelector('.leaderboard-portrait'),pages=panel.querySelector('.leaderboard-pages');let stage=0,character='Plana',page=0;
- let showNames=true,useUsername=true,username='',deleteArmed=false;
+ const savedPreferences=globalThis.window?.accountSave?.snapshot.preferences;let showNames=savedPreferences?.showScoreNames!==0,useUsername=savedPreferences?.useScoreUsername!==0,username=savedPreferences?.scoreUsername||'',deleteArmed=false;
  const settings=panel.querySelector('.leaderboard-settings-shade'),settingsTrigger=panel.querySelector('[data-leaderboard-settings]'),nameForm=panel.querySelector('.leaderboard-name-form'),nameInput=panel.querySelector('#leaderboard-display-name');
  function text(node,value,{highlight=false}={}){node.replaceChildren();const canvas=document.createElement('canvas');canvas.setAttribute('aria-hidden','true');node.append(canvas);createBitmapText(canvas,{variant:'font2',scale:1.2,wrap:false,highlightStats:highlight}).setText(value);node.setAttribute('aria-label',value);}
  function time(seconds){const total=Math.max(0,Math.floor(seconds||0));return `${Math.floor(total/60)}:${String(total%60).padStart(2,'0')}`;}
@@ -16,10 +16,10 @@ export function createLeaderboardMenu({panel,onBack,getScores=()=>[],getPlayer=(
  for(const node of panel.querySelectorAll('[data-leaderboard-settings-text]'))text(node,node.textContent);
  settingsTrigger.addEventListener('click',()=>{settings.hidden=false;deleteArmed=false;settingsLabels();panel.querySelector('[data-change-score-name]').focus();});
  panel.querySelector('[data-close-leaderboard-settings]').addEventListener('click',closeSettings);
- panel.querySelector('[data-show-score-names]').addEventListener('click',()=>{showNames=!showNames;settingsLabels();render();});
- panel.querySelector('[data-use-score-username]').addEventListener('click',()=>{useUsername=!useUsername;settingsLabels();render();});
+ panel.querySelector('[data-show-score-names]').addEventListener('click',()=>{showNames=!showNames;globalThis.window?.accountSave?.set('preferences','showScoreNames',showNames?1:0);settingsLabels();render();});
+ panel.querySelector('[data-use-score-username]').addEventListener('click',()=>{useUsername=!useUsername;globalThis.window?.accountSave?.set('preferences','useScoreUsername',useUsername?1:0);settingsLabels();render();});
  panel.querySelector('[data-change-score-name]').addEventListener('click',()=>{nameForm.hidden=false;nameInput.value=username;nameInput.focus();});
- nameForm.addEventListener('submit',event=>{event.preventDefault();username=nameInput.value.trim().slice(0,24);nameForm.hidden=true;render();panel.querySelector('[data-change-score-name]').focus();});
+ nameForm.addEventListener('submit',event=>{event.preventDefault();username=nameInput.value.trim().slice(0,24);globalThis.window?.accountSave?.set('preferences','scoreUsername',username);nameForm.hidden=true;render();panel.querySelector('[data-change-score-name]').focus();});
  panel.querySelector('[data-delete-session-scores]').addEventListener('click',()=>{if(!deleteArmed){deleteArmed=true;settingsLabels();return;}clearScores();deleteArmed=false;page=0;render();settingsLabels();});
  settings.addEventListener('keydown',event=>{if(event.key!=='Tab')return;const focusable=[...settings.querySelectorAll('button:not([aria-disabled="true"]),input')].filter(node=>!node.closest('[hidden]'));const first=focusable[0],last=focusable[focusable.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}});
  settingsLabels();

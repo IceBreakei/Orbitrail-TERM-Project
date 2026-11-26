@@ -6,7 +6,7 @@ function element(id){if(!elements.has(id))elements.set(id,{value:'',hidden:true,
  showModal(){this.open=true},querySelector(){return element('submit')}});return elements.get(id)}
 const context=vm.createContext({sessionStorage:{getItem:key=>values.get(key),setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)},
  document:{querySelector:element},window:{location:{assign:url=>navigations.push(url),replace:url=>navigations.push(url)}},
- console,isAdmin:()=>true,getFirebaseAuth:async()=>({auth:{},sdk:{signInWithEmailAndPassword:async()=>{}}})});
+ console,usernameServiceEnabled:false,signInWithIdentifier:async()=>{},isAdmin:()=>true,getFirebaseAuth:async()=>({auth:{},sdk:{signInWithEmailAndPassword:async()=>{}}})});
 vm.runInContext(source('guest-session.js')+source('script.js'),context);
 const run=code=>vm.runInContext(code,context);
 assert.equal(run('isGuestSession()'),false);
